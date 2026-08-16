@@ -129,6 +129,7 @@ def run(
     model: Model,
     client: Client,
     prompts: PromptStore,
+    macro: list | None = None,
 ) -> LensViews:
     started = time.monotonic()
     lens_nodes = [nodes.node(node_id) for node_id in nodes.LENS_NODES]
@@ -137,7 +138,7 @@ def run(
     result = LensViews()
     result.views.append(_mechanical(ctx, model))
 
-    corpus = build_corpus(ctx, evidence, model)
+    corpus = build_corpus(ctx, evidence, model, macro)
     model_nodes = [n for n in lens_nodes if n.tier != nodes.NONE_TIER]
 
     def run_lens(node: nodes.Node) -> LensView:
@@ -197,7 +198,9 @@ def run(
     return result
 
 
-def build_corpus(ctx: RunContext, evidence: EvidenceStore, model: Model) -> str:
+def build_corpus(
+    ctx: RunContext, evidence: EvidenceStore, model: Model, macro: list | None = None
+) -> str:
     """The shared prefix every lens reads. Built once, placed first, identical
     across the fan-out so the cache can match it."""
     lines: list[str] = []

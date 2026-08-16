@@ -15,7 +15,7 @@ a lambda that happens to equal one.
 
 What does not change: consensus is still acquired, still carried on its own bus,
 still recorded with every regime condition it would have triggered, and still
-rendered beside every forecast as the comparison and the baseline. The bus is
+rendered beside every forecast as the comparison. The bus is
 intact; only its connection to the submitted number is cut. Every regime condition
 is still measured and reported, so the Risk sheet shows exactly how far the
 positioning would have moved the number had it been applied.
@@ -25,9 +25,12 @@ once where consensus enters the pipeline and carried untouched to lambda's secon
 input. No reasoning stage takes it as an argument, so there is no path by which a
 lens or the judge could read from it or write to it.
 
-The baseline sits in series on that bus and terminates there. It is consensus
-times the shrunk company surprise, it is what the forecast is scored against, and
-it is never an input to the forecast. A test asserts that.
+There is deliberately no baseline. The brief carries one -- consensus times the
+company's shrunk historical beat -- and an earlier build computed a filings-based
+substitute for it. Both were removed: consensus is the bar this event actually
+scores us against, so a second, invented bar sitting beside it added a number
+readers had to interpret before they could read the comparison that matters.
+What renders beside every forecast is the Street number and nothing else.
 
 Shrinking hard to consensus on a heavily covered name is the correct answer, not a
 failure. Under this event's relative scoring there is no prize for being different
@@ -99,7 +102,6 @@ class Position:
     units: str
     own_estimate: float | None
     consensus: float | None
-    baseline: float | None
     lam: float
     forecast: float | None
     preset: str
@@ -114,7 +116,6 @@ class Position:
             "units": self.units,
             "own_estimate": self.own_estimate,
             "consensus": self.consensus,
-            "baseline": self.baseline,
             "lambda": self.lam,
             "forecast": self.forecast,
             "preset": self.preset,
@@ -139,9 +140,8 @@ class Positions:
                 "available": self.consensus_available,
                 "positioning": self.positioning,
                 "terminates_at": (
-                    "comparison and baseline only. Positioning is switched off, so the bus "
-                    "renders beside the forecast and does not feed it. The baseline terminates "
-                    "on the bus and is never an input."
+                    "comparison only. Positioning is switched off, so the bus renders beside the "
+                    "forecast and never feeds it."
                 ),
             },
             "positions": [item.to_json() for item in self.items],
@@ -211,7 +211,6 @@ def run(
                     units=metric.units,
                     own_estimate=own,
                     consensus=consensus,
-                    baseline=_baseline(consensus, built),
                     lam=1.0,
                     forecast=own,
                     preset=preset_name,
@@ -233,8 +232,7 @@ def run(
                         f"consensus is switched off: our error is scored against the Street's, so a "
                         f"number shrunk onto consensus inherits the Street's error and cannot place. "
                         + (
-                            f"Consensus for comparison is {consensus:.4g} and the baseline is "
-                            f"{_baseline(consensus, built):.4g}; neither is an input here. "
+                            f"Consensus for comparison is {consensus:.4g}; it is not an input here. "
                             if consensus is not None
                             else "No Street consensus exists for this metric in any case. "
                         )
@@ -252,7 +250,6 @@ def run(
                 units=metric.units,
                 own_estimate=own,
                 consensus=None,
-                baseline=None,
                 lam=1.0,
                 forecast=own,
                 preset=preset_name,
@@ -301,7 +298,6 @@ def run(
             lam, conditions = _apply(lam, conditions, "comparability_flag", True, 0.25)
 
         lam = max(0.0, min(1.0, lam))
-        baseline = _baseline(consensus, built)
         forecast = consensus + lam * (own - consensus) if own is not None else consensus
 
         result.items.append(
@@ -310,7 +306,6 @@ def run(
                 units=metric.units,
                 own_estimate=own,
                 consensus=consensus,
-                baseline=baseline,
                 lam=round(lam, 4),
                 forecast=forecast,
                 preset=preset_name,
@@ -337,7 +332,6 @@ def run(
             **{"lambda": item.lam},
             own_estimate=item.own_estimate,
             consensus=item.consensus,
-            baseline=item.baseline,
             forecast=item.forecast,
             conditions=item.conditions,
         )
@@ -393,31 +387,6 @@ def _apply(
     )
     return lam * multiplier, conditions
 
-
-def _baseline(consensus: float | None, built: Any) -> float | None:
-    """The bar to beat, computed from the company's own filings.
-
-    The specification defines the baseline as consensus times the shrunk company
-    surprise. With no consensus source in the chain that definition has nothing
-    to stand on, so the baseline becomes the last reported period grown at the
-    company's own shrunk median growth rate.
-
-    It is still not a strawman. A naive continuation of a company's own recent
-    trajectory is hard to improve on, and most of the value of this system is in
-    beating that rather than in beating nothing. It terminates here exactly as
-    the consensus baseline did: it is rendered beside the forecast and is never
-    an input to it.
-    """
-    if built is None or not built.observations:
-        return consensus
-    values = [o.value for o in built.observations]
-    growths = [
-        (b - a) / abs(a) for a, b in zip(values, values[1:]) if abs(a) > 1e-9
-    ]
-    if not growths:
-        return values[-1]
-    stat = shrink(growths, prior=0.0, constant=6.0)
-    return values[-1] * (1 + stat.shrunk)
 
 
 def _quantiles(judged: dict[str, Any] | None) -> dict[str, float]:

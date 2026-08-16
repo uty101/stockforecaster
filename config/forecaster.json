@@ -10,7 +10,8 @@
     "corpus",
     "market",
     "news",
-    "research"
+    "research",
+    "macro"
   ],
   "sources": {
     "corpus": {
@@ -98,6 +99,70 @@
           {
             "angle": "cost",
             "query": "staffing industry consultant headcount wage inflation cost reduction recruitment 2026"
+          }
+        ]
+      }
+    },
+    "macro": {
+      "kind": "fred_alfred",
+      "observations": 8,
+      "series": {
+        "HD": [
+          {
+            "id": "EXHOSLUSM495S",
+            "label": "Existing home sales",
+            "why": "housing turnover drives home improvement demand"
+          },
+          {
+            "id": "HOUST",
+            "label": "Housing starts",
+            "why": "new construction feeds building materials"
+          },
+          {
+            "id": "MORTGAGE30US",
+            "label": "30-year mortgage rate",
+            "why": "affordability gates large discretionary projects"
+          }
+        ],
+        "ADI": [
+          {
+            "id": "IPG3344S",
+            "label": "Semiconductor industrial production",
+            "why": "the analog cycle tracks industrial output"
+          },
+          {
+            "id": "BUSINV",
+            "label": "Business inventories",
+            "why": "inventory correction is the swing factor in this cycle"
+          }
+        ],
+        "DE": [
+          {
+            "id": "PCU333111333111",
+            "label": "Farm machinery PPI",
+            "why": "equipment pricing power"
+          },
+          {
+            "id": "PMAIZMTUSDM",
+            "label": "Global corn price",
+            "why": "crop prices drive farm income and equipment demand"
+          },
+          {
+            "id": "PSOYBUSDM",
+            "label": "Global soybean price",
+            "why": "same channel as corn"
+          }
+        ],
+        "LSE:HAS": [
+          {
+            "id": "LRHUTTTTGBM156S",
+            "label": "UK unemployment rate",
+            "why": "recruitment net fees track labour market tightness"
+          },
+          {
+            "id": "LREM64TTGBM156S",
+            "label": "UK employment rate",
+            "why": "hiring volume drives permanent placement fees"
           }
         ]
       }

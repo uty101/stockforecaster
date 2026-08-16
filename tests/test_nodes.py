@@ -46,11 +46,19 @@ class Registry(unittest.TestCase):
             self.assertTrue(item.agent, f"{item.id} has a tier but no prompt name")
 
     def test_unavailable_sources_stay_in_the_registry_with_a_reason(self) -> None:
-        """Deleting a node we cannot feed would hide the gap. Keeping it dark is
-        what the Integrity sheet reports. J4 has no entitlement on the available
-        options plan; J6/U6 have no macro adapter."""
+        """Every node in the registry now produces something.
+
+        The registry used to carry dark nodes with a reason, which was honest but
+        left the System sheet showing capability that did not exist. The options
+        chain was removed because no plan we hold is entitled to it, and the
+        calibration node was removed because there are no residuals to bootstrap.
+        Macro was made to work instead of removed. What remains all runs."""
         dark = {item.id: item.note for item in nodes.unavailable()}
-        self.assertEqual(sorted(dark), ["J4", "J6", "U6"])
+        self.assertEqual(
+            sorted(dark),
+            [],
+            "a node that produces nothing is either made to work or taken out, never left dark",
+        )
         for node_id, note in dark.items():
             self.assertTrue(note, f"{node_id} is unavailable with no stated reason")
 

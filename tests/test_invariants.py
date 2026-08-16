@@ -93,23 +93,30 @@ class ConsensusBusIsolation(unittest.TestCase):
         self.assertEqual(writable, [], "the bus must be carried untouched")
 
 
-class BaselineTerminates(unittest.TestCase):
-    def test_the_baseline_cannot_feed_the_forecast(self) -> None:
-        """It renders beside the forecast and is never an input to it.
+class NoBaseline(unittest.TestCase):
+    """There is deliberately no baseline anywhere.
 
-        The forecast for every metric must equal either the own estimate or the
-        consensus-anchored blend — never anything computed from the baseline.
-        """
-        source = inspect.getsource(h_position.run)
-        self.assertNotIn("baseline +", source)
-        self.assertNotIn("+ baseline", source)
-        self.assertNotIn("baseline *", source)
+    The brief carries one and an earlier build computed a filings-based
+    substitute. Both were removed: consensus is the bar this event actually
+    scores against, and a second invented bar beside it was a number a reader had
+    to interpret before reaching the comparison that matters.
+    """
+
+    def test_positioning_produces_no_baseline_field(self) -> None:
+        import dataclasses
+
+        fields = {f.name for f in dataclasses.fields(h_position.Position)}
+        self.assertNotIn("baseline", fields)
+
+    def test_no_baseline_is_computed_anywhere_in_positioning(self) -> None:
+        source = inspect.getsource(h_position)
         for line in source.splitlines():
             stripped = line.strip()
-            if stripped.startswith("forecast") and "=" in stripped:
-                self.assertNotIn(
-                    "baseline", stripped, f"the baseline reached the forecast: {stripped}"
-                )
+            if stripped.startswith("#") or stripped.startswith('"'):
+                continue
+            self.assertNotIn(
+                "_baseline(", stripped, f"a baseline is still being computed: {stripped}"
+            )
 
 
 class DeepTierBudget(unittest.TestCase):

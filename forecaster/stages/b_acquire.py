@@ -88,6 +88,7 @@ class Dossier:
     other_calls: list[Document] = field(default_factory=list)
     slides: list[Document] = field(default_factory=list)
     research: list[Document] = field(default_factory=list)
+    macro: list[dict[str, Any]] = field(default_factory=list)
 
     absent: dict[str, str] = field(default_factory=dict)
     skipped: list[dict[str, Any]] = field(default_factory=list)
@@ -125,6 +126,7 @@ class Dossier:
                 "earnings_calls": len(self.call_sequence),
                 "slides": len(self.slides),
                 "research": len(self.research),
+                "macro_series": len(self.macro),
             },
             "earnings_releases": [doc.summary() for doc in self.earnings_releases],
             "periodic_reports": [doc.summary() for doc in self.periodic_reports],
@@ -142,6 +144,7 @@ class Dossier:
             ],
             "slides": [doc.summary() for doc in self.slides],
             "research": [doc.summary() for doc in self.research],
+            "macro": self.macro,
             "absent": self.absent,
             "skipped": self.skipped,
             "paths": {doc.doc_id: str(doc.path) for doc in self.all_documents},
@@ -154,7 +157,6 @@ ABSENT_REASONS = {
     "consensus": "no source in the chain publishes analyst consensus; lambda has no coverage inputs",
     "peers": "the corpus holds only the four target companies, so no peer has reported into this period",
     "industry_sizing": "no third-party industry data in the corpus",
-    "macro": "no macro series in the corpus; FRED is out of the source chain for this run",
     "fx_rates": "no FX series in the corpus; FX exposure must come from filings text instead",
     "prices": "no price history in the corpus",
 }
@@ -180,6 +182,16 @@ def run(ctx: RunContext, sources: LoadedSources) -> Dossier:
 
     _acquire_filings(ctx, dossier, filings, budgets)  # U3
     _acquire_calls(ctx, dossier, transcripts, budgets)  # U8 reads this sequence
+
+    series = chain.fetch("macro", ctx.ticker)  # U6 / J6
+    if series:
+        dossier.macro = series
+        ctx.events.emit(STAGE, "macro_acquired", node="U6",
+                        series=[s["series_id"] for s in series], vintage=ctx.as_of.isoformat())
+    else:
+        ctx.note(STAGE, "degrade",
+                 "no macro series were returned, so the Macro lens works from company disclosure alone",
+                 node="U6")
 
     slide_budget = budgets.get("slides", 12)
     dossier.slides = slides[:slide_budget]

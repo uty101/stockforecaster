@@ -98,7 +98,7 @@ def forecast(
     model = d_model.run(ctx, evidence)
     last_stage = "E"
 
-    lens_views = e_analyse.run(ctx, evidence, model, client, prompts)
+    lens_views = e_analyse.run(ctx, evidence, model, client, prompts, dossier.macro)
     last_stage = "V1"
 
     reconciled = v1_reconcile.run(ctx, lens_views, evidence)

@@ -36,6 +36,7 @@ def _builders() -> dict:
     # Imported lazily: the network adapters import urllib, and a corpus-only
     # run should not pay for that or fail on it.
     from .market import YahooMarketSource
+    from .macro import MacroSource
     from .news import NewsSource
     from .research import WebResearchSource
     from .sec import SecSource
@@ -45,6 +46,7 @@ def _builders() -> dict:
         "sec": SecSource,
         "market": YahooMarketSource,
         "news": NewsSource,
+        "macro": MacroSource,
         "research": WebResearchSource,
     }
 

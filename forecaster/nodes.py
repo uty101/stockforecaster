@@ -63,15 +63,14 @@ SOURCES = [
        note="Date-bounded at the API, so nothing published after the lock date can enter the "
             "result set. Feeds perception, and separately feeds the agent-driven industry "
             "research that reaches the demand and cost drivers."),
-    _n("J4", "A", "Options chain", SOURCE, available=False,
-       note="No LSE options feed, so no implied move."),
     _n("J5", "A", "Universe", SOURCE,
        note="challenge/companies.json: four companies, twelve metrics, prepared and local. "
             "Fixed by the organisers, so universe construction uses no post-as-of information "
             "by construction."),
-    _n("J6", "A", "Macro", SOURCE, available=False,
-       note="No FRED/ALFRED adapter, so no macro series and no realtime_start pinning. U20 works "
-            "from macro commentary quoted inside the filings and calls."),
+    _n("J6", "A", "Macro", SOURCE,
+       note="FRED with realtime_start pinned to the lock date, so the series comes back as it "
+            "stood then and later revisions are excluded. Which series matter is per company: "
+            "housing turnover for HD, crop prices for DE, the UK labour market for Hays."),
     _n("J7", "A", "Sponsor feed", SOURCE,
        note="challenge/templates: the metric label, unit and period header for each of the twelve "
             "numbers. A structured source: values are typed, not quoted prose."),
@@ -92,7 +91,9 @@ ACQUIRERS = [
        note="An agent proposes the searches, sees what came back, and asks for what is missing. "
             "Retrieved text is written to the run directory as documents, so a lens citing it is "
             "quoting something V1 can string-match."),
-    _n("U6", "B", "B4 macro", ACQUIRE, available=False, note="No macro adapter; see J6."),
+    _n("U6", "B", "B4 macro", ACQUIRE,
+       note="Pulls the per-company series with the vintage pinned, and puts them in the "
+            "shared corpus so the Macro lens reads measurement rather than commentary."),
     _n("U7", "B", "B6 bridge", AGENT, tier=CHEAP, agent="extract_bridge"),
     _n("U8", "B", "E7 calls", AGENT, tier=CHEAP, agent="scan_calls"),
     _n("U9", "B", "E6 perception", AGENT, tier=CHEAP, agent="scan_perception"),
@@ -118,7 +119,6 @@ PIPELINE = [
     _n("U22", "F", "Champion", AGENT, tier=MID, agent="champion"),
     _n("U23", "G", "Judge", AGENT, tier=DEEP, agent="judge"),
     _n("U24", "V2", "Comparability", AGENT, tier=CHEAP, agent="comparability"),
-    _n("U25", "V3", "Calibrate", DETERMINISTIC),
     _n("U26", "H", "Position", DETERMINISTIC),
     _n("OUT", "I", "Output", OUTPUT, tier=MID, agent="narrative"),
 ]
