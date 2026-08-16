@@ -26,7 +26,10 @@
   "acquire_budgets": {
     "transcript_sequence_length": 8,
     "history_periods": 24,
-    "max_documents_per_company": 400
+    "earnings_releases": 14,
+    "other_filings": 6,
+    "other_calls": 6,
+    "slides": 12
   },
 
   "statistics": {
