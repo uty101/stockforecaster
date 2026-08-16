@@ -1,0 +1,61 @@
+{
+  "_comment": [
+    "Run configuration for the forecaster pipeline. Nothing in here is hardcoded in Python.",
+    "JSON rather than YAML because PyYAML cannot be installed on this machine (no pip);",
+    "see forecaster/README.md for the full note on the stdlib-only constraint."
+  ],
+
+  "as_of": "2026-08-16",
+  "corpus_frozen_at": "2026-08-14",
+
+  "source_priority": ["corpus"],
+
+  "sources": {
+    "corpus": {
+      "kind": "local_markdown_corpus",
+      "root": "challenge/offline-data",
+      "company_directories": {
+        "HD": "home-depot",
+        "ADI": "analog-devices",
+        "LSE:HAS": "hays",
+        "DE": "deere"
+      }
+    }
+  },
+
+  "acquire_budgets": {
+    "transcript_sequence_length": 8,
+    "history_periods": 24,
+    "max_documents_per_company": 400
+  },
+
+  "statistics": {
+    "mad_scale_factor": 1.4826,
+    "winsorize_lower_pct": 5,
+    "winsorize_upper_pct": 95,
+    "shrinkage_constant": 6,
+    "small_sample_threshold": 8,
+    "trailing_window_periods": 12
+  },
+
+  "lambda": {
+    "presets": {
+      "shrink": 0.2,
+      "barbell": 0.55,
+      "calibrated": 0.3
+    },
+    "active_preset": "shrink",
+    "beta_measured": false
+  },
+
+  "cost": {
+    "ceiling_usd": 25.0,
+    "cache_dir": ".forecaster-cache"
+  },
+
+  "models": {
+    "cheap": "claude-haiku-4-5-20251001",
+    "mid": "claude-sonnet-5",
+    "expensive": "claude-opus-5"
+  }
+}

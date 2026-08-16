@@ -1,6 +1,18 @@
 node_modules/
 __pycache__/
 *.py[cod]
+
+# Pipeline run artefacts: one directory per run holding the dossier, results and
+# tape. Nothing is overwritten, so this grows fast. The accepted run's results
+# are committed by hand under runs/accepted/.
+runs/
+!runs/accepted/
+.forecaster-cache/
+
+# `py -m ensurepip` on this machine resolves its prefix to the working directory
+# and installs here. It is a broken Python install, not part of the project.
+/Lib/
+/Scripts/pip*.exe
 research/
 .DS_Store
 .env
