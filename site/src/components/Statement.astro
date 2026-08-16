@@ -1,0 +1,203 @@
+---
+// The income statement as the company printed it.
+//
+// The periods along the top are the ones the filings report. Nothing here is
+// summed into a period the company did not publish, so a quarter beside a half
+// year is two reported columns rather than one derived from the other. Selecting
+// a cell names the filing it came from.
+import Spark from "./Spark.astro";
+import { tickerId } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
+
+const { company, columns: shown = 8 } = Astro.props;
+const statement = company.statement;
+const id = tickerId(company.ticker);
+const units = (company.results.forecast?.metrics ?? [])[0]?.units ?? "";
+const money = String(units).toUpperCase().startsWith("GBP") ? "GBP" : "USD";
+
+// The lengths the filings report, most common first.
+const spans = statement
+  ? [...new Set(statement.columns.map((c) => c.span).filter(Boolean))]
+  : [];
+const order = ["Three months", "Six months", "Nine months", "Year"];
+spans.sort((a, b) => order.indexOf(a) - order.indexOf(b));
+const preferred = spans[0] ?? "";
+
+const forecastRow = (company.results.forecast?.metrics ?? [])[0] ?? null;
+const period = company.results.header?.period ?? "";
+---
+
+{!statement || !statement.rows.length ? (
+  <div class="panel">
+    <div class="panel-head">
+      <span class="eyebrow">Income statement</span>
+      <span class="plus">+</span>
+    </div>
+    <div class="panel-body">
+      <p class="small t-secondary" style="margin:0">
+        No filing in the corpus prints the statement as a table for this name. A release carrying the
+        statement would fill this in.
+      </p>
+    </div>
+  </div>
+) : (
+  <div class="panel statement" data-statement={id}>
+    <div class="panel-head">
+      <span class="eyebrow">Income statement · {money} {statement.rows.length} lines</span>
+      <span class="plus">+</span>
+    </div>
+    <div class="panel-body">
+      <div class="stmt-controls">
+        <div class="toggle">
+          <span class="eyebrow">Periods</span>
+          {spans.map((span) => (
+            <label>
+              <input type="radio" name={`span-${id}`} value={span} checked={span === preferred} />
+              <span>{span.toLowerCase()}</span>
+            </label>
+          ))}
+        </div>
+        <div class="toggle">
+          <span class="eyebrow">Read as</span>
+          <label><input type="radio" name={`basis-${id}`} value="reported" checked /> <span>reported</span></label>
+          <label><input type="radio" name={`basis-${id}`} value="common" /> <span>percent of revenue</span></label>
+        </div>
+      </div>
+
+      {spans.map((span) => {
+        const cols = statement.columns
+          .map((column, index) => ({ column, index }))
+          .filter((entry) => entry.column.span === span)
+          .slice(-shown);
+        // The top line is what the common size view divides by.
+        const topIndex = statement.rows.findIndex((row) => row.cells.some(Boolean));
+        return (
+          <div class="stmt-view" data-span={span} hidden={span !== preferred}>
+            <div class="scroll-x">
+              <table class="ledger stmt">
+                <thead>
+                  <tr>
+                    <th class="sticky">Line</th>
+                    {cols.map((entry) => (
+                      <th class="n">{entry.column.label.replace(`${span} to `, "")}</th>
+                    ))}
+                    <th class="n est">{period}</th>
+                    <th class="n">Trail</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {statement.rows.map((row, rowIndex) => {
+                    const cells = cols.map((entry) => row.cells[entry.index]);
+                    const values = cells.map((cell) => (cell ? cell.value : null));
+                    const top = statement.rows[topIndex];
+                    const isTop = rowIndex === topIndex;
+                    const projected = isTop && forecastRow ? forecastRow.forecast : null;
+                    return (
+                      <tr class={row.subtotal ? "sub" : ""}>
+                        <td class="sticky">{row.label}</td>
+                        {cells.map((cell, i) => {
+                          const base = top ? top.cells[cols[i].index] : null;
+                          const share =
+                            cell && base && base.value ? (cell.value / base.value) * 100 : null;
+                          return (
+                            <td
+                              class="n cell"
+                              data-doc={cell?.doc_id ?? ""}
+                              data-quote={cell?.quote ?? ""}
+                              data-period={cols[i].column.label}
+                              data-reported={cell ? f.money(cell.value) : "—"}
+                              data-common={share === null ? "—" : f.pct(share)}
+                              tabindex={cell ? "0" : undefined}
+                            >
+                              {cell ? f.money(cell.value) : "—"}
+                            </td>
+                          );
+                        })}
+                        <td class="n est t-white">
+                          {projected !== null ? f.metricValue(projected, forecastRow.units) : "—"}
+                        </td>
+                        <td class="n">
+                          <Spark values={values.filter((v) => typeof v === "number")} projected={projected} />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        );
+      })}
+
+      <div class="stmt-trace meta" data-trace>
+        Select any figure for the filing it was read from.
+      </div>
+      <p class="meta" style="margin:10px 0 0">
+        Figures as printed for each period, in the units the filing states. Periods are the ones the
+        company reports. Nothing on this table is summed into a period the company did not publish.
+      </p>
+    </div>
+  </div>
+)}
+
+<style>
+  .stmt-controls { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 14px; }
+  .stmt-controls .toggle { display: flex; align-items: center; gap: 10px; }
+  .stmt-controls label { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--secondary); cursor: pointer; }
+  .stmt-controls input { accent-color: #a77bff; width: 10px; height: 10px; }
+
+  table.stmt td.sticky, table.stmt th.sticky {
+    position: sticky;
+    left: 0;
+    background: var(--panel);
+    min-width: 230px;
+  }
+  table.stmt thead th { position: sticky; top: 0; background: var(--panel); }
+  table.stmt tr.sub td { color: var(--primary); }
+  table.stmt tr.sub td.sticky { color: var(--primary); }
+  table.stmt td.est, table.stmt th.est { border-left: 2px solid var(--line-strong); padding-left: 12px; }
+  table.stmt td.cell { cursor: default; }
+  table.stmt td.cell[tabindex] { cursor: pointer; }
+  table.stmt td.cell[tabindex]:hover { color: var(--white); }
+  .stmt-trace { margin-top: 12px; border-top: 1px solid var(--line); padding-top: 10px; }
+</style>
+
+<script>
+  for (const panel of document.querySelectorAll("[data-statement]")) {
+    const trace = panel.querySelector("[data-trace]");
+
+    // The period control shows the columns the filings report at that length.
+    for (const input of panel.querySelectorAll('input[name^="span-"]')) {
+      input.addEventListener("change", () => {
+        for (const view of panel.querySelectorAll("[data-span]")) {
+          view.hidden = view.dataset.span !== input.value;
+        }
+      });
+    }
+
+    // Percent of revenue is a way of reading the same figures, not extra rows.
+    for (const input of panel.querySelectorAll('input[name^="basis-"]')) {
+      input.addEventListener("change", () => {
+        for (const cell of panel.querySelectorAll("td.cell")) {
+          cell.textContent = input.value === "common" ? cell.dataset.common : cell.dataset.reported;
+        }
+      });
+    }
+
+    for (const cell of panel.querySelectorAll("td.cell[tabindex]")) {
+      const open = () => {
+        if (!trace) return;
+        trace.textContent = cell.dataset.doc
+          ? `${cell.dataset.period} · ${cell.dataset.doc} · ${cell.dataset.quote.slice(0, 160)}`
+          : "No filing carries this line for that period.";
+      };
+      cell.addEventListener("click", open);
+      cell.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open();
+        }
+      });
+    }
+  }
+</script>

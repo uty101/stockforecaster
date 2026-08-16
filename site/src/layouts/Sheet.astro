@@ -20,10 +20,8 @@ const SHEETS = [
   ["03", "Reasoning", "/reasoning"],
   ["04", "Model", "/model"],
   ["05", "Risk", "/risk"],
-  ["06", "Method", "/method"],
-  ["07", "Agents", "/agents"],
-  ["08", "Cost", "/cost"],
-  ["09", "Integrity", "/integrity"],
+  ["06", "Agents", "/agents"],
+  ["07", "Cost", "/cost"],
 ];
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
@@ -60,19 +58,19 @@ const stopped = incomplete
         </nav>
       </header>
 
-      <form class="tickerbar" data-ticker-form autocomplete="off">
+      <div class="tickerbar">
         <label class="eyebrow" for="ticker">Name</label>
-        <input
-          id="ticker"
-          name="ticker"
-          class="tickerbox"
-          type="text"
-          spellcheck="false"
-          placeholder="ticker"
-          aria-describedby="ticker-state"
-        />
-        <span class="meta" data-ticker-state id="ticker-state"></span>
-      </form>
+        <span class="tickerpick">
+          <select id="ticker" class="tickerbox" data-ticker>
+            {known.map((k) => (
+              <option value={k.ticker}>{k.ticker} · {k.name}</option>
+            ))}
+          </select>
+          <svg class="chev" width="9" height="6" viewBox="0 0 9 6" aria-hidden="true">
+            <path d="M0.5 0.5 L4.5 4.5 L8.5 0.5" fill="none" stroke="currentColor" stroke-width="1" />
+          </svg>
+        </span>
+      </div>
 
       <div class="metabar">
         <div class="pairs">
@@ -160,8 +158,10 @@ const stopped = incomplete
 
     <script type="application/json" data-known set:html={JSON.stringify(known)}></script>
     <script>
-      // One name at a time. The box sets it, every sheet follows it, and the
-      // choice is kept so moving between sheets does not lose the name.
+      // One name at a time. The list sets it, every sheet follows it, and the
+      // choice is kept so moving between sheets does not lose the name. The list
+      // offers the names that have a run behind them and nothing else, so there
+      // is no missing name to report.
       (() => {
         const known = JSON.parse(document.querySelector("[data-known]").textContent);
         const tickers = known.map((k) => k.ticker);

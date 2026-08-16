@@ -60,7 +60,20 @@ for (const company of definitions.companies) {
   }
   const results = JSON.parse(fs.readFileSync(path.join(dir, "results.json"), "utf8"));
   const tape = readTape(dir);
-  companies.push({ ticker: company.ticker, definition: company, results, tape, runDir: path.basename(dir) });
+  // The statement is read out of the filings by its own pass, so it can be
+  // rebuilt without paying for the reasoning again.
+  const statementFile = path.join(dir, "statement.json");
+  const statement = fs.existsSync(statementFile)
+    ? JSON.parse(fs.readFileSync(statementFile, "utf8"))
+    : null;
+  companies.push({
+    ticker: company.ticker,
+    definition: company,
+    results,
+    statement,
+    tape,
+    runDir: path.basename(dir),
+  });
   fs.writeFileSync(
     path.join(publicDir, `${company.ticker.replace(":", "_")}-tape.json`),
     JSON.stringify(tape),

@@ -93,6 +93,58 @@ const view = companies.map((company) => {
         </div>
       </section>
 
+
+      <section class="sheet-section">
+        <h2 class="section-heading">What has been checked, and what has not</h2>
+        <p class="prose small t-secondary" style="margin:8px 0 0">
+          The two claims worth separating on any forecasting system: whether the evidence behind a
+          number was verified, and whether the number itself has ever been scored.
+        </p>
+        <div class="grid2" style="margin-top:16px">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="eyebrow">Checked</span>
+              <span class="plus">+</span>
+            </div>
+            <div class="panel-body">
+              <div class="kv">
+                <div class="row"><span class="k">Quotes matched to their filing</span><span class="v num">{v.matched}/{v.checked}</span></div>
+                <div class="row"><span class="k">Workstreams excluded for a bad citation</span><span class="v num">{(v.company.results.reconciliation?.dropped ?? []).length}</span></div>
+                <div class="row"><span class="k">Claims read</span><span class="v num">{f.count(v.claims)}</span></div>
+              </div>
+              <p class="prose small t-secondary" style="margin:14px 0 0">
+                Every quoted figure is matched back against the document it was attributed to. A
+                workstream that cites something the filing does not say is excluded whole, not
+                corrected. Filing dates are checked twice, once by the adapter and again by the
+                chain, and the retrieval window for anything read from the web is bounded at the
+                source so nothing published after the lock date can enter at all.
+              </p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <span class="eyebrow">Not measured</span>
+              <span class="plus">+</span>
+            </div>
+            <div class="panel-body">
+              <p class="prose" style="margin:0">
+                No accuracy figure on this page has been measured. There is no backtest, the
+                weighting is asserted rather than fitted, and the ranges are the weighing step's own
+                and have never been checked against an outcome.
+              </p>
+              <p class="prose small t-secondary" style="margin:12px 0 0">
+                For two of the three that is not an omission to be filled in later. Scoring our
+                estimate against past results is possible from the filings. Scoring it against the
+                Street's figure as it stood at those quarters is not, because no source available
+                publishes what consensus was at the time. So a p10 to p90 range here is not a claim
+                that four outcomes in five fall inside it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section class="sheet-section">
         <Strip
           items={[

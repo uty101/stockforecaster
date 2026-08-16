@@ -19,10 +19,8 @@ const SHEETS = [
   ["03", "Reasoning", "reasoning/index.html", "/reasoning"],
   ["04", "Model", "model/index.html", "/model"],
   ["05", "Risk", "risk/index.html", "/risk"],
-  ["06", "Method", "method/index.html", "/method"],
-  ["07", "Agents", "agents/index.html", "/agents"],
-  ["08", "Cost", "cost/index.html", "/cost"],
-  ["09", "Integrity", "integrity/index.html", "/integrity"],
+  ["06", "Agents", "agents/index.html", "/agents"],
+  ["07", "Cost", "cost/index.html", "/cost"],
 ];
 
 if (!fs.existsSync(dist)) {
