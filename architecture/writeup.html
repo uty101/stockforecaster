@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Agent architecture — Utkarsh Malhotra</title>
+  <style>
+    :root { color-scheme: light; --ink:#101828; --muted:#667085; --line:#d0d5dd; --blue:#155eef; --paper:#fff; --wash:#f8fafc; }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); background: var(--wash); font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    main { width: min(920px, calc(100% - 32px)); margin: 40px auto; padding: clamp(24px, 6vw, 64px); background: var(--paper); border: 1px solid var(--line); border-radius: 20px; }
+    h1 { margin: 0 0 8px; font-size: clamp(40px, 8vw, 72px); line-height: .98; letter-spacing: -.05em; }
+    h2 { margin: 48px 0 12px; font-size: 24px; letter-spacing: -.02em; }
+    h3 { margin: 28px 0 6px; font-size: 17px; letter-spacing: -.01em; }
+    p, li { max-width: 72ch; }
+    .eyebrow { color: var(--blue); font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .lede { color: var(--muted); font-size: 20px; }
+    .card { margin-top: 24px; padding: 20px; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; }
+    code { padding: 2px 6px; border-radius: 5px; background: #eef4ff; }
+    pre { overflow-x: auto; margin: 20px 0; padding: 20px; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; font: 12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    pre code { padding: 0; background: none; }
+    table { width: 100%; margin: 20px 0; border-collapse: collapse; font-size: 14.5px; }
+    th, td { padding: 8px 10px; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+    th { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+    td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .note { color: var(--muted); font-size: 14.5px; }
+  </style>
+</head>
+<body>
+  <main>
+    <p class="eyebrow">Agents vs Wall Street</p>
+    <h1>Forecaster</h1>
+    <p class="lede">Nine lenses read one evidence corpus blind to each other; every claim is quoted and matched back to the document it came from, and a single deep-tier judge weighs what survives by materiality rather than by vote.</p>
+
+    <div class="card">
+      <p>Agent name: <strong>Forecaster</strong></p>
+      <p>Team: <strong>Utkarsh Malhotra</strong> (solo)</p>
+      <p>Build style and harness: <strong>coding harness — Claude Code, unmodified. The agent itself is a headless Python pipeline run by one command.</strong></p>
+      <p>Models: <strong>claude-opus-5 (deep tier, the judge), claude-sonnet-5 (mid tier, lenses / challenge / narrative), claude-haiku-4-5 (cheap tier, extraction, scanners, research scout, comparability)</strong></p>
+    </div>
+
+    <section>
+      <h2>How it works</h2>
+      <p>One command runs four companies end to end. Each company walks the same stages in a fixed order, written out top to bottom in <code>forecaster/run.py</code> with no registry and no dispatch loop, so the whole data flow can be read aloud while somebody watches over your shoulder. Every node has a stable ID (<code>J1</code>–<code>J7</code> for sources, <code>U1</code>–<code>U26</code> for the pipeline) defined once in <code>forecaster/nodes.py</code>; those IDs appear in module names, event names and log lines, so a line in the event tape names the node that produced it.</p>
+
+<pre><code>ticker ──► A  sources        J1 frozen filing corpus · J2 consensus · J3 news + web
+       │                     J5 universe · J6 macro (FRED) · J7 sponsor templates
+       ├──► B  acquire       U1 metric extractor   U4 guidance extractor   (cheap)
+       │                     U5 research scout     U8/U9 call + perception scanners
+       ├──► C  evidence      U10 one byte-identical store; claim = source + quote
+       ├──► D  income model  U11 medians + scaled MAD, projection, reproduction error
+       ├──► E  analyse       U12 mechanical (no model call) + eight lenses (mid),
+       │                     blind to each other, one call each for all 3 metrics
+       ├──► V1 reconcile     U21 deterministic gate: every citation ID must exist,
+       │                     every quote must string-match. A lens that fails is
+       │                     dropped whole. All lenses dropped ⇒ the run raises.
+       ├──► F  challenge     U22 each surviving view argued for, then argued against
+       ├──► G  judge         U23 ONE deep-tier call ⇒ p10/p25/p50/p75/p90 per metric
+       ├──► V2 comparability U24 acquisition · accounting change · 53rd week ·
+       │                     withdrawn guidance — do the historical priors still hold?
+       ├──► H  position      U26 deterministic; consensus bus terminates here
+       └──► I  output        results.json ⇒ xlsx writer ⇒ shape checker ⇒ submission/</code></pre>
+
+      <p>The tiers are assigned once, in <code>forecaster/agents/tiers.py</code>: cheap for retrieval and extraction, mid for the lenses, the challenge and the narrative, deep for the judge alone — one deep call per company, enforced by a test. The client is our own <code>urllib</code> wrapper over the Messages API (there is no working <code>pip</code> on the build machine), doing five things and only five: force a schema and validate before returning, cache on a content hash on disk, enforce a hard cost ceiling, handle prompt caching of the shared corpus, and retry on rate limits and 5xx only.</p>
+
+      <h3>The last clean run, all four companies</h3>
+      <table>
+        <thead><tr><th>Company</th><th>Period</th><th class="num">Model calls</th><th class="num">Citations matched</th><th class="num">Cost</th><th>Forecasts</th></tr></thead>
+        <tbody>
+          <tr><td>Home Depot (HD)</td><td>FY2026 Q2</td><td class="num">38</td><td class="num">71 / 71</td><td class="num">$1.21</td><td class="num">47,320 USDm · 4.65 USD/sh · 0.9 %</td></tr>
+          <tr><td>Analog Devices (ADI)</td><td>FY2026 Q3</td><td class="num">38</td><td class="num">65 / 65</td><td class="num">$1.11</td><td class="num">3,930 USDm · 3.35 USD/sh · 73.1 %</td></tr>
+          <tr><td>Hays plc (LSE:HAS)</td><td>FY2026</td><td class="num">36</td><td class="num">58 / 60</td><td class="num">$1.23</td><td class="num">896 GBPm · 1.25 GBp · 45.2 GBPm</td></tr>
+          <tr><td>Deere &amp; Company (DE)</td><td>FY2026 Q3</td><td class="num">38</td><td class="num">81 / 81</td><td class="num">$1.65</td><td class="num">12,470 USDm · 4.92 USD/sh · 560 USDm</td></tr>
+        </tbody>
+      </table>
+      <p class="note">150 model calls, $5.20 and about fourteen minutes of wall clock for twelve numbers, against a configured ceiling of $25 per company. Two of Hays' citations failed to match, which cost it two whole lenses — see <em>Checks and tests</em>.</p>
+    </section>
+
+    <section>
+      <h2>Research and financial reasoning</h2>
+      <p><strong>Finding information.</strong> Five source adapters sit behind one priority chain. The organisers' frozen corpus (1,139 documents, frozen 2026-08-14) supplies filings, transcripts and slides and is the only source of historical financials, because a number that traces to a document a judge can open is worth more than one that traces to an API response they cannot see. On top of that: an <em>agent-driven</em> industry research scout that proposes searches, sees the titles that came back and asks for what is still missing — a fixed query list cannot notice that every result came from the same trade magazine; date-bounded news, with the upper bound enforced at the API rather than filtered afterwards, so material published after the lock date cannot enter the result set at all; FRED macro with <code>realtime_start</code> pinned to the lock date, so the series comes back as it stood then rather than as later revised; and analyst consensus, which is rendered beside every forecast as the Street number and never feeds it.</p>
+      <p>Everything retrieved from the web is written into the run directory as a document, so a lens citing research is quoting text that exists on disk and the gate can string-match it exactly as it matches a quote from an 8-K.</p>
+
+      <p><strong>Metrics and units.</strong> The metric label, units and period header come from the sponsor templates and <code>challenge/companies.json</code> — the agent never invents them. Every extracted value is typed against the metric it is offered for, and two guards reject values that merely mention the right words: a percentage offered for a money or per-share metric is discarded, and a post-exceptional value offered for a pre-exceptional line is discarded. A third guard rejects a figure covering a different period length than the one we owe — a half-year figure for a full-year metric, a full-year figure for a quarterly one. Each discard is recorded on the metric rather than dropped silently. Consensus revenue arrives in absolute currency and is converted to millions in exactly one place, because getting that direction wrong is a 1,000,000× error that still looks like a plausible number on a sheet.</p>
+
+      <p><strong>Conflicting evidence.</strong> Four mechanisms, in order. First, the evidence store splits verification three ways — <em>prose</em> (a human wrote it, a model quoted it, the quote must be found), <em>structured</em> (the quote is the tagged fact itself, rendered by an adapter from a typed response) and <em>derived</em> (something the pipeline computed, deliberately in neither set, justified by the claims underneath it). News is deliberately not evidence at all: we hold a snippet rather than the article, coverage published days before a print is preview and positioning, and no lens may cite it. Second, the challenge stage argues every surviving case into its strongest honest form and then argues against it hard, and the gap between stated and surviving confidence reaches the judge as a discount on that view's weight — never as a vote. Third, the spread between lenses is measured as a coefficient of variation per metric, with abstentions counted separately rather than folded in. Fourth, the comparability gate asks whether this period can be compared with the company's own history at all; when it fires, the historical priors the system runs on have stopped applying, and that is carried forward rather than noted and forgotten.</p>
+
+      <p><strong>Turning research into a forecast.</strong> The deterministic income model — an income statement, not three, because none of the twelve metrics touches a balance-sheet or cash-flow line — builds history as filed, a ratio base of medians with the scaled MAD beside each, a projection, and a reproduction check that re-projects each recent reported period using only the statistics as they stood before it. That measured error is the model's structural bias and it goes to the judge with the projection, because a model should state its own error before anyone trusts it. The judge then receives every surviving view with its reasoning, its confidence after being argued against, what would change its mind, the lenses that produced nothing and why, what one sigma of each metric's own history is worth, and the disagreement between views — and returns five named quantile fields per metric. Named float fields rather than a free-form object, because a free-form object comes back empty with the numbers written into the prose, which validates fine and carries no forecast.</p>
+    </section>
+
+    <section>
+      <h2>Important design choices</h2>
+      <h3>Positioning toward consensus is switched off — by configuration, not by deletion</h3>
+      <p>Accuracy here is our miss divided by the Street's miss, capped at 5.0 and averaged over twelve metrics. A forecast shrunk hard onto consensus inherits the Street's error and scores a ratio of about 1.0 by construction: safe, and unable to place. Submitting our own estimate is the only way to score below 1.0, and it accepts a wider spread of outcomes in exchange. This deliberately reverses the specification's own instinct, so it is written down rather than left to be inferred from a lambda that happens to equal 1. What did not change: consensus is still acquired, still carried on its own bus, and every regime condition it would have triggered is still measured and reported — the run states, for each metric, the lambda that <em>would</em> have applied. Rejected alternative: deleting the positioning stage, which would have made the decision invisible and unmeasurable.</p>
+
+      <h3>The consensus bus is structural, not a diagram label</h3>
+      <p>It is tapped once where consensus enters, carried untouched, constructed in the orchestrator and handed to exactly one stage. It exposes no method a reasoning stage could write to, and no lens or judge signature takes it. A test asserts both properties, so lookahead through consensus is prevented by the shape of the code rather than by a promise in a prompt. The same instinct governs the lenses: there is no parameter through which one lens's view could reach another, and a change that would create one is rejected on that basis alone.</p>
+
+      <h3>A lens that fabricates one citation is dropped whole</h3>
+      <p>Not the offending claim — the entire view. A lens that invented one citation has told you something about the rest of its reasoning, and keeping its surviving claims means keeping the parts of an argument whose author you have just stopped trusting. The cost is real: Hays lost two of nine lenses this way on the final run. The alternative — dropping the bad claim and keeping the rest — was rejected because it makes fabrication cheap.</p>
+
+      <h3>One deep-tier call, spent on the judge</h3>
+      <p>The judge is the highest-leverage decision in the system, so it is the only call on the deep tier and exactly one is allowed per run (asserted by a test). The narrative agent is deliberately mid-tier: prose written from a settled answer is not where the leverage is, and spending the expensive tier there would take the call away from the decision that actually moves the number.</p>
+
+      <h3>Degrade loudly, never silently</h3>
+      <p>If the judge call fails, the fallback is the median of surviving views and it labels itself degraded on every metric. If the judge returns crossed quantiles, they are sorted and the correction is recorded — accepting them silently and sorting them silently are both ways of hiding that it happened. If a metric has no judged distribution, it falls back to the model projection and says so. A blank scores the maximum 5.0 penalty, so the system always ships a number; it just never ships one that looks better than it is.</p>
+
+      <h3>The newest <em>healthy</em> run wins, not the newest run</h3>
+      <p>This exists because of a specific failure during the build: the API ran out of credit mid-run, Deere's scout, all three scanners and eight of its nine lenses failed, the pipeline correctly degraded and produced numbers anyway — and those numbers then overwrote a healthy run's numbers, because the writer took the most recent run rather than the best one. Health is now judged explicitly (stage reached, surviving lens floor of four, no failed lenses, judge not degraded, no metric equal to consensus), and when nothing is healthy the writer says so loudly rather than quietly shipping the wreckage.</p>
+
+      <h3>Standard library only, and one command with no install step</h3>
+      <p>No <code>pip</code> works on the build machine, so the Anthropic client, schema validator, tier router, disk cache and fan-out runner are written here over <code>urllib</code>. A constraint rather than a preference, but it has one real benefit at 17:30: the final run has no dependency install that can fail. Node is used only for the workbook writing and the shape checks, where SheetJS was already in the starter.</p>
+
+      <h3>Two things built and then taken out</h3>
+      <p>SEC XBRL adapters work and are out of the priority chain on purpose, so every historical number traces to a document in this repository. And an earlier build computed a baseline — consensus times the company's shrunk historical beat — which was removed: consensus is the bar this event actually scores against, and a second invented bar beside it was one more number a reader had to interpret before reaching the comparison that matters.</p>
+    </section>
+
+    <section>
+      <h2>Checks and tests</h2>
+      <h3>What the running system catches</h3>
+      <ul>
+        <li><strong>Fabricated quotes.</strong> Twice. At extraction, every quote is string-matched back against the document it was attributed to — this is the only stage that can catch a guidance range assembled from two different sentences, which reads beautifully and is not what the company said. Then again at the V1 gate, deterministically: nothing that can hallucinate decides which hallucinations survive.</li>
+        <li><strong>Invented citation IDs.</strong> Every cited ID must already exist in the evidence store. An estimate with no citation at all is also a drop — an uncited estimate is unfalsifiable.</li>
+        <li><strong>Total collapse.</strong> If every lens is dropped, the run raises rather than emitting a number nothing supports.</li>
+        <li><strong>Bad units and mixed kinds.</strong> Percentage-for-money, post-exceptional-for-pre-exceptional and wrong-period-length values are rejected before they can reach a median, each rejection recorded on the metric.</li>
+        <li><strong>Implausible distributions.</strong> Crossed quantiles are sorted and flagged; disagreement is measured per metric; the comparability gate flags periods where the priors have broken.</li>
+        <li><strong>Invented figures in the write-up.</strong> Every number in the narrative agent's prose is pulled out and checked against the set of figures the pipeline actually produced. Prose carrying an invented figure is rejected rather than printed.</li>
+        <li><strong>Malformed model responses.</strong> The schema validator never coerces, never defaults a missing field and never accepts a string where a float was declared. Schema errors fail fast rather than retrying — retrying malformed structured output mostly reproduces it and bills you twice. Rate limits and 5xx <em>are</em> retried.</li>
+        <li><strong>Cost.</strong> A hard ceiling raises before the call that would breach it, and every call's tokens, cache hits and dollars are logged.</li>
+        <li><strong>Malformed workbooks.</strong> The writer patches the organisers' templates in place and refuses to write a non-finite value, a value count that does not match the metric count, a template that no longer matches <code>companies.json</code>, or one whose fiscal-period header does not match the spec. The checker then re-opens each file on disk and verifies the Metric / Units / period header, the exact metric labels and units, and that every forecast cell holds a finite number.</li>
+        <li><strong>Whole-company failure.</strong> Each company is retried once — the retry is nearly free because every repeated model call is served from the disk cache, so what is really being retried is the transport. One company failing cannot cost the other three their numbers.</li>
+      </ul>
+
+      <h3>What was tested, and what happened</h3>
+      <p><strong>106 automated tests, all passing</strong> — 93 Python (<code>py -m unittest discover -s tests -t .</code>) and 13 Node (<code>npm test</code>), verified at the time of writing. Beyond ordinary unit coverage, a suite of structural invariants asserts the architecture rather than the outputs: no lens signature can accept another lens's view; the corpus a lens reads contains no lens output; only the positioning stage accepts the consensus bus; the bus exposes nothing writable; only the judge runs on the deep tier; every lens dropped raises rather than forecasting; the results file is never observed half-written; every prompt file has a node, every agent node has a prompt, and every prompt declares a version.</p>
+      <p>Three defects were found by these checks during the build, each fixed in its own commit:</p>
+      <ul>
+        <li><strong>Hays net fees were contaminated.</strong> A results release gives net fees in pounds and net fee growth as a percentage in the same breath; both mention net fees, both matched on label, and fourteen of sixteen observations in the series were percentage declines sitting in a series measured in millions. A median across two kinds of thing is a median of nothing, and everything downstream inherited it. This is what the kind and period-length guards now exist for.</li>
+        <li><strong>The judge's metrics were silently unmatched.</strong> The judge is given each metric label with its units beside it and sometimes echoes the pair back as one string; an exact comparison found nothing and every metric read as unjudged. Label matching is now normalised, with a containment fallback.</li>
+        <li><strong>A degraded run overwrote a healthy one</strong> after the API ran out of credit — the failure that produced the run-health check described above.</li>
+      </ul>
+      <p>The final run itself is verified end to end and reports an exit code that means something: <code>0</code> = four workbooks written, verified, and every number forecast in this run; <code>1</code> = a workbook failed verification, do not upload; <code>2</code> = the workbooks are the right shape but at least one company carried forward previous numbers rather than forecasting today. The last clean run exited 0 with all four files PASS.</p>
+    </section>
+
+    <section>
+      <h2>Reproducing the run</h2>
+      <p><strong>Install and configure.</strong> Python 3.14 (standard library only — nothing to install) and Node.js with <code>npm install</code> for the two npm packages the starter already listed. Three keys in <code>.env</code> or the environment: <code>ANTHROPIC_API_KEY</code> (required), <code>EXA_API_KEY</code> (news and industry research) and <code>FRED_API_KEY</code> (macro). Missing optional keys degrade that source and are recorded on the run rather than crashing it.</p>
+      <p><strong>How the company and metric specification enters.</strong> Nothing about the four companies is hardcoded in Python. <code>challenge/companies.json</code> supplies the tickers, the fiscal periods, the twelve metric labels, their units and the output filenames; the organisers' workbook templates supply the period header; and <code>config/forecaster.json</code> holds the run parameters — <code>as_of</code>, the corpus freeze date, the source priority chain, the per-company research angles and macro series, the tier-to-model mapping, the cost ceiling and the positioning switch. Adding a fifth company means editing JSON, not Python.</p>
+      <p><strong>Remaining human input.</strong> None during the run. A human reads the log, sanity-checks the four numbers, and uploads the files by hand — the rules require manual upload, and the agent does not post to OpenStocks.</p>
+    </section>
+
+    <section>
+      <h2>Known weaknesses</h2>
+      <ul>
+        <li><strong>Dropping a lens whole is expensive.</strong> Two Hays lenses died on two failed quote matches on the final run, taking their good claims with them. The trade is deliberate, but a lens that mis-transcribes one em dash is treated exactly like one that fabricates, and I would separate those cases next.</li>
+        <li><strong>The extraction drops are not audited.</strong> Between 43 and 144 candidate values per company were discarded by the guards. Spot checks say they are overwhelmingly correct rejections, but nothing verifies that a right value was never thrown away with them.</li>
+        <li><strong>Lambda's base is asserted, not fitted.</strong> The regression that would measure it needs the Street bar as it stood at past quarters, and no source available here publishes consensus history. Positioning is switched off for this run, so it does not touch the submitted numbers — but the machinery would need that measurement before it should ever be switched on.</li>
+        <li><strong>Hays has no consensus coverage at all</strong> in the market adapter, so three of the twelve numbers have no Street comparison to render, and Hays is also the name where the corpus is thinnest and reports half-yearly.</li>
+        <li><strong>Only the model's error is measured, not the system's.</strong> The reproduction check measures the deterministic projection against reported history. There is no backtest of the full nine-lens pipeline, because doing it honestly needs point-in-time consensus and a corpus rebuilt per past quarter, and neither exists inside a one-day event.</li>
+        <li><strong>The judge is a single point of judgement.</strong> One deep call per company: if it fails, the fallback is a median of surviving views, which is labelled degraded but is a materially weaker answer.</li>
+        <li><strong>The corpus is frozen at 2026-08-14</strong> and the run is 2026-08-16. The two-day gap is covered only by date-bounded web search, which feeds perception and reaches no revenue or margin driver by design.</li>
+        <li><strong>The shape checker cannot judge quality.</strong> It verifies that the workbooks are exactly what the organisers asked for. Whether 47,320 is a good number for Home Depot is a question no check in this repository can answer.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>How to reproduce the final run</h2>
+      <div class="card">
+        <p>Final commit: <code>52bb54d72389ef3a94ea798785e34f548a06c0d3</code></p>
+        <p>Final command: <code>py -m forecaster.final_run</code></p>
+        <p>Expected output: four completed workbooks in <code>submission/</code>, one timestamped log in <code>logs/</code>, one results file per company under <code>runs/</code>, and exit code <code>0</code>.</p>
+      </div>
+      <p class="note">The log records the git commit and whether the working tree was clean, the <code>as_of</code> and corpus freeze dates, every stage event as it is emitted, the cost per company, the checker's verdict per file and the meaning of the exit code. Nothing under <code>logs/</code> is ever overwritten, so a retry leaves the failed attempt exactly where it was.</p>
+    </section>
+  </main>
+</body>
+</html>
