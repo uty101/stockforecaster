@@ -341,3 +341,12 @@
 {"message":"[200] /forecast 15ms","label":null,"level":"info"}
 {"message":"[200] /reasoning 14ms","label":null,"level":"info"}
 {"message":"[200] /reasoning 17ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] /reasoning 14ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] /reasoning 14ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] /reasoning 23ms","label":null,"level":"info"}
+{"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] /reasoning 13ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 32ms","label":null,"level":"info"}
