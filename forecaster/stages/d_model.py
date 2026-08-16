@@ -188,6 +188,7 @@ def _build_metric(ctx: RunContext, metric: Metric, evidence: EvidenceStore) -> M
 
     built.observations.sort(key=lambda o: (o.period_end or "", o.period_label))
     _dedupe(built)
+    _harmonise_magnitude(ctx, built, metric)
 
     if not built.observations:
         built.notes.append(
@@ -266,6 +267,73 @@ def _growth_series(observations: list[Observation]) -> list[float]:
             continue
         growths.append((current.value - previous.value) / abs(previous.value))
     return growths
+
+
+def _harmonise_magnitude(ctx: RunContext, built: MetricModel, metric: Metric) -> None:
+    """Put every observation on the same scale before anything is measured.
+
+    A results release says "$41.8 billion" in one sentence and tags 41,765 in a
+    table in the next. Both are the same number and the extractor reports the
+    units it saw, but a series mixing them produces a median that is meaningless
+    and a projection in the wrong order of magnitude entirely -- and a revenue
+    forecast that is out by a factor of a million still looks like a number on
+    the sheet.
+
+    The modal order of magnitude wins, and anything a clean power of a thousand
+    away from it is rescaled. Anything that cannot be reconciled that way is
+    dropped rather than fudged into place.
+    """
+    if metric.kind != "money" or len(built.observations) < 2:
+        return
+
+    import math
+
+    exponents = [
+        round(math.log10(abs(o.value)))
+        for o in built.observations
+        if abs(o.value) > 0
+    ]
+    if not exponents:
+        return
+    target = max(set(exponents), key=exponents.count)
+
+    kept: list[Observation] = []
+    rescaled = 0
+    for observation in built.observations:
+        if abs(observation.value) <= 0:
+            continue
+        exponent = round(math.log10(abs(observation.value)))
+        gap = exponent - target
+        if gap == 0:
+            kept.append(observation)
+            continue
+        if gap % 3 == 0 and abs(gap) <= 6:
+            kept.append(
+                Observation(
+                    period_label=observation.period_label,
+                    period_end=observation.period_end,
+                    value=observation.value / (10 ** gap),
+                    basis=observation.basis,
+                    citation_id=observation.citation_id,
+                )
+            )
+            rescaled += 1
+            continue
+        built.notes.append(
+            f"dropped a reported value of {observation.value} for {observation.period_label}: "
+            f"it is {gap} orders of magnitude away from the rest of the series and could not be "
+            "reconciled to the same scale"
+        )
+
+    built.observations = kept
+    if rescaled:
+        built.notes.append(
+            f"rescaled {rescaled} reported value(s) onto the modal order of magnitude, because "
+            "the same figure is stated in billions in the prose and in millions in the tables"
+        )
+        ctx.events.emit(
+            STAGE, "magnitude_harmonised", metric=metric.label, rescaled=rescaled, exponent=target
+        )
 
 
 def _dedupe(built: MetricModel) -> None:

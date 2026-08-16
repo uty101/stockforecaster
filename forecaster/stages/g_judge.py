@@ -18,6 +18,7 @@ Never emit a degraded judgement that looks whole.
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -66,7 +67,18 @@ class Judgement:
     crossed: list[str] = field(default_factory=list)
 
     def for_metric(self, label: str) -> dict[str, Any] | None:
-        return next((m for m in self.metrics if m["metric_label"] == label), None)
+        """Match tolerantly. The judge is given the metric label with its units
+        beside it and will sometimes echo the pair back as one string, so an
+        exact comparison silently finds nothing and every metric reads as
+        unjudged."""
+        wanted = _normalise_label(label)
+        for record in self.metrics:
+            if _normalise_label(record["metric_label"]) == wanted:
+                return record
+        for record in self.metrics:
+            if wanted and wanted in _normalise_label(record["metric_label"]):
+                return record
+        return None
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -180,6 +192,11 @@ def _brief(ctx: RunContext, reconciliation: Reconciliation, views: LensViews, mo
             f"{record['abstentions']} abstained"
         )
     return "\n".join(lines)
+
+
+def _normalise_label(label: str) -> str:
+    text = re.sub(r"\(.*?\)", " ", str(label or "")).lower()
+    return " ".join(re.sub(r"[^a-z0-9 ]+", " ", text).split())
 
 
 def _disagreement(ctx: RunContext, reconciliation: Reconciliation) -> dict[str, Any]:

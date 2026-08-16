@@ -146,9 +146,24 @@ def run(
 
     for metric in ctx.target.metrics:
         judged = judgement.for_metric(metric.label)
-        own = float(judged["p50"]) if judged else None
-        consensus = bus.value_for(metric)
         built = model.for_metric(metric.label)
+        own_source = "judge"
+        own = float(judged["p50"]) if judged else None
+        if own is None and built is not None and built.projection is not None:
+            # The judge produced nothing for this metric. Falling through to the
+            # model keeps a number on the sheet, which matters because a blank
+            # scores the maximum penalty -- but it is a different and weaker
+            # thing than a judged forecast, so it is labelled as one.
+            own = built.projection
+            own_source = "model projection (the judge returned nothing for this metric)"
+            ctx.note(
+                STAGE,
+                "degrade",
+                f"{metric.label}: no judged distribution, so the forecast falls back to the "
+                "deterministic model projection and is labelled as unjudged",
+                metric=metric.label,
+            )
+        consensus = bus.value_for(metric)
 
         conditions: list[dict[str, Any]] = []
         lam = preset
@@ -172,6 +187,7 @@ def run(
                     }
                 ],
                 rationale=(
+                    f"Own estimate from {own_source}. "
                     f"No Street consensus exists for {metric.label}, so there is nothing to shrink "
                     f"toward and no lambda is applied against a zero. Our own estimate stands, and "
                     f"the forecast should be read as an unanchored estimate rather than a "
@@ -221,7 +237,7 @@ def run(
                 forecast=forecast,
                 preset=preset_name,
                 conditions=conditions,
-                rationale=_rationale(
+                rationale=f"Own estimate from {own_source}. " + _rationale(
                     metric, preset_name, preset, conditions, lam, consensus, own, forecast, beta_measured
                 ),
                 quantiles=_quantiles(judged),

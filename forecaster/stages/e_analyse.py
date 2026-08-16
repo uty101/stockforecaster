@@ -23,6 +23,7 @@ the only one that cannot.
 
 from __future__ import annotations
 
+import re
 import time
 from dataclasses import dataclass, field
 from typing import Any
@@ -38,6 +39,14 @@ from .c_structure import EvidenceStore
 from .d_model import Model
 
 STAGE = "E"
+
+
+def normalise_label(label: str) -> str:
+    """A lens is shown the metric label with its units beside it and will
+    sometimes echo the pair back. An exact comparison then finds nothing and
+    every estimate silently reads as an abstention."""
+    text = re.sub(r"\(.*?\)", " ", str(label or "")).lower()
+    return " ".join(re.sub(r"[^a-z0-9 ]+", " ", text).split())
 
 CITATION = schema.obj(
     {
@@ -74,8 +83,12 @@ class LensView:
     drop_reason: str = ""
 
     def estimate_for(self, label: str) -> dict[str, Any] | None:
+        wanted = normalise_label(label)
         for item in self.payload.get("estimates", []):
-            if item.get("metric_label") == label:
+            if normalise_label(item.get("metric_label", "")) == wanted:
+                return item
+        for item in self.payload.get("estimates", []):
+            if wanted and wanted in normalise_label(item.get("metric_label", "")):
                 return item
         return None
 
