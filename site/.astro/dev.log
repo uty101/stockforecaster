@@ -306,3 +306,18 @@
 {"message":"[200] /agents 10ms","label":null,"level":"info"}
 {"message":"[200] /cost 14ms","label":null,"level":"info"}
 {"message":"[200] / 10ms","label":null,"level":"info"}
+{"message":"[200] / 10ms","label":null,"level":"info"}
+{"message":"[200] / 34ms","label":null,"level":"info"}
+{"message":"[200] / 20ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 55ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 47ms","label":null,"level":"info"}
+{"message":"src/components/Tape.astro","label":"watch","level":"info"}
+{"message":"[200] / 26ms","label":null,"level":"info"}
+{"message":"src/components/Tape.astro","label":"watch","level":"info"}
+{"message":"[200] / 72ms","label":null,"level":"info"}
+{"message":"src/components/Tape.astro","label":"watch","level":"info"}
+{"message":"[200] / 52ms","label":null,"level":"info"}
+{"message":"[200] / 46ms","label":null,"level":"info"}
+{"message":"[200] / 35ms","label":null,"level":"info"}

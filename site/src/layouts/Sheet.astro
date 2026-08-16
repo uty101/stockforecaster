@@ -185,7 +185,12 @@ const stopped = incomplete
           return named ? named.ticker : null;
         };
 
-        const box = document.querySelector("[data-ticker]");
+        // The sealed build carries every sheet in one document, so there is a
+        // box per sheet rather than one box. All of them are live and all of
+        // them show the same name.
+        const boxes = [...document.querySelectorAll("[data-ticker]")];
+        const forms = [...document.querySelectorAll("[data-ticker-form]")];
+        const states = [...document.querySelectorAll("[data-ticker-state]")];
 
         const show = (ticker) => {
           const entry = known.find((k) => k.ticker === ticker);
@@ -195,16 +200,40 @@ const stopped = incomplete
           }
           for (const el of document.querySelectorAll("[data-company-name]")) el.textContent = entry.name;
           for (const el of document.querySelectorAll("[data-company-period]")) el.textContent = entry.period;
-          if (box) box.value = ticker;
+          for (const box of boxes) box.value = entry.label ?? ticker;
+          for (const state of states) state.textContent = "";
           write(ticker);
+        };
+
+        const take = (raw) => {
+          const match = resolve(raw);
+          if (match) {
+            show(match);
+            return;
+          }
+          // Nothing is guessed and nothing is hidden. The line states what is
+          // missing and what would produce it.
+          const wanted = String(raw ?? "").trim().toUpperCase();
+          for (const state of states) {
+            state.textContent = wanted
+              ? `No run for ${wanted}. A run against its filings would produce one.`
+              : "";
+          }
         };
 
         const selected = resolve(read()) ?? tickers[0];
         if (selected) show(selected);
 
-        // The list carries only names with a run behind them, so a choice is
-        // always one this build can show.
-        box?.addEventListener("change", () => show(box.value));
+        for (const form of forms) {
+          form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            take(form.querySelector("[data-ticker]")?.value);
+          });
+        }
+        // Choosing from the suggestions applies without waiting for a return.
+        for (const box of boxes) {
+          box.addEventListener("change", () => take(box.value));
+        }
       })();
     </script>
   </body>

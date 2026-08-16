@@ -48,7 +48,6 @@ const TITLES = {
   U22: "Champion",
   U23: "Judge",
   U24: "Comparability",
-  U25: "Calibration",
   U26: "Position",
   OUT: "Estimate",
 };
@@ -58,7 +57,6 @@ const SAYS = {
   J1: "Filings, transcripts and slides",
   J2: "Street estimates and coverage",
   J3: "Trade press, date bounded",
-  J4: "No options feed for this listing",
   J5: "The four names in scope",
   J6: "Macro series, vintage pinned",
   J7: "The metric, unit and period we owe",
@@ -86,9 +84,47 @@ const SAYS = {
   U22: "The strongest case, then the case against",
   U23: "Weighs the surviving work into one range",
   U24: "Whether the base year still compares",
-  U25: "Sizing against the comparison",
   U26: "The figure submitted",
   OUT: "The estimate and its write up",
+};
+
+// What each box is for. SAYS is the one line on the drawing; WORTH is why the
+// box is in the system at all, which is the question a reader actually has when
+// they select it. Kept here beside the drawing rather than in the pipeline,
+// because it is a claim about design rather than a figure from the run.
+const WORTH = {
+  J1: "The filings are the only source that cannot be revised under us. Everything a workstream quotes has to exist in one of these documents, so the whole evidence trail terminates in text a reader can open.",
+  J2: "Consensus is the number our error is divided by when this is scored, so it belongs on every page as the comparison. It never feeds the estimate. Serving current figures only, it refuses a historical date rather than answering with today's estimates for a past quarter, which would look like skill.",
+  J3: "The corpus holds what the company said about itself and nothing about the market it sells into. Bounding the retrieval window at the source means an article published after the lock date cannot enter the reading at all, rather than being filtered out afterwards.",
+  J5: "The four names are fixed by the organisers, so there is no selection to make and no survivorship to guard against. Worth stating because a universe you choose is the easiest place to manufacture a result.",
+  J6: "Macro data feels like background rather than a document, which is exactly why it is easy to forget it gets revised. Pinning the vintage to the lock date applies the same rule the filings get to the one source where breaking it would be invisible.",
+  J7: "The metric label, unit and period come from the organisers rather than from us. It is what stops an estimate being written against the wrong line, in the wrong unit, for the wrong period.",
+  U1: "Turns prose into figures that carry their own quote. A number without the sentence it came from cannot be checked later, and this is where that link is made rather than assumed.",
+  U2: "The reported series by period, held apart from the claim store. The trailing history has to be uninterrupted to measure anything from, and a series assembled out of claims has gaps wherever a quote failed.",
+  U3: "Picks the results release by its form rather than by its date. A large filer publishes many filings a quarter covering board changes and share dealings, so taking the most recent by date reliably misses the only one that matters.",
+  U4: "Guidance is the company's own statement of what it expects, which is the strongest single piece of evidence available before a print. Reading only the most recent release keeps a stale range, issued for a quarter already reported, out of the reading.",
+  U5: "The industry is where the revenue and cost lines actually come from. Searching for the driver rather than the company is what separates measurement of the end market from commentary about the share price.",
+  U6: "Gives the macro workstream something measured to argue from. Without it that workstream is reasoning from whatever the company chose to say about its own conditions.",
+  U7: "An item excluded once is a one off. The same item excluded four periods running is a permanent cost moved below the line, and this reconciliation is the only place that pattern is visible.",
+  U8: "Reads the calls as a sequence rather than one at a time. A metric management used to give every quarter and has stopped giving is said by nobody, so it cannot be found in any single call.",
+  U9: "Reads how the quarter is being framed, and is deliberately kept away from every revenue and cost driver. Sentiment feeding a revenue line is how a forecast ends up restating the loudest recent headline.",
+  U10: "One body of evidence that every workstream reads, so two of them agreeing is a real agreement rather than an artefact of having read different things. Every claim carries an identifier a quote can be checked against.",
+  U11: "States its own measured error before anyone trusts it with a projection. Re running recent periods from only what was known before each one turns the model's bias from an opinion into a number.",
+  U12: "Arithmetic on the reported series, with no model behind it. It costs nothing, it cannot invent anything, and it is the one reading still standing when the interface to the models is unavailable, which happened during this build.",
+  U13: "The guided range plus where this company has historically landed inside it. Everybody reads the guidance. Almost nobody measures the landing position, and it is the cheapest real edge available.",
+  U14: "Breaks the line into the quantities that generate it, so the estimate can be wrong in a way somebody can point at. A decomposition that cannot be falsified is not a decomposition.",
+  U15: "A customer's spending plans are this company's revenue, and they are disclosed on a different calendar, often earlier. Reading one link up and one link down finds that before the company reports it.",
+  U16: "Separates market growth from share change. Consensus forecasts them as one number and almost never splits them, which is the whole reason this reading exists.",
+  U17: "Works the margin from prior year actuals and the Street's revenue figure, never from the drivers reading. If the two agreed by construction, the weighing step would read it as two independent views corroborating each other.",
+  U18: "Looks for the gap between what is reported and what is earned. Accruals, working capital and what the company chooses to exclude are where a number is dressed rather than made.",
+  U19: "A comparable that has already printed into the same window says something about the end market before this company speaks. It abstains rather than reaching across to an unrelated business.",
+  U20: "Asks what the estimates in front of us appear to assume about rates, currency and input costs, and whether the series bear that out.",
+  U21: "The gate every reading passes through, and it has no model in it on purpose. Nothing that can invent a quote decides which quotes survive. A reading that cites something its filing does not say is excluded whole, because it has told you something about the rest of its reasoning.",
+  U22: "Every case is argued against before anything is compared. Comparing raw findings and taking the plurality rewards the finding that was easiest to reach, not the one that matters, and the confidence that survives the attack is the one that counts.",
+  U23: "The one place the whole picture is visible, which is why it is the only expensive call and why exactly one is allowed. It weighs by how much each view would move the number, never by how many agreed, and it is told which readings are missing so silence is not mistaken for agreement.",
+  U24: "Asks whether this period can be compared with the company's own history at all. When an acquisition, an accounting change, an extra week or withdrawn guidance fires, the priors this system runs on stop applying, and a system most confident where its priors have broken is worse than one that says so.",
+  U26: "Where the submitted figure is set. Positioning toward consensus is switched off here by configuration, and every condition that would have moved it is still measured and reported, so the page shows what was declined rather than only what was done.",
+  OUT: "The results file and the tape, written so that nothing between the run and the page interprets anything. The write up may not introduce a figure the run did not produce, and that is enforced rather than asked for.",
 };
 
 const KIND_TONE = {
@@ -269,6 +305,7 @@ const detail = Object.fromEntries(
         title: TITLES[n.id] ?? n.label,
         label: n.label,
         says: SAYS[n.id] ?? "",
+        worth: WORTH[n.id] ?? "",
         note: n.note ?? "",
         kind: n.kind,
         tier: n.tier,
@@ -459,6 +496,10 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     <div class="panel-body">
       <p class="small" data-detail-says>Every box on the drawing opens here, with what it reads, whether a check covers it, and what it did on this run.</p>
       <p class="small t-secondary" data-detail-note hidden></p>
+      <div class="worth" data-detail-worth hidden>
+        <span class="eyebrow">Why it is here</span>
+        <p class="small" data-detail-worth-text></p>
+      </div>
       <div class="kv" data-detail-rows></div>
     </div>
   </div>
@@ -502,6 +543,8 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
   @keyframes gatecurrent { to { stroke-dashoffset: -20; } }
 
   .nodedetail { margin-top: 16px; max-width: 720px; }
+  .worth { margin-top: 14px; border-left: 2px solid var(--teal); padding-left: 14px; }
+  .worth p { margin: 4px 0 0; line-height: 1.62; color: var(--body); }
 
   @media (prefers-reduced-motion: reduce) {
     .flowline, .bus, .gate { animation: none; }
@@ -515,6 +558,8 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     const name = wrap.querySelector("[data-detail-name]");
     const says = wrap.querySelector("[data-detail-says]");
     const note = wrap.querySelector("[data-detail-note]");
+    const worth = wrap.querySelector("[data-detail-worth]");
+    const worthText = wrap.querySelector("[data-detail-worth-text]");
     const rows = wrap.querySelector("[data-detail-rows]");
     const boxes = [...wrap.querySelectorAll("[data-node]")];
     const escape = (value) =>
@@ -527,6 +572,8 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
       says.textContent = d.says || d.note || d.label;
       note.textContent = d.note && d.note !== says.textContent ? d.note : "";
       note.hidden = !note.textContent;
+      worthText.textContent = d.worth || "";
+      worth.hidden = !d.worth;
       const pairs = [
         ["Full name", d.label],
         ["Part", d.agent ? `${d.kind}${d.tier && d.tier !== "none" ? ` · ${d.tier}` : ""}` : d.kind],

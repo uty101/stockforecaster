@@ -30,7 +30,7 @@ function setBy(metric) {
     const h = header(company);
     const metrics = company.results.forecast?.metrics ?? [];
     return (
-      <section class="sheet-section">
+      <section class="sheet-section" data-company={company.ticker} hidden>
         <h2 class="section-heading">{h.company} · {h.period}</h2>
 
         {metrics.map((metric) => {
