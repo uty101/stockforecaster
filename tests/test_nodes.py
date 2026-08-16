@@ -66,3 +66,36 @@ class Registry(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class EvidenceIndex(unittest.TestCase):
+    """Regression: a guidance claim shown to a lens must be findable by V1.
+
+    On the first end-to-end run, seven of eight lenses were dropped for citing a
+    guidance ID. The IDs were real and the corpus showed them; the lookup index
+    simply did not carry them. V1 reported it as fabrication, which is what a
+    missing index looks like from the outside.
+    """
+
+    def test_guidance_claims_share_the_citation_index(self) -> None:
+        from forecaster.stages.c_structure import PROSE, Claim, EvidenceStore
+
+        store = EvidenceStore(ticker="DEMO")
+        claim = Claim(
+            citation_id="DEMO-001",
+            kind=PROSE,
+            label="Total sales growth",
+            value=3.5,
+            units="percent",
+            basis="unstated",
+            period_label="Fiscal 2026",
+            period_end=None,
+            quote="total sales growth of approximately 2.5% to 4.5%",
+            doc_id="doc",
+            source="corpus",
+        )
+        store.add_guidance(claim)
+
+        self.assertIn(claim, store.guidance)
+        self.assertTrue(store.has("DEMO-001"), "a lens citing this would be dropped for fabrication")
+        self.assertIs(store.get("DEMO-001"), claim)

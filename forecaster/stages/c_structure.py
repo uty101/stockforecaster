@@ -101,6 +101,15 @@ class EvidenceStore:
         self.claims.append(claim)
         self._by_id[claim.citation_id] = claim
 
+    def add_guidance(self, claim: Claim) -> None:
+        """Guidance is kept in its own list because the lenses read it as a
+        separate section, but it must be in the same lookup index. A claim the
+        corpus shows to a lens and the index does not know about will drop every
+        lens that cites it, which is a failure in this stage wearing V1's
+        clothing."""
+        self.guidance.append(claim)
+        self._by_id[claim.citation_id] = claim
+
     def get(self, citation_id: str) -> Claim | None:
         return self._by_id.get(citation_id)
 
@@ -181,7 +190,7 @@ def run(
     for extraction in extractions.guidance:
         for item in extraction.payload.get("items", []):
             counter += 1
-            store.guidance.append(
+            store.add_guidance(
                 Claim(
                     citation_id=_cite(ctx, counter),
                     kind=PROSE,
