@@ -61,25 +61,39 @@ const stopped = incomplete
       </header>
 
       <form class="tickerbar" data-ticker-form autocomplete="off">
-        <label class="eyebrow" for="ticker">Name</label>
+        <label class="eyebrow" for={`ticker-${index}`}>Name</label>
         <span class="tickerpick">
           <input
-            id="ticker"
+            id={`ticker-${index}`}
             class="tickerbox"
             type="text"
-            list="known-names"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls={`names-${index}`}
+            aria-describedby={`ticker-state-${index}`}
+            autocomplete="off"
             spellcheck="false"
             placeholder="ticker"
-            aria-describedby="ticker-state"
             data-ticker
           />
-          <datalist id="known-names">
+          <button type="button" class="chev" data-ticker-open aria-label="Show the names on the book">
+            <svg width="9" height="6" viewBox="0 0 9 6" aria-hidden="true">
+              <path d="M0.5 0.5 L4.5 4.5 L8.5 0.5" fill="none" stroke="currentColor" stroke-width="1" />
+            </svg>
+          </button>
+          <ul class="tickerlist" id={`names-${index}`} role="listbox" hidden data-ticker-list>
             {known.map((k) => (
-              <option value={k.label}>{k.name}</option>
+              <li>
+                <button type="button" role="option" data-pick={k.ticker}>
+                  <span class="t">{k.label}</span>
+                  <span class="c">{k.name}</span>
+                  <span class="p">{k.period}</span>
+                </button>
+              </li>
             ))}
-          </datalist>
+          </ul>
         </span>
-        <span class="meta" id="ticker-state" data-ticker-state></span>
+        <span class="meta" id={`ticker-state-${index}`} data-ticker-state></span>
       </form>
 
 
@@ -228,12 +242,62 @@ const stopped = incomplete
           form.addEventListener("submit", (event) => {
             event.preventDefault();
             take(form.querySelector("[data-ticker]")?.value);
+            close();
           });
         }
-        // Choosing from the suggestions applies without waiting for a return.
-        for (const box of boxes) {
-          box.addEventListener("change", () => take(box.value));
+
+        // The list is the same choice as typing, offered to a reader who does
+        // not know the tickers by heart.
+        const lists = [...document.querySelectorAll("[data-ticker-list]")];
+        const close = () => {
+          for (const list of lists) list.hidden = true;
+          for (const box of boxes) box.setAttribute("aria-expanded", "false");
+        };
+        const open = () => {
+          for (const list of lists) list.hidden = false;
+          for (const box of boxes) box.setAttribute("aria-expanded", "true");
+        };
+
+        for (const button of document.querySelectorAll("[data-ticker-open]")) {
+          button.addEventListener("click", (event) => {
+            event.stopPropagation();
+            const shut = lists.every((list) => list.hidden);
+            if (shut) open();
+            else close();
+          });
         }
+
+        for (const option of document.querySelectorAll("[data-pick]")) {
+          option.addEventListener("click", () => {
+            show(option.dataset.pick);
+            close();
+          });
+        }
+
+        for (const box of boxes) {
+          box.addEventListener("focus", () => open());
+          box.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") close();
+          });
+          // Typing narrows the list to what the letters can still reach.
+          box.addEventListener("input", () => {
+            const text = box.value.trim().toUpperCase();
+            open();
+            for (const option of document.querySelectorAll("[data-pick]")) {
+              const entry = known.find((k) => k.ticker === option.dataset.pick);
+              const reachable =
+                !text ||
+                (entry.label ?? entry.ticker).toUpperCase().startsWith(text) ||
+                entry.ticker.toUpperCase().includes(text) ||
+                (entry.name ?? "").toUpperCase().includes(text);
+              option.parentElement.hidden = !reachable;
+            }
+          });
+        }
+
+        document.addEventListener("click", (event) => {
+          if (!event.target.closest(".tickerpick")) close();
+        });
       })();
     </script>
   </body>
@@ -258,12 +322,65 @@ const stopped = incomplete
     font-family: var(--mono);
     font-size: 12px;
     letter-spacing: 0.1em;
-    padding: 5px 28px 5px 10px;
-    cursor: pointer;
+    text-transform: uppercase;
+    padding: 5px 26px 5px 10px;
+    width: 148px;
   }
-  .tickerbox option { background: var(--panel); color: var(--body); letter-spacing: normal; }
+  .tickerbox::placeholder { color: var(--faint); text-transform: none; letter-spacing: 0.1em; }
   .tickerbox:hover { border-color: var(--secondary); }
   .tickerbox:focus-visible { outline: 1px solid var(--teal); outline-offset: 1px; }
-  .tickerpick .chev { position: absolute; right: 9px; color: var(--faint); pointer-events: none; }
+
+  .tickerpick .chev {
+    position: absolute;
+    right: 1px;
+    top: 1px;
+    bottom: 1px;
+    width: 22px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: 0;
+    border-left: 1px solid var(--line);
+    color: var(--faint);
+    cursor: pointer;
+    padding: 0;
+  }
+  .tickerpick .chev:hover { color: var(--primary); }
+  .tickerpick .chev:focus-visible { outline: 1px solid var(--teal); outline-offset: -1px; }
+
+  .tickerlist {
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    z-index: 20;
+    min-width: 268px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    background: var(--panel);
+    border: 1px solid var(--line-strong);
+  }
+  .tickerlist[hidden] { display: none; }
+  .tickerlist li + li { border-top: 1px solid var(--line); }
+  .tickerlist button {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    width: 100%;
+    background: none;
+    border: 0;
+    padding: 6px 10px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--body);
+    text-align: left;
+    cursor: pointer;
+  }
+  .tickerlist button:hover { background: var(--raised); }
+  .tickerlist button:focus-visible { outline: 1px solid var(--teal); outline-offset: -1px; }
+  .tickerlist .t { color: var(--white); letter-spacing: 0.1em; min-width: 40px; }
+  .tickerlist .c { color: var(--secondary); flex: 1; }
+  .tickerlist .p { color: var(--faint); letter-spacing: 0.08em; }
   [data-company][hidden] { display: none; }
 </style>

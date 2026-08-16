@@ -334,3 +334,10 @@
 {"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
 {"message":"[200] / 27ms","label":null,"level":"info"}
 {"message":"[200] / 16ms","label":null,"level":"info"}
+{"message":"[200] /forecast 40ms","label":null,"level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] /forecast 15ms","label":null,"level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] /forecast 15ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 14ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 17ms","label":null,"level":"info"}
