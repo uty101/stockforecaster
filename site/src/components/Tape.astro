@@ -9,11 +9,16 @@ const id = tickerId(company.ticker);
 const tape = [...(company.tape ?? [])].reverse();
 const total = company.tape?.length ?? 0;
 
+// The run tags its events with the joining key, exchange prefix and all. The
+// record is left as it was written; only the reading of it drops the prefix.
+const exchange = String(company.ticker).includes(":") ? `${String(company.ticker).split(":")[0]}:` : "";
+const plain = (text) => (exchange ? String(text).split(exchange).join("") : String(text));
+
 function describe(row) {
-  if (row.request) return row.request;
+  if (row.request) return plain(row.request);
   if (row.agent) return `${row.agent}${row.tier ? ` ${row.tier}` : ""}`;
   if (row.nodes) return row.nodes.join(" ");
-  if (row.message) return row.message;
+  if (row.message) return plain(row.message);
   if (row.metric) return row.metric;
   return "";
 }
@@ -26,7 +31,7 @@ function describe(row) {
     <span class="plus">+</span>
   </div>
   <div class="panel-body" style="padding:10px 14px">
-    <div class="tape" data-tape={id} data-live={live ? "1" : "0"} data-total={total}>
+    <div class="tape" data-tape={id} data-live={live ? "1" : "0"} data-total={total} data-exchange={exchange}>
       {tape.map((row, i) => (
         <div class="row">
           <span class="c num">{String(total - i).padStart(3, "0")}</span>
@@ -42,9 +47,11 @@ function describe(row) {
   // Live mode only. A sealed page carries the recorded record and polls nothing.
   for (const tape of document.querySelectorAll("[data-tape][data-live='1']")) {
     const ticker = tape.dataset.tape;
+    const exchange = tape.dataset.exchange || "";
     let seen = Number(tape.dataset.total || 0);
+    const plain = (text) => (exchange ? String(text).split(exchange).join("") : String(text));
     const describe = (row) =>
-      row.request || row.agent || (row.nodes ? row.nodes.join(" ") : "") || row.message || row.metric || "";
+      plain(row.request || row.agent || (row.nodes ? row.nodes.join(" ") : "") || row.message || row.metric || "");
     const time = (ts) => {
       const d = new Date(ts * 1000);
       const p = (n) => String(n).padStart(2, "0");

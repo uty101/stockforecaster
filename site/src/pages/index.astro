@@ -39,7 +39,7 @@ const view = companies.map((company) => {
         <h2 class="section-heading">From filing to estimate</h2>
         <p class="prose small t-secondary" style="margin:8px 0 0">
           Line weight and speed carry the number of checked claims each route moved on the
-          {" "}{v.h.ticker} run. Select any box for what it read and what it did.
+          {" "}{f.ticker(v.h.ticker)} run. Select any box for what it read and what it did.
         </p>
         <SignalFlow company={v.company} />
         <Gates company={v.company} />
@@ -52,7 +52,7 @@ const view = companies.map((company) => {
           <div class="panel">
             <div class="panel-head">
               <span class="n">SUM</span>
-              <span class="eyebrow">{v.h.ticker} · {v.h.period}</span>
+              <span class="eyebrow">{f.ticker(v.h.ticker)} · {v.h.period}</span>
               <span class="plus">+</span>
             </div>
             <div class="panel-body">

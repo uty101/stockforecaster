@@ -214,3 +214,95 @@
 {"message":"[200] / 57ms","label":null,"level":"info"}
 {"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
 {"message":"[200] / 26ms","label":null,"level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 19ms","label":null,"level":"info"}
+{"message":"[200] / 18ms","label":null,"level":"info"}
+{"message":"src/components/Tape.astro","label":"watch","level":"info"}
+{"message":"[200] / 21ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 19ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 34ms","label":null,"level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 15ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 25ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 19ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 17ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 17ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 16ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 52ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 21ms","label":null,"level":"info"}
+{"message":"[Unhandled error] ReferenceError: state is not defined\n > show ../../src/layouts/Sheet.astro?astro=&type=script&index=0&lang.ts=:43:3\n > ../../src/layouts/Sheet.astro?astro=&type=script&index=0&lang.ts=:59:16\n > ../../src/layouts/Sheet.astro?astro=&type=script&index=0&lang.ts=:66:3\n","label":"vite","level":"error"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 19ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 40ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/reasoning.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at C:/Hackathon_Utkarsh_Malhotra/site/src/pages/index.astro:160:5\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at C:/Hackathon_Utkarsh_Malhotra/site/src/pages/index.astro:160:5\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at C:/Hackathon_Utkarsh_Malhotra/site/src/pages/index.astro:160:5\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at C:/Hackathon_Utkarsh_Malhotra/site/src/pages/index.astro:160:5\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at C:/Hackathon_Utkarsh_Malhotra/site/src/pages/index.astro:160:5\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at C:/Hackathon_Utkarsh_Malhotra/site/src/pages/index.astro:160:5\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[CompilerError] Unterminated regular expression\n  Stack trace:\n    at handleCompileResultErrors (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\compile\\compile.js:57:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[UnhandledRejection] Astro detected an unhandled rejection. Here's the stack trace:\nError: ENOENT: no such file or directory, stat 'C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\model.astro'\n    at Object.statSync (node:fs:1726:25)\n    at walk (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\routing\\create-manifest.js:65:20)\n    at createFileBasedRoutes (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\routing\\create-manifest.js:162:3)\n    at createRoutesList (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\core\\routing\\create-manifest.js:443:3)\n    at rebuildRoutes (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\vite-plugin-routes\\index.js:42:4)\n    at FSWatcher.<anonymous> (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\vite-plugin-routes\\index.js:88:26)\n    at FSWatcher.emit (node:events:521:24)\n    at FSWatcher.emitWithAll (file:///C:/Hackathon_Utkarsh_Malhotra/node_modules/vite/dist/node/chunks/node.js:10499:9)\n    at FSWatcher._emit (file:///C:/Hackathon_Utkarsh_Malhotra/node_modules/vite/dist/node/chunks/node.js:10572:9)\n    at listener (file:///C:/Hackathon_Utkarsh_Malhotra/node_modules/vite/dist/node/chunks/node.js:9593:64)\n  Hint:\n    Make sure your promises all have an `await` or a `.catch()` handler.\n  Error reference:\n    https://docs.astro.build/en/reference/errors/unhandled-rejection/\n  Stack trace:\n    at Object.statSync (node:fs:1726:25)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/reasoning.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/reasoning.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 82ms","label":null,"level":"info"}
+{"message":"[200] / 82ms","label":null,"level":"info"}
+{"message":"[200] / 82ms","label":null,"level":"info"}
+{"message":"[200] / 82ms","label":null,"level":"info"}
+{"message":"[200] / 82ms","label":null,"level":"info"}
+{"message":"[200] / 82ms","label":null,"level":"info"}
+{"message":"[200] / 81ms","label":null,"level":"info"}
+{"message":"[200] / 41ms","label":null,"level":"info"}
+{"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/reasoning.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 28ms","label":null,"level":"info"}
+{"message":"[200] / 40ms","label":null,"level":"info"}
+{"message":"[200] / 29ms","label":null,"level":"info"}
+{"message":"[200] / 11ms","label":null,"level":"info"}
+{"message":"[200] /forecast 19ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 15ms","label":null,"level":"info"}
+{"message":"[200] /model 179ms","label":null,"level":"info"}
+{"message":"[200] /risk 9ms","label":null,"level":"info"}
+{"message":"[200] /agents 10ms","label":null,"level":"info"}
+{"message":"[200] /cost 14ms","label":null,"level":"info"}
+{"message":"[200] / 10ms","label":null,"level":"info"}

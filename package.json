@@ -16,7 +16,8 @@
     "site:build": "node site/prep.mjs && npm --prefix site run build",
     "check:tests": "node scripts/record-tests.mjs",
     "check:punctuation": "node scripts/check-punctuation.mjs",
-    "build:architecture": "npm run check:tests && npm run site:build && node scripts/check-punctuation.mjs --data-warn && node scripts/seal.mjs"
+    "build:architecture": "npm run check:tests && npm run build:statements && npm run site:build && node scripts/check-punctuation.mjs --data-warn && node scripts/seal.mjs",
+    "build:statements": "py -m forecaster.stages.d_statement"
   },
   "dependencies": {
     "astro": "^7.2.2",
