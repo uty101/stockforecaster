@@ -14,24 +14,30 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fillWorkbook, readForecasts } from "./workbook.mjs";
+import { pickRun } from "./run-health.mjs";
 
 const root = path.resolve(import.meta.dirname, "..");
 const definitions = JSON.parse(
   fs.readFileSync(path.join(root, "challenge", "companies.json"), "utf8"),
 );
 
-function latestResults(ticker) {
+// The newest *healthy* run, not simply the newest. A run that degraded its way
+// to a number must never overwrite one that did not.
+function chooseResults(ticker) {
   const runsDir = path.join(root, "runs");
-  if (!fs.existsSync(runsDir)) return null;
+  if (!fs.existsSync(runsDir)) return { chosen: null, fallback: false, considered: [] };
   const prefix = `${ticker.replace(":", "_")}-`;
   const candidates = fs
     .readdirSync(runsDir)
     .filter((name) => name.startsWith(prefix))
     .map((name) => path.join(runsDir, name, "results.json"))
     .filter((file) => fs.existsSync(file))
-    .map((file) => ({ file, mtime: fs.statSync(file).mtimeMs }))
-    .sort((a, b) => b.mtime - a.mtime);
-  return candidates.length ? candidates[0].file : null;
+    .map((file) => ({
+      file,
+      mtime: fs.statSync(file).mtimeMs,
+      results: JSON.parse(fs.readFileSync(file, "utf8")),
+    }));
+  return pickRun(candidates);
 }
 
 function forecastFor(results, metricLabel) {
@@ -47,10 +53,25 @@ let carriedForward = 0;
 for (const company of definitions.companies) {
   const outputPath = path.join(root, "submission", company.outputFile);
   const templatePath = path.join(root, "challenge", "templates", company.outputFile);
-  const resultsPath = latestResults(company.ticker);
+  const picked = chooseResults(company.ticker);
+  const resultsPath = picked.chosen?.file ?? null;
+  const results = picked.chosen?.results ?? null;
+
+  if (picked.fallback && picked.chosen) {
+    console.warn(
+      `  ! ${company.ticker}: no healthy run available. Using ${path.basename(
+        path.dirname(picked.chosen.file),
+      )} anyway — ${picked.chosen.health.reasons.join("; ")}`,
+    );
+  } else if (picked.chosen && picked.considered[0]?.file !== picked.chosen.file) {
+    console.warn(
+      `  ! ${company.ticker}: the newest run was not healthy (${picked.considered[0].health.reasons.join(
+        "; ",
+      )}). Falling back to ${path.basename(path.dirname(picked.chosen.file))}.`,
+    );
+  }
 
   const existing = fs.existsSync(outputPath) ? readForecasts(outputPath) : new Map();
-  const results = resultsPath ? JSON.parse(fs.readFileSync(resultsPath, "utf8")) : null;
 
   const values = [];
   const provenance = [];
@@ -81,6 +102,13 @@ for (const company of definitions.companies) {
   const written = fillWorkbook({ templatePath, outputPath, company, values });
   manifest.companies[company.ticker] = {
     results: resultsPath,
+    runHealth: picked.chosen?.health ?? null,
+    usedDegradedRun: picked.fallback,
+    runsConsidered: picked.considered.map((c) => ({
+      run: path.basename(path.dirname(c.file)),
+      healthy: c.health.healthy,
+      reasons: c.health.reasons,
+    })),
     lastCompletedStage: results?.header?.last_completed_stage ?? null,
     costUsd: results?.cost?.spent_usd ?? null,
     provenance,
