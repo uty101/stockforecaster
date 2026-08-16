@@ -350,3 +350,16 @@
 {"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
 {"message":"[200] /reasoning 13ms","label":null,"level":"info"}
 {"message":"[200] /reasoning 32ms","label":null,"level":"info"}
+{"message":"[200] / 18ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 57ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 46ms","label":null,"level":"info"}
+{"message":"/src/components/SignalFlow.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/components/SignalFlow.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 56ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 40ms","label":null,"level":"info"}
+{"message":"[200] / 66ms","label":null,"level":"info"}
+{"message":"[200] / 59ms","label":null,"level":"info"}

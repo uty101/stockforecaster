@@ -295,32 +295,19 @@ const animated = new Set(
     .map((e) => e.i),
 );
 
+// What a selected box says. Two things only: what it is, and why it is here.
+// The run figures for every node are on the Agents and Cost sheets, and putting
+// them in here as well made a card nobody finished reading.
 const detail = Object.fromEntries(
-  allNodes.map((n) => {
-    const row = load.get(n.id) ?? {};
-    const view = lensByNode.get(n.id);
-    return [
-      n.id,
-      {
-        title: TITLES[n.id] ?? n.label,
-        label: n.label,
-        says: SAYS[n.id] ?? "",
-        worth: WORTH[n.id] ?? "",
-        note: n.note ?? "",
-        kind: n.kind,
-        tier: n.tier,
-        available: n.available,
-        agent: n.agent ?? "",
-        covered: Boolean(n.covered),
-        tokens: row.tokens ?? null,
-        seconds: row.seconds ?? null,
-        usd: row.usd ?? null,
-        calls: row.calls ?? 0,
-        state: view ? view.state : n.available ? "pass" : "open",
-        citations: view ? view.citations : null,
-      },
-    ];
-  }),
+  allNodes.map((n) => [
+    n.id,
+    {
+      title: TITLES[n.id] ?? n.label,
+      label: n.label,
+      says: SAYS[n.id] ?? n.note ?? "",
+      worth: WORTH[n.id] ?? "",
+    },
+  ]),
 );
 
 const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
@@ -335,7 +322,7 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     </div>
     <div class="toggle">
       <span class="eyebrow">Boxes</span>
-      <span class="hint">Select one; it opens in the reader under the drawing</span>
+      <span class="hint">Select one for what it is and why it is here</span>
     </div>
   </div>
 
@@ -486,22 +473,16 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
         );
       })}
     </svg>
-  </div>
 
-  <div class="nodedetail panel" data-detail tabindex="-1">
-    <div class="panel-head">
-      <span class="n">READER</span>
-      <span class="eyebrow" data-detail-name>Select a box</span>
-      <span class="plus">+</span>
-    </div>
-    <div class="panel-body">
-      <p class="small" data-detail-says>Every box on the drawing opens here, with what it reads, whether a check covers it, and what it did on this run.</p>
-      <p class="small t-secondary" data-detail-note hidden></p>
-      <div class="worth" data-detail-worth hidden>
-        <span class="eyebrow">Why it is here</span>
-        <p class="small" data-detail-worth-text></p>
+    {/* Opens against the box that was selected, inside the drawing's own
+        scrolling area, so it stays where the reader is looking. */}
+    <div class="nodecard" data-card hidden>
+      <div class="nodecard-head">
+        <span class="nodecard-id" data-card-id></span>
+        <span class="nodecard-name" data-card-name></span>
       </div>
-      <div class="kv" data-detail-rows></div>
+      <p class="nodecard-says" data-card-says></p>
+      <p class="nodecard-worth" data-card-worth></p>
     </div>
   </div>
 
@@ -547,24 +528,26 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
   .gate { animation: gatecurrent 6s linear infinite; }
   @keyframes gatecurrent { to { stroke-dashoffset: -20; } }
 
-  /* The drawing is taller than a screen, so a reader that sits under it answers
-     a click 600px below where the click happened. It rides the bottom of the
-     viewport instead, for as long as the drawing is on screen. */
-  .nodedetail {
-    position: sticky;
-    bottom: 16px;
-    z-index: 2;
-    margin-top: 16px;
-    max-width: 720px;
-    max-height: min(44vh, 340px);
-    overflow-y: auto;
+  /* The card opens against the box that was selected. It lives inside the
+     drawing's own scrolling area, so it travels with the drawing rather than
+     answering a click somewhere the reader is not looking. */
+  .scroll-x { position: relative; }
+  .nodecard {
+    position: absolute;
+    z-index: 4;
+    width: 250px;
+    padding: 11px 13px 12px;
+    border: 1px solid var(--teal);
     background: var(--panel);
-    box-shadow: 0 -12px 28px -18px #000;
+    box-shadow: 0 10px 26px -12px #000;
   }
-  .nodedetail .panel-head { position: sticky; top: 0; background: var(--panel); z-index: 1; }
-  .nodedetail.is-live { border-color: var(--teal); }
-  .worth { margin-top: 14px; border-left: 2px solid var(--teal); padding-left: 14px; }
-  .worth p { margin: 4px 0 0; line-height: 1.62; color: var(--body); }
+  .nodecard[hidden] { display: none; }
+  .nodecard-head { display: flex; align-items: baseline; gap: 7px; margin-bottom: 6px; }
+  .nodecard-id { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.12em; color: var(--faint); }
+  .nodecard-name { font-family: var(--mono); font-size: 12px; color: var(--teal); }
+  .nodecard-says { margin: 0; font-size: 11px; line-height: 1.5; color: var(--secondary); }
+  .nodecard-worth { margin: 8px 0 0; font-size: 11.5px; line-height: 1.6; color: var(--body); }
+  .nodecard-worth:empty { display: none; }
 
   @media (prefers-reduced-motion: reduce) {
     .flowline, .bus, .gate { animation: none; }
@@ -572,63 +555,79 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
 </style>
 
 <script>
-  // The only work here is opening a box and writing what the run recorded.
+  // Open a box, put the card beside it, and get out of the way on the next click.
   for (const wrap of document.querySelectorAll("[data-flow]")) {
     const detail = JSON.parse(wrap.querySelector("[data-flow-detail]").textContent);
-    const name = wrap.querySelector("[data-detail-name]");
-    const says = wrap.querySelector("[data-detail-says]");
-    const note = wrap.querySelector("[data-detail-note]");
-    const worth = wrap.querySelector("[data-detail-worth]");
-    const worthText = wrap.querySelector("[data-detail-worth-text]");
-    const rows = wrap.querySelector("[data-detail-rows]");
+    const stage = wrap.querySelector(".scroll-x");
+    const card = wrap.querySelector("[data-card]");
+    const cardId = wrap.querySelector("[data-card-id]");
+    const cardName = wrap.querySelector("[data-card-name]");
+    const cardSays = wrap.querySelector("[data-card-says]");
+    const cardWorth = wrap.querySelector("[data-card-worth]");
     const boxes = [...wrap.querySelectorAll("[data-node]")];
-    const escape = (value) =>
-      String(value).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
-    const panel = wrap.querySelector("[data-detail]");
-    const open = (id, { reveal = true } = {}) => {
+    const GAP = 12;
+    let openId = null;
+
+    const close = () => {
+      openId = null;
+      card.hidden = true;
+      for (const box of boxes) box.classList.remove("is-open");
+    };
+
+    // Measured from the live boxes rather than from the geometry that drew them,
+    // so the card lands correctly whatever the drawing has been scaled to.
+    const place = (node) => {
+      // The box itself, not the group, which also carries the ID above it.
+      const box = (node.querySelector("rect") ?? node).getBoundingClientRect();
+      const area = stage.getBoundingClientRect();
+      const left = box.left - area.left + stage.scrollLeft;
+      const top = box.top - area.top + stage.scrollTop;
+      const width = card.offsetWidth;
+      const height = card.offsetHeight;
+      const room = stage.scrollWidth - (left + box.width);
+
+      // To the right of the box, unless the drawing runs out of room there.
+      const x = room > width + GAP ? left + box.width + GAP : left - width - GAP;
+      const y = top + box.height / 2 - height / 2;
+      card.style.left = `${Math.max(0, Math.min(x, stage.scrollWidth - width))}px`;
+      card.style.top = `${Math.max(0, Math.min(y, stage.scrollHeight - height))}px`;
+    };
+
+    const open = (id, node) => {
       const d = detail[id];
       if (!d) return;
+      // Selecting the open box again puts the card away.
+      if (openId === id) return close();
+      openId = id;
       for (const box of boxes) box.classList.toggle("is-open", box.dataset.node === id);
-      panel.classList.add("is-live");
-      name.textContent = `${id} · ${d.title}`;
-      says.textContent = d.says || d.note || d.label;
-      note.textContent = d.note && d.note !== says.textContent ? d.note : "";
-      note.hidden = !note.textContent;
-      worthText.textContent = d.worth || "";
-      worth.hidden = !d.worth;
-      const pairs = [
-        ["Full name", d.label],
-        ["Part", d.agent ? `${d.kind}${d.tier && d.tier !== "none" ? ` · ${d.tier}` : ""}` : d.kind],
-        ["Checked", d.covered ? "covered by a check" : "no check covers this"],
-        ["On this run", d.state === "dropped" ? "excluded" : d.state === "abstained" ? "no view offered" : d.available ? "ran" : "not answered"],
-      ];
-      if (d.agent) pairs.push(["Runs as", d.agent]);
-      if (d.calls) pairs.push(["Calls", String(d.calls)]);
-      if (d.tokens) pairs.push(["Tokens", d.tokens.toLocaleString("en-GB")]);
-      if (d.seconds) pairs.push(["Time", `${d.seconds.toFixed(1)}s`]);
-      if (d.usd) pairs.push(["Spend", `$${d.usd.toFixed(3)}`]);
-      if (d.citations !== null && d.citations !== undefined) pairs.push(["Citations", String(d.citations)]);
-      rows.innerHTML = pairs
-        .map(([k, v]) => `<div class="row"><span class="k">${escape(k)}</span><span class="v num">${escape(v)}</span></div>`)
-        .join("");
-      // The reader is pinned to the bottom of the viewport while the drawing is
-      // on screen, so this scrolls only in the cases where it is not: the top
-      // of a long page, or a browser without sticky.
-      if (reveal) panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
-      panel.scrollTop = 0;
+      cardId.textContent = id;
+      cardName.textContent = d.title;
+      cardSays.textContent = d.says || d.label;
+      cardWorth.textContent = d.worth || "";
+      card.hidden = false;
+      place(node);
     };
+
     for (const node of boxes) {
-      node.addEventListener("click", () => open(node.dataset.node));
+      node.addEventListener("click", (event) => {
+        event.stopPropagation();
+        open(node.dataset.node, node);
+      });
       node.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
-          open(node.dataset.node);
+          open(node.dataset.node, node);
         }
       });
     }
-    // Open on the one box the estimate turns on, so the reader arrives populated
-    // and the drawing is visibly something you select from.
-    const first = boxes.find((b) => b.dataset.node === "U23") ?? boxes[0];
-    if (first) open(first.dataset.node, { reveal: false });
+
+    // Anywhere else on the page, and Escape, put it away.
+    card.addEventListener("click", (event) => event.stopPropagation());
+    document.addEventListener("click", () => { if (openId) close(); });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && openId) close();
+    });
+    // A card measured against a box that has since moved is worse than no card.
+    window.addEventListener("resize", () => { if (openId) close(); });
   }
 </script>
