@@ -1,19 +1,72 @@
 {
-  "generatedAt": "2026-08-16T14:04:32.405Z",
+  "generatedAt": "2026-08-16T14:24:50.531Z",
   "companies": {
     "HD": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-70673bff\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-93226a58\\results.json",
+      "runHealth": {
+        "healthy": true,
+        "reasons": [],
+        "surviving": 9,
+        "ran": 9,
+        "stage": "I"
+      },
+      "usedDegradedRun": false,
+      "runsConsidered": [
+        {
+          "run": "HD-2026-08-16-93226a58",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-70673bff",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-2763a2cb",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-69b2de74",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-d381e6c8",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-eda45c63",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-ef8312c4",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "HD-2026-08-16-smoke1",
+          "healthy": false,
+          "reasons": [
+            "only 2 of 9 lenses survived, below the floor of 4",
+            "2 metric(s) fell back to the consensus figure: Net sales, Adjusted diluted EPS"
+          ]
+        }
+      ],
       "lastCompletedStage": "I",
-      "costUsd": 1.216,
+      "costUsd": 1.2111,
       "provenance": [
         {
           "metric": "Net sales",
-          "value": 47280,
+          "value": 47320,
           "source": "this run"
         },
         {
           "metric": "Adjusted diluted EPS",
-          "value": 4.68,
+          "value": 4.65,
           "source": "this run"
         },
         {
@@ -26,12 +79,12 @@
         {
           "label": "Net sales",
           "cell": "C7",
-          "value": 47280
+          "value": 47320
         },
         {
           "label": "Adjusted diluted EPS",
           "cell": "C8",
-          "value": 4.68
+          "value": 4.65
         },
         {
           "label": "Comparable sales, total company",
@@ -41,23 +94,68 @@
       ]
     },
     "ADI": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-70673bff\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-93226a58\\results.json",
+      "runHealth": {
+        "healthy": true,
+        "reasons": [],
+        "surviving": 9,
+        "ran": 9,
+        "stage": "I"
+      },
+      "usedDegradedRun": false,
+      "runsConsidered": [
+        {
+          "run": "ADI-2026-08-16-93226a58",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "ADI-2026-08-16-70673bff",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "ADI-2026-08-16-2763a2cb",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "ADI-2026-08-16-69b2de74",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "ADI-2026-08-16-d381e6c8",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "ADI-2026-08-16-eda45c63",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "ADI-2026-08-16-ef8312c4",
+          "healthy": true,
+          "reasons": []
+        }
+      ],
       "lastCompletedStage": "I",
-      "costUsd": 1.1045,
+      "costUsd": 1.1111,
       "provenance": [
         {
           "metric": "Revenue",
-          "value": 3932,
+          "value": 3930,
           "source": "this run"
         },
         {
           "metric": "Adjusted diluted EPS",
-          "value": 3.355,
+          "value": 3.35,
           "source": "this run"
         },
         {
           "metric": "Adjusted gross margin",
-          "value": 73,
+          "value": 73.1,
           "source": "this run"
         }
       ],
@@ -65,33 +163,87 @@
         {
           "label": "Revenue",
           "cell": "C7",
-          "value": 3932
+          "value": 3930
         },
         {
           "label": "Adjusted diluted EPS",
           "cell": "C8",
-          "value": 3.355
+          "value": 3.35
         },
         {
           "label": "Adjusted gross margin",
           "cell": "C9",
-          "value": 73
+          "value": 73.1
         }
       ]
     },
     "LSE:HAS": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-70673bff\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-93226a58\\results.json",
+      "runHealth": {
+        "healthy": true,
+        "reasons": [],
+        "surviving": 7,
+        "ran": 9,
+        "stage": "I"
+      },
+      "usedDegradedRun": false,
+      "runsConsidered": [
+        {
+          "run": "LSE_HAS-2026-08-16-93226a58",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-70673bff",
+          "healthy": false,
+          "reasons": [
+            "the judge degraded to its fallback"
+          ]
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-2763a2cb",
+          "healthy": false,
+          "reasons": [
+            "the judge degraded to its fallback"
+          ]
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-hasfix2",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-69b2de74",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-d381e6c8",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-eda45c63",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "LSE_HAS-2026-08-16-ef8312c4",
+          "healthy": true,
+          "reasons": []
+        }
+      ],
       "lastCompletedStage": "I",
-      "costUsd": 0.9842,
+      "costUsd": 1.2297,
       "provenance": [
         {
           "metric": "Net fees",
-          "value": 897,
+          "value": 896,
           "source": "this run"
         },
         {
           "metric": "Pre-exceptional basic EPS",
-          "value": 1.275,
+          "value": 1.25,
           "source": "this run"
         },
         {
@@ -104,12 +256,12 @@
         {
           "label": "Net fees",
           "cell": "C7",
-          "value": 897
+          "value": 896
         },
         {
           "label": "Pre-exceptional basic EPS",
           "cell": "C8",
-          "value": 1.275
+          "value": 1.25
         },
         {
           "label": "Pre-exceptional operating profit",
@@ -119,23 +271,78 @@
       ]
     },
     "DE": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-70673bff\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-93226a58\\results.json",
+      "runHealth": {
+        "healthy": true,
+        "reasons": [],
+        "surviving": 9,
+        "ran": 9,
+        "stage": "I"
+      },
+      "usedDegradedRun": false,
+      "runsConsidered": [
+        {
+          "run": "DE-2026-08-16-93226a58",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "DE-2026-08-16-70673bff",
+          "healthy": false,
+          "reasons": [
+            "only 1 of 1 lenses survived, below the floor of 4",
+            "8 lenses failed to run at all",
+            "the judge degraded to its fallback",
+            "1 metric(s) fell back to the consensus figure: Worldwide net sales and revenues"
+          ]
+        },
+        {
+          "run": "DE-2026-08-16-2763a2cb",
+          "healthy": false,
+          "reasons": [
+            "only 1 of 1 lenses survived, below the floor of 4",
+            "8 lenses failed to run at all",
+            "the judge degraded to its fallback",
+            "1 metric(s) fell back to the consensus figure: Worldwide net sales and revenues"
+          ]
+        },
+        {
+          "run": "DE-2026-08-16-69b2de74",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "DE-2026-08-16-d381e6c8",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "DE-2026-08-16-eda45c63",
+          "healthy": true,
+          "reasons": []
+        },
+        {
+          "run": "DE-2026-08-16-ef8312c4",
+          "healthy": true,
+          "reasons": []
+        }
+      ],
       "lastCompletedStage": "I",
-      "costUsd": 0.4393,
+      "costUsd": 1.6489,
       "provenance": [
         {
           "metric": "Worldwide net sales and revenues",
-          "value": 10731.54221,
+          "value": 12470,
           "source": "this run"
         },
         {
           "metric": "Diluted EPS (GAAP)",
-          "value": 6.55,
+          "value": 4.92,
           "source": "this run"
         },
         {
           "metric": "Production & Precision Ag operating profit",
-          "value": 554.2409638554217,
+          "value": 560,
           "source": "this run"
         }
       ],
@@ -143,17 +350,17 @@
         {
           "label": "Worldwide net sales and revenues",
           "cell": "C7",
-          "value": 10731.54221
+          "value": 12470
         },
         {
           "label": "Diluted EPS (GAAP)",
           "cell": "C8",
-          "value": 6.55
+          "value": 4.92
         },
         {
           "label": "Production & Precision Ag operating profit",
           "cell": "C9",
-          "value": 554.2409638554217
+          "value": 560
         }
       ]
     }
