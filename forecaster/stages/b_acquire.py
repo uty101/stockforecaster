@@ -181,8 +181,6 @@ def run(ctx: RunContext, sources: LoadedSources) -> Dossier:
     _acquire_filings(ctx, dossier, filings, budgets)  # U3
     _acquire_calls(ctx, dossier, transcripts, budgets)  # U8 reads this sequence
 
-    _acquire_research(ctx, dossier, chain)  # U5
-
     slide_budget = budgets.get("slides", 12)
     dossier.slides = slides[:slide_budget]
     _record_skips(ctx, dossier, "slides", slides[slide_budget:])

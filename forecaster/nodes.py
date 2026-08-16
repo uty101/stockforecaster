@@ -9,10 +9,10 @@ exists in code but not here has no way to render and a node here with no code
 shows as unbuilt rather than being quietly forgotten.
 
 Where this build departs from the specification, the node stays and its
-`available` flag says why. The four target companies come with a frozen
-1,139-document corpus and no market data feed, so J2, J3, J4 and J6 have no
-source behind them. Deleting them would hide that; keeping them dark is the
-honest rendering, and it is what the Integrity sheet reports.
+`available` flag says why. Deleting a node we cannot feed would hide the gap;
+keeping it dark is the honest rendering, and it is what the Integrity sheet
+reports. Two remain dark: J4, because the available options plan carries no
+entitlement, and J6/U6, because no macro adapter was built.
 """
 
 from __future__ import annotations
@@ -49,18 +49,20 @@ def _n(*args, **kwargs) -> Node:
 
 
 # -- A, sources -------------------------------------------------------------
-# The specification's J1..J7 are kept in place. Four of them have no source in
-# this build and say so rather than disappearing.
+# The specification's J1..J7 are kept in place. The ones with no source behind
+# them say so rather than disappearing.
 SOURCES = [
     _n("J1", "A", "Frozen filing corpus", SOURCE,
        note="8-K/10-Q/10-K equivalents, transcripts and slides for the four target companies, "
             "frozen 2026-08-14. Stands in for SEC: markdown filings, no XBRL and no SIC peer list."),
-    _n("J2", "A", "Market data", SOURCE, available=False,
-       note="No yfinance or equivalent adapter. No analyst consensus, no prices, no share counts "
-            "from a vendor. Share counts come from the filings instead; consensus does not exist."),
-    _n("J3", "A", "News", SOURCE, available=False,
-       note="No Exa or news feed. Analyst Q&A in the transcript sequence is the only coverage "
-            "signal held, and E6 reads that instead."),
+    _n("J2", "A", "Market data", SOURCE,
+       note="Analyst consensus with the count, the high/low spread and revision recency. Serves "
+            "current consensus only and refuses a historical as_of, because answering one would "
+            "be lookahead that surfaces as skill. Hays has no coverage here."),
+    _n("J3", "A", "News and web research", SOURCE,
+       note="Date-bounded at the API, so nothing published after the lock date can enter the "
+            "result set. Feeds perception, and separately feeds the agent-driven industry "
+            "research that reaches the demand and cost drivers."),
     _n("J4", "A", "Options chain", SOURCE, available=False,
        note="No LSE options feed, so no implied move."),
     _n("J5", "A", "Universe", SOURCE,
@@ -86,9 +88,10 @@ ACQUIRERS = [
     _n("U3", "B", "B2 filings", ACQUIRE,
        note="Results releases selected by form token, this corpus's item-2.02 equivalent."),
     _n("U4", "B", "B5 extract", AGENT, tier=CHEAP, agent="extract_guidance"),
-    _n("U5", "B", "B3 industry", ACQUIRE, available=False,
-       note="No SIC peer list and no industry news. The only peers held are the other three "
-            "target companies, which U19 uses and labels as such."),
+    _n("U5", "B", "B3 industry research", AGENT, tier=CHEAP, agent="research_scout",
+       note="An agent proposes the searches, sees what came back, and asks for what is missing. "
+            "Retrieved text is written to the run directory as documents, so a lens citing it is "
+            "quoting something V1 can string-match."),
     _n("U6", "B", "B4 macro", ACQUIRE, available=False, note="No macro adapter; see J6."),
     _n("U7", "B", "B6 bridge", AGENT, tier=CHEAP, agent="extract_bridge"),
     _n("U8", "B", "E7 calls", AGENT, tier=CHEAP, agent="scan_calls"),
@@ -98,7 +101,9 @@ ACQUIRERS = [
 # -- C through I ------------------------------------------------------------
 PIPELINE = [
     _n("U10", "C", "Evidence store", DETERMINISTIC),
-    _n("U11", "D", "Three-statement model", DETERMINISTIC),
+    _n("U11", "D", "Income model", DETERMINISTIC,
+       note="An income statement, not three: no metric we owe touches a balance-sheet or "
+            "cash-flow line, so the P&L half reaches all twelve and the other half reaches none."),
     _n("U12", "E", "Mechanical", AGENT, tier=NONE_TIER, agent="lens_mechanical",
        note="No model call. Pure arithmetic, zero tokens."),
     _n("U13", "E", "Guidance", AGENT, tier=MID, agent="lens_guidance"),

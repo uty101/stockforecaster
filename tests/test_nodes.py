@@ -18,15 +18,15 @@ class Registry(unittest.TestCase):
         ids = [item.id for item in nodes.ALL]
         self.assertEqual(len(ids), len(set(ids)))
 
-    def test_the_roster_is_seventeen_agents_tiered_by_leverage(self) -> None:
+    def test_the_roster_is_eighteen_agents_tiered_by_leverage(self) -> None:
         roster = nodes.agents()
         by_tier: dict[str, int] = {}
         for item in roster:
             by_tier[item.tier] = by_tier.get(item.tier, 0) + 1
 
-        self.assertEqual(len(roster), 17)
+        self.assertEqual(len(roster), 18)
         self.assertEqual(by_tier[nodes.NONE_TIER], 1, "exactly one agent has no model")
-        self.assertEqual(by_tier[nodes.CHEAP], 5)
+        self.assertEqual(by_tier[nodes.CHEAP], 6)
         self.assertEqual(by_tier[nodes.MID], 10)
         self.assertEqual(by_tier[nodes.DEEP], 1, "exactly one call runs on the deep tier")
 
@@ -47,9 +47,10 @@ class Registry(unittest.TestCase):
 
     def test_unavailable_sources_stay_in_the_registry_with_a_reason(self) -> None:
         """Deleting a node we cannot feed would hide the gap. Keeping it dark is
-        what the Integrity sheet reports."""
+        what the Integrity sheet reports. J4 has no entitlement on the available
+        options plan; J6/U6 have no macro adapter."""
         dark = {item.id: item.note for item in nodes.unavailable()}
-        self.assertEqual(sorted(dark), ["J2", "J3", "J4", "J6", "U5", "U6"])
+        self.assertEqual(sorted(dark), ["J4", "J6", "U6"])
         for node_id, note in dark.items():
             self.assertTrue(note, f"{node_id} is unavailable with no stated reason")
 

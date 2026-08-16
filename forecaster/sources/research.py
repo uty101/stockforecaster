@@ -59,10 +59,18 @@ class WebResearchSource:
         self.queries: dict[str, list[dict[str, str]]] = settings.get("queries") or {}
 
     def industry(self, ticker: str, as_of: date) -> list[dict[str, Any]] | None:
+        """The configured fallback. The scout agent drives search_many instead,
+        and this stays so a run with no model access still retrieves something."""
         if not self.api_key:
             return None
         angles = self.queries.get(ticker)
         if not angles:
+            return None
+        return self.search_many(angles, as_of)
+
+    def search_many(self, angles: list[dict[str, str]], as_of: date) -> list[dict[str, Any]] | None:
+        """Run one or more agent-proposed searches and return retrieved documents."""
+        if not self.api_key:
             return None
 
         start = as_of - timedelta(days=self.lookback_days)
@@ -86,7 +94,7 @@ class WebResearchSource:
                 collected.append(
                     {
                         "source": self.name,
-                        "angle": angle["angle"],
+                        "angle": angle.get("angle") or "demand",
                         "title": (entry.get("title") or "Untitled").strip(),
                         "url": url,
                         "published_at": published,
