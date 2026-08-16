@@ -188,12 +188,43 @@ class RealCorpus(unittest.TestCase):
             self.assertTrue(all(doc.published_at <= self.config.as_of for doc in filings))
             self.assertTrue(all(doc.published_at <= self.config.as_of for doc in transcripts))
 
-    def test_the_corpus_answers_nothing_about_consensus(self) -> None:
-        """Stated as a test so the design cannot quietly acquire a consensus it
-        never sourced."""
-        self.assertIsNone(self.chain.fetch("consensus", "HD", "FY2026Q2"))
-        self.assertIsNone(self.chain.fetch("prices", "HD"))
-        self.assertIsNone(self.chain.fetch("macro", "fx_gbp_usd"))
+    def test_the_corpus_itself_answers_nothing_about_consensus(self) -> None:
+        """Stated as a test so the corpus can never quietly acquire a consensus
+        it never contained. Consensus must arrive from a source that publishes
+        it, and be labelled with that source."""
+        corpus = CorpusSource(self.config.source("corpus"))
+        self.assertIsNone(corpus.consensus("HD", "FY2026Q2", self.config.as_of))
+        self.assertIsNone(corpus.prices("HD", self.config.as_of))
+
+    def test_consensus_arrives_with_the_fields_lambda_needs(self) -> None:
+        """A bare float is useless here: every regime condition needs an input."""
+        try:
+            consensus = self.chain.fetch("consensus", "HD", "FY2026Q2")
+        except Exception as error:  # noqa: BLE001
+            self.skipTest(f"market source unreachable: {error}")
+
+        if consensus is None:
+            self.skipTest("market source returned nothing; network gate is open")
+
+        self.assertEqual(consensus["source"], "market")
+        self.assertGreater(consensus["eps"]["mean"], 0)
+        self.assertGreaterEqual(consensus["eps"]["analysts"], 1)
+        self.assertIsNotNone(consensus["eps"]["dispersion_range_pct"])
+        self.assertIn("up_30d", consensus["revisions"])
+        self.assertFalse(
+            consensus["as_of_history_available"],
+            "this source has no vintage, and the Method sheet must say so",
+        )
+
+    def test_a_historical_as_of_is_refused_rather_than_answered(self) -> None:
+        """Serving today's consensus for a past quarter is lookahead that would
+        show up as skill. The adapter refuses instead."""
+        from datetime import date as _date
+
+        from forecaster.sources.market import PointInTimeUnavailable, YahooMarketSource
+
+        with self.assertRaises(PointInTimeUnavailable):
+            YahooMarketSource().consensus("HD", "FY2024Q2", _date(2024, 5, 1))
 
 
 if __name__ == "__main__":

@@ -32,9 +32,13 @@ class SourceUnavailable(Exception):
 
 NETWORK_SHAPED = (SourceUnavailable, TimeoutError, ConnectionError)
 
-BUILDERS = {
-    "corpus": CorpusSource,
-}
+def _builders() -> dict:
+    # Imported lazily: the network adapters import urllib, and a corpus-only
+    # run should not pay for that or fail on it.
+    from .market import YahooMarketSource
+    from .sec import SecSource
+
+    return {"corpus": CorpusSource, "sec": SecSource, "market": YahooMarketSource}
 
 
 class MissingRequiredData(Exception):
@@ -127,7 +131,7 @@ def build_chain(config: Config, events: EventSink) -> SourceChain:
     sources: list[Source] = []
     for name in config.source_priority:
         settings = config.source(name)
-        builder = BUILDERS.get(name)
+        builder = _builders().get(name)
         if builder is None:
             raise KeyError(f"config lists source {name!r} but no adapter is registered for it")
         sources.append(builder(settings))

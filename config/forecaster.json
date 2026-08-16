@@ -4,12 +4,13 @@
     "JSON rather than YAML because PyYAML cannot be installed on this machine (no pip);",
     "see forecaster/README.md for the full note on the stdlib-only constraint."
   ],
-
   "as_of": "2026-08-16",
   "corpus_frozen_at": "2026-08-14",
-
-  "source_priority": ["corpus"],
-
+  "source_priority": [
+    "corpus",
+    "sec",
+    "market"
+  ],
   "sources": {
     "corpus": {
       "kind": "local_markdown_corpus",
@@ -20,9 +21,26 @@
         "LSE:HAS": "hays",
         "DE": "deere"
       }
+    },
+    "sec": {
+      "kind": "sec_xbrl",
+      "cache_dir": ".forecaster-cache/sec",
+      "ciks": {
+        "HD": 354950,
+        "ADI": 6281,
+        "DE": 315189
+      }
+    },
+    "market": {
+      "kind": "yahoo_quote_summary",
+      "symbols": {
+        "HD": "HD",
+        "ADI": "ADI",
+        "DE": "DE",
+        "LSE:HAS": "HAS.L"
+      }
     }
   },
-
   "acquire_budgets": {
     "transcript_sequence_length": 8,
     "history_periods": 24,
@@ -31,7 +49,6 @@
     "other_calls": 6,
     "slides": 12
   },
-
   "statistics": {
     "mad_scale_factor": 1.4826,
     "winsorize_lower_pct": 5,
@@ -40,7 +57,6 @@
     "small_sample_threshold": 8,
     "trailing_window_periods": 12
   },
-
   "lambda": {
     "presets": {
       "shrink": 0.2,
@@ -50,12 +66,10 @@
     "active_preset": "shrink",
     "beta_measured": false
   },
-
   "cost": {
     "ceiling_usd": 25.0,
     "cache_dir": ".forecaster-cache"
   },
-
   "models": {
     "cheap": "claude-haiku-4-5-20251001",
     "mid": "claude-sonnet-5",
