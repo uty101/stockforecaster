@@ -7,4 +7,8 @@ research/
 .env.*
 !.env.example
 entry.json
-submission/*.xlsx
+
+# The four completed workbooks are committed on purpose. The starter ignores
+# them; we want the accepted run's exact numbers tied to the final commit, since
+# judging asks for traces connecting source evidence to the submitted figures.
+

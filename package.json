@@ -8,6 +8,7 @@
     "check:entry": "node scripts/check-entry.mjs",
     "check:forecasts": "node scripts/check-forecasts.mjs submission",
     "check:submission": "npm run check:entry && npm run check:forecasts",
+    "test": "node --test \"test/**/*.test.mjs\"",
     "test:starter": "python3 -m unittest discover -s starter -p 'test_*.py'"
   },
   "dependencies": {
