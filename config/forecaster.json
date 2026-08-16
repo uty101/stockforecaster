@@ -8,7 +8,8 @@
   "corpus_frozen_at": "2026-08-14",
   "source_priority": [
     "corpus",
-    "market"
+    "market",
+    "news"
   ],
   "sources": {
     "corpus": {
@@ -38,6 +39,17 @@
         "ADI": "ADI",
         "DE": "DE",
         "LSE:HAS": "HAS.L"
+      }
+    },
+    "news": {
+      "kind": "exa_search",
+      "lookback_days": 75,
+      "max_results": 8,
+      "queries": {
+        "HD": "Home Depot second quarter fiscal 2026 earnings preview comparable sales outlook",
+        "ADI": "Analog Devices fiscal third quarter 2026 earnings preview revenue guidance semiconductor",
+        "DE": "Deere third quarter fiscal 2026 earnings preview agriculture equipment outlook",
+        "LSE:HAS": "Hays plc full year 2026 results net fees recruitment market outlook"
       }
     }
   },

@@ -36,9 +36,15 @@ def _builders() -> dict:
     # Imported lazily: the network adapters import urllib, and a corpus-only
     # run should not pay for that or fail on it.
     from .market import YahooMarketSource
+    from .news import NewsSource
     from .sec import SecSource
 
-    return {"corpus": CorpusSource, "sec": SecSource, "market": YahooMarketSource}
+    return {
+        "corpus": CorpusSource,
+        "sec": SecSource,
+        "market": YahooMarketSource,
+        "news": NewsSource,
+    }
 
 
 class MissingRequiredData(Exception):
