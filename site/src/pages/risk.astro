@@ -2,127 +2,152 @@
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
 import Strip from "../components/Strip.astro";
-import { companies, primary, header, sum } from "../lib/read.mjs";
+import { companies, header } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
-
-const ceiling = primary.results.cost?.ceiling_usd ?? 0;
-const spentAll = sum(companies, (c) => c.results.cost?.spent_usd ?? 0);
-const headroom = ceiling - spentAll;
-const metrics = primary.results.forecast?.metrics ?? [];
-const lambda = metrics[0]?.lambda ?? null;
-const fired = companies.flatMap((c) => c.results.comparability?.fired ?? []);
-const dropped = companies.flatMap((c) => c.results.reconciliation?.dropped ?? []);
-const challenges = primary.results.challenge?.challenges ?? [];
-const erosion = challenges.length
-  ? challenges.reduce((n, c) => n + (c.erosion ?? 0), 0) / challenges.length
-  : null;
 
 const W = 560;
 const barW = W - 20;
-const takenW = ceiling ? Math.max(2, (spentAll / ceiling) * barW) : 0;
+
+// One name at a time, so the budget on this sheet is the budget for that name.
+const view = companies.map((company) => {
+  const metrics = company.results.forecast?.metrics ?? [];
+  const challenges = company.results.challenge?.challenges ?? [];
+  const ceiling = company.results.cost?.ceiling_usd ?? 0;
+  const spent = company.results.cost?.spent_usd ?? 0;
+  return {
+    company,
+    h: header(company),
+    metrics,
+    lambda: metrics[0]?.lambda ?? null,
+    fired: company.results.comparability?.fired ?? [],
+    checks: company.results.comparability?.flags ?? [],
+    dropped: company.results.reconciliation?.dropped ?? [],
+    ceiling,
+    spent,
+    headroom: ceiling - spent,
+    taken: ceiling ? Math.max(2, (spent / ceiling) * barW) : 0,
+    erosion: challenges.length
+      ? challenges.reduce((n, c) => n + (c.erosion ?? 0), 0) / challenges.length
+      : null,
+  };
+});
 ---
 
 <Sheet title="Risk" subsystem="Deviation" index="05">
-
-  <section class="sheet-section">
-    <div class="grid2" style="grid-template-columns: minmax(0,1.35fr) minmax(0,1fr)">
-      <div class="stack-16">
-        <Panel n="01" name="Position size" figure={f.position(lambda)} unit="of full weight">
-          <p>
-            Each estimate is submitted at its own figure rather than pulled toward the Street.
-            Positioning is switched off for this run, so the measured conditions did not move it.
-          </p>
-        </Panel>
-        <Panel n="02" name="The stop" figure={erosion === null ? "—" : f.ratio(erosion)} unit="confidence given up">
-          <p>
-            Each workstream states its strongest case and then the case against it. What survives that
-            exchange is what the weighting sees.
-          </p>
-        </Panel>
-        <Panel n="03" name="Spend limit" figure={f.usd(ceiling)} unit="ceiling">
-          <p>
-            The run stops before the ceiling rather than after it. {f.usd(spentAll)} was used across the
-            four names, leaving {f.usd(headroom)}.
-          </p>
-        </Panel>
-        <Panel n="04" name="Exposure" figure={String(companies.length * 3)} unit="estimates at risk">
-          <p>
-            Twelve lines carry a figure. A line with no published Street figure is scored against the
-            floor, so an absent comparison is exposure rather than shelter.
-          </p>
-        </Panel>
-        <Panel n="05" name="Allocation" figure={String(fired.length)} unit="flags fired">
-          <p>
-            A base year that moved is the condition that damps a position. It fired on{" "}
-            {companies.filter((c) => c.results.comparability?.any_fired).length} of {companies.length} names.
-          </p>
-        </Panel>
-      </div>
-
-      <div class="stack-16">
-        <div class="panel">
-          <div class="panel-head">
-            <span class="eyebrow">Budget</span>
-            <span class="plus">+</span>
+  {view.map((v) => (
+    <div data-company={v.company.ticker} hidden>
+      <section class="sheet-section">
+        <div class="grid2" style="grid-template-columns: minmax(0,1.35fr) minmax(0,1fr)">
+          <div class="stack-16">
+            <Panel n="01" name="Position size" figure={f.position(v.lambda)} unit="of full weight">
+              <p>
+                Each estimate is submitted at its own figure rather than pulled toward the Street.
+                Positioning is switched off for this run, so the measured conditions did not move it.
+              </p>
+            </Panel>
+            <Panel n="02" name="The stop" figure={v.erosion === null ? "—" : f.ratio(v.erosion)} unit="confidence given up">
+              <p>
+                Each workstream states its strongest case and then the case against it. What survives
+                that exchange is what the weighting sees.
+              </p>
+            </Panel>
+            <Panel n="03" name="Spend limit" figure={f.usd(v.ceiling)} unit="ceiling">
+              <p>
+                The run stops before the ceiling rather than after it. {f.usd(v.spent)} was used on
+                this name, leaving {f.usd(v.headroom)}.
+              </p>
+            </Panel>
+            <Panel n="04" name="Exposure" figure={String(v.metrics.length)} unit="estimates at risk">
+              <p>
+                A line with no published Street figure is scored against the floor, so an absent
+                comparison is exposure rather than shelter.
+              </p>
+            </Panel>
+            <Panel n="05" name="Allocation" figure={`${v.fired.length}/${v.checks.length}`} unit="checks fired">
+              <p>
+                A base year that moved is the condition that damps a position. Each check is run
+                against the prior year base and stated whether it fired or not.
+              </p>
+            </Panel>
           </div>
-          <div class="panel-body">
-            <svg viewBox={`0 0 ${W} 56`} width="100%" role="img" aria-label="Spend against the ceiling">
-              <rect x="10" y="16" width={barW} height="14" fill="none" stroke="#1A2230" stroke-width="1" />
-              <rect x="10" y="16" width={takenW} height="14" fill="none" stroke="#35D39A" stroke-width="1" />
-              <line x1={10 + takenW} y1="10" x2={10 + takenW} y2="36" stroke="#35D39A" stroke-width="1" />
-              <text x="10" y="48" class="tick">taken {f.usd(spentAll)}</text>
-              <text x={W - 10} y="48" text-anchor="end" class="tick">headroom {f.usd(headroom)}</text>
-            </svg>
-            <p class="small t-secondary" style="margin:6px 0 0">
-              Spend across the four names against the ceiling set before the run.
-            </p>
-          </div>
-        </div>
 
-        <div class="panel">
-          <div class="panel-head">
-            <span class="eyebrow">State</span>
-            <span class="plus">+</span>
-          </div>
-          <div class="panel-body" style="text-align:center">
-            <svg width="86" height="96" viewBox="0 0 86 96" role="img" aria-label="Deviation held">
-              <path
-                d="M43 5 L79 18 V50 C79 71 63 84 43 91 C23 84 7 71 7 50 V18 Z"
-                fill="none"
-                stroke="#35D39A"
-                stroke-width="1"
-              />
-              <path d="M43 20 V76" stroke="#1A2230" stroke-width="1" />
-              <path d="M20 34 H66" stroke="#1A2230" stroke-width="1" />
-              <path d="M27 52 L39 64 L61 38" fill="none" stroke="#35D39A" stroke-width="1" />
-            </svg>
-            <div style="margin-top:10px">
-              <span class={`state ${dropped.length ? "open" : "pass"}`}>
-                {dropped.length ? "one reading excluded" : "held"}
-              </span>
+          <div class="stack-16">
+            <div class="panel">
+              <div class="panel-head">
+                <span class="eyebrow">Budget</span>
+                <span class="plus">+</span>
+              </div>
+              <div class="panel-body">
+                <svg viewBox={`0 0 ${W} 56`} width="100%" role="img" aria-label="Spend against the ceiling">
+                  <rect x="10" y="16" width={barW} height="14" fill="none" stroke="#1A2230" stroke-width="1" />
+                  <rect x="10" y="16" width={v.taken} height="14" fill="none" stroke="#35D39A" stroke-width="1" />
+                  <line x1={10 + v.taken} y1="10" x2={10 + v.taken} y2="36" stroke="#35D39A" stroke-width="1" />
+                  <text x="10" y="48" class="tick">taken {f.usd(v.spent)}</text>
+                  <text x={W - 10} y="48" text-anchor="end" class="tick">headroom {f.usd(v.headroom)}</text>
+                </svg>
+                <p class="small t-secondary" style="margin:6px 0 0">
+                  Spend on this name against the ceiling set before the run.
+                </p>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head">
+                <span class="eyebrow">State</span>
+                <span class="plus">+</span>
+              </div>
+              <div class="panel-body" style="text-align:center">
+                <svg width="86" height="96" viewBox="0 0 86 96" role="img" aria-label="Deviation held">
+                  <path
+                    d="M43 5 L79 18 V50 C79 71 63 84 43 91 C23 84 7 71 7 50 V18 Z"
+                    fill="none"
+                    stroke="#35D39A"
+                    stroke-width="1"
+                  />
+                  <path d="M43 20 V76" stroke="#1A2230" stroke-width="1" />
+                  <path d="M20 34 H66" stroke="#1A2230" stroke-width="1" />
+                  <path d="M27 52 L39 64 L61 38" fill="none" stroke="#35D39A" stroke-width="1" />
+                </svg>
+                <div style="margin-top:10px">
+                  <span class={`state ${v.dropped.length ? "open" : "pass"}`}>
+                    {v.dropped.length ? "one reading excluded" : "held"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule teal">
+              <span class="t">Deviation rules</span>
+              A figure moves only on evidence in the filings. A quote that does not match its filing
+              takes its workstream out. A base year that moved damps the position. Spend stops at the
+              ceiling.
             </div>
           </div>
         </div>
+      </section>
 
-        <div class="rule teal">
-          <span class="t">Deviation rules</span>
-          A figure moves only on evidence in the filings. A quote that does not match its filing takes
-          its workstream out. A base year that moved damps the position. Spend stops at the ceiling.
-        </div>
-      </div>
+      <section class="sheet-section">
+        <Strip
+          items={[
+            { label: "Position size", value: f.position(v.lambda), context: "Carried on every estimate." },
+            {
+              label: "Flags fired",
+              value: String(v.fired.length),
+              context: "Base years that moved.",
+              tone: v.fired.length ? "amber" : "teal",
+            },
+            {
+              label: "Excluded",
+              value: String(v.dropped.length),
+              context: "Readings whose quote did not match.",
+              tone: v.dropped.length ? "red" : "teal",
+            },
+            { label: "Headroom", value: f.usd(v.headroom), context: "Left under the ceiling.", tone: "teal" },
+          ]}
+        />
+      </section>
     </div>
-  </section>
-
-  <section class="sheet-section">
-    <Strip
-      items={[
-        { label: "Position size", value: f.position(lambda), context: "Carried on every estimate." },
-        { label: "Flags fired", value: String(fired.length), context: "Base years that moved.", tone: fired.length ? "amber" : "teal" },
-        { label: "Excluded", value: String(dropped.length), context: "Readings whose quote did not match.", tone: dropped.length ? "red" : "teal" },
-        { label: "Headroom", value: f.usd(headroom), context: "Left under the ceiling.", tone: "teal" },
-      ]}
-    />
-  </section>
+  ))}
 </Sheet>
 
 <style>

@@ -321,3 +321,16 @@
 {"message":"[200] / 52ms","label":null,"level":"info"}
 {"message":"[200] / 46ms","label":null,"level":"info"}
 {"message":"[200] / 35ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 26ms","label":null,"level":"info"}
+{"message":"[200] / 55ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 32ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 53ms","label":null,"level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 46ms","label":null,"level":"info"}
+{"message":"[200] / 39ms","label":null,"level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 27ms","label":null,"level":"info"}
+{"message":"[200] / 16ms","label":null,"level":"info"}
