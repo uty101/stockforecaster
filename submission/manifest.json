@@ -1,0 +1,161 @@
+{
+  "generatedAt": "2026-08-16T13:15:44.731Z",
+  "companies": {
+    "HD": {
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-ef8312c4\\results.json",
+      "lastCompletedStage": "I",
+      "costUsd": 0.7716,
+      "provenance": [
+        {
+          "metric": "Net sales",
+          "value": 47246.35928,
+          "source": "this run"
+        },
+        {
+          "metric": "Adjusted diluted EPS",
+          "value": 4.72208,
+          "source": "this run"
+        },
+        {
+          "metric": "Comparable sales, total company",
+          "value": 0.9,
+          "source": "this run"
+        }
+      ],
+      "cells": [
+        {
+          "label": "Net sales",
+          "cell": "C7",
+          "value": 47246.35928
+        },
+        {
+          "label": "Adjusted diluted EPS",
+          "cell": "C8",
+          "value": 4.72208
+        },
+        {
+          "label": "Comparable sales, total company",
+          "cell": "C9",
+          "value": 0.9
+        }
+      ]
+    },
+    "ADI": {
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-ef8312c4\\results.json",
+      "lastCompletedStage": "I",
+      "costUsd": 0.6683,
+      "provenance": [
+        {
+          "metric": "Revenue",
+          "value": 3931.6292160000003,
+          "source": "this run"
+        },
+        {
+          "metric": "Adjusted diluted EPS",
+          "value": 3.3511119999999996,
+          "source": "this run"
+        },
+        {
+          "metric": "Adjusted gross margin",
+          "value": 73.2,
+          "source": "this run"
+        }
+      ],
+      "cells": [
+        {
+          "label": "Revenue",
+          "cell": "C7",
+          "value": 3931.6292160000003
+        },
+        {
+          "label": "Adjusted diluted EPS",
+          "cell": "C8",
+          "value": 3.3511119999999996
+        },
+        {
+          "label": "Adjusted gross margin",
+          "cell": "C9",
+          "value": 73.2
+        }
+      ]
+    },
+    "LSE:HAS": {
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-ef8312c4\\results.json",
+      "lastCompletedStage": "I",
+      "costUsd": 0.9478,
+      "provenance": [
+        {
+          "metric": "Net fees",
+          "value": 890,
+          "source": "this run"
+        },
+        {
+          "metric": "Pre-exceptional basic EPS",
+          "value": 1.21,
+          "source": "this run"
+        },
+        {
+          "metric": "Pre-exceptional operating profit",
+          "value": 44.9,
+          "source": "this run"
+        }
+      ],
+      "cells": [
+        {
+          "label": "Net fees",
+          "cell": "C7",
+          "value": 890
+        },
+        {
+          "label": "Pre-exceptional basic EPS",
+          "cell": "C8",
+          "value": 1.21
+        },
+        {
+          "label": "Pre-exceptional operating profit",
+          "cell": "C9",
+          "value": 44.9
+        }
+      ]
+    },
+    "DE": {
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-ef8312c4\\results.json",
+      "lastCompletedStage": "I",
+      "costUsd": 1.0806,
+      "provenance": [
+        {
+          "metric": "Worldwide net sales and revenues",
+          "value": 11055.233768,
+          "source": "this run"
+        },
+        {
+          "metric": "Diluted EPS (GAAP)",
+          "value": 4.737112,
+          "source": "this run"
+        },
+        {
+          "metric": "Production & Precision Ag operating profit",
+          "value": 535,
+          "source": "this run"
+        }
+      ],
+      "cells": [
+        {
+          "label": "Worldwide net sales and revenues",
+          "cell": "C7",
+          "value": 11055.233768
+        },
+        {
+          "label": "Diluted EPS (GAAP)",
+          "cell": "C8",
+          "value": 4.737112
+        },
+        {
+          "label": "Production & Precision Ag operating profit",
+          "cell": "C9",
+          "value": 535
+        }
+      ]
+    }
+  }
+}

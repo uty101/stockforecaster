@@ -1,8 +1,24 @@
 """Stage H, position. Deterministic.
 
-The forecast is consensus plus lambda times the gap between our own estimate and
-consensus. Everything upstream produced the own estimate; this decides how much of
-it to act on.
+Positioning toward consensus is switched off for this run, by configuration
+rather than by deletion.
+
+The reasoning is the scoring rule. Accuracy here is our miss divided by the
+Street's miss, capped at 5.0 and averaged over the twelve. A forecast shrunk hard
+onto consensus inherits the Street's error and scores a ratio of about 1.0 by
+construction -- safe, and unable to place. Submitting our own estimate is the only
+way to score below 1.0, and it accepts a wider spread of outcomes in exchange.
+
+This is the one place in the build where the specification's own instinct is
+deliberately reversed, so it is written down rather than left to be inferred from
+a lambda that happens to equal one.
+
+What does not change: consensus is still acquired, still carried on its own bus,
+still recorded with every regime condition it would have triggered, and still
+rendered beside every forecast as the comparison and the baseline. The bus is
+intact; only its connection to the submitted number is cut. Every regime condition
+is still measured and reported, so the Risk sheet shows exactly how far the
+positioning would have moved the number had it been applied.
 
 The consensus bus is a first-class object here, not a diagram label. It is tapped
 once where consensus enters the pipeline and carried untouched to lambda's second
@@ -113,6 +129,7 @@ class Position:
 class Positions:
     bus_tapped_at: str
     consensus_available: bool
+    positioning: str = "own_estimate_only"
     items: list[Position] = field(default_factory=list)
 
     def to_json(self) -> dict[str, Any]:
@@ -120,8 +137,12 @@ class Positions:
             "consensus_bus": {
                 "tapped_at_node": self.bus_tapped_at,
                 "available": self.consensus_available,
-                "terminates_at": "lambda second input; the baseline terminates on the bus and "
-                "is never an input to the forecast",
+                "positioning": self.positioning,
+                "terminates_at": (
+                    "comparison and baseline only. Positioning is switched off, so the bus "
+                    "renders beside the forecast and does not feed it. The baseline terminates "
+                    "on the bus and is never an input."
+                ),
             },
             "positions": [item.to_json() for item in self.items],
         }
@@ -141,8 +162,14 @@ def run(
     preset_name = config.get("active_preset", "shrink")
     preset = float(config["presets"][preset_name])
     beta_measured = bool(config.get("beta_measured", False))
+    positioning = config.get("positioning", "consensus_anchored")
+    own_only = positioning == "own_estimate_only"
 
-    result = Positions(bus_tapped_at=bus.tapped_at_node, consensus_available=bus.available)
+    result = Positions(
+        bus_tapped_at=bus.tapped_at_node,
+        consensus_available=bus.available,
+        positioning=positioning,
+    )
 
     for metric in ctx.target.metrics:
         judged = judgement.for_metric(metric.label)
@@ -167,6 +194,57 @@ def run(
 
         conditions: list[dict[str, Any]] = []
         lam = preset
+
+        if own_only:
+            # Measure every condition anyway. They are what the Risk sheet
+            # renders, and reporting the positioning we chose not to apply is
+            # more honest than reporting none at all.
+            measured = _measure_conditions(bus, judgement, metric, comparability_fired)
+            would_be = preset
+            for condition in measured:
+                if condition["multiplier"] is not None:
+                    would_be *= condition["multiplier"]
+            would_be = max(0.0, min(1.0, would_be))
+            result.items.append(
+                Position(
+                    metric_label=metric.label,
+                    units=metric.units,
+                    own_estimate=own,
+                    consensus=consensus,
+                    baseline=_baseline(consensus, built),
+                    lam=1.0,
+                    forecast=own,
+                    preset=preset_name,
+                    conditions=measured
+                    + [
+                        {
+                            "name": "positioning_disabled",
+                            "input": positioning,
+                            "multiplier": None,
+                            "effect": (
+                                f"lambda forced to 1.0; the conditions above were measured but not "
+                                f"applied. Had positioning been on, lambda would have been "
+                                f"{would_be:.3f}"
+                            ),
+                        }
+                    ],
+                    rationale=(
+                        f"Own estimate from {own_source}, submitted unadjusted. Positioning toward "
+                        f"consensus is switched off: our error is scored against the Street's, so a "
+                        f"number shrunk onto consensus inherits the Street's error and cannot place. "
+                        + (
+                            f"Consensus for comparison is {consensus:.4g} and the baseline is "
+                            f"{_baseline(consensus, built):.4g}; neither is an input here. "
+                            if consensus is not None
+                            else "No Street consensus exists for this metric in any case. "
+                        )
+                        + f"Had positioning been applied, lambda would have been {would_be:.3f}."
+                    ),
+                    quantiles=_quantiles(judged),
+                    beta_measured=beta_measured,
+                )
+            )
+            continue
 
         if consensus is None:
             position = Position(
@@ -252,8 +330,40 @@ def run(
         cost_usd=0.0,
         positioned=len(result.items),
         consensus_available=bus.available,
+        positioning=positioning,
     )
     return result
+
+
+def _measure_conditions(
+    bus: "ConsensusBus", judgement: Judgement, metric: Metric, comparability_fired: bool
+) -> list[dict[str, Any]]:
+    """Every regime condition, with the input that fired it, measured but not applied."""
+    measured: list[dict[str, Any]] = []
+    inputs = bus.conditions_input()
+    analysts = inputs.get("analysts")
+    dispersion = inputs.get("dispersion")
+    revisions = inputs.get("revisions_30d")
+
+    if analysts is not None and analysts <= 5:
+        measured.append({"name": "thin_coverage", "input": analysts, "multiplier": 1.8, "effect": "measured"})
+    elif analysts is not None and analysts >= 40:
+        measured.append({"name": "heavy_coverage", "input": analysts, "multiplier": 0.4, "effect": "measured"})
+    if dispersion is not None and dispersion > 0.15:
+        measured.append({"name": "wide_dispersion", "input": dispersion, "multiplier": 1.4, "effect": "measured"})
+    if revisions == 0:
+        measured.append({"name": "stale_revisions", "input": revisions, "multiplier": 1.3, "effect": "measured"})
+
+    coefficient = (judgement.disagreement.get(metric.label) or {}).get("coefficient") or 0.0
+    if coefficient > 0.25:
+        measured.append(
+            {"name": "internal_disagreement", "input": coefficient, "multiplier": round(0.25 / coefficient, 4), "effect": "measured"}
+        )
+    if comparability_fired:
+        measured.append({"name": "comparability_flag", "input": True, "multiplier": 0.25, "effect": "measured"})
+    if not measured:
+        measured.append({"name": "no_condition_fired", "input": None, "multiplier": None, "effect": "measured"})
+    return measured
 
 
 def _apply(
@@ -265,22 +375,30 @@ def _apply(
     return lam * multiplier, conditions
 
 
-def _baseline(consensus: float, built: Any) -> float:
-    """Consensus times the shrunk company surprise. Not a strawman: most
-    companies beat a lowered bar, so applying the company's own historical beat
-    is hard to improve on, and most of the value here is in beating this rather
-    than in beating raw consensus."""
+def _baseline(consensus: float | None, built: Any) -> float | None:
+    """The bar to beat, computed from the company's own filings.
+
+    The specification defines the baseline as consensus times the shrunk company
+    surprise. With no consensus source in the chain that definition has nothing
+    to stand on, so the baseline becomes the last reported period grown at the
+    company's own shrunk median growth rate.
+
+    It is still not a strawman. A naive continuation of a company's own recent
+    trajectory is hard to improve on, and most of the value of this system is in
+    beating that rather than in beating nothing. It terminates here exactly as
+    the consensus baseline did: it is rendered beside the forecast and is never
+    an input to it.
+    """
     if built is None or not built.observations:
         return consensus
-    surprises = [
-        (o.value - p.value) / abs(p.value)
-        for p, o in zip(built.observations, built.observations[1:])
-        if abs(p.value) > 1e-9
+    values = [o.value for o in built.observations]
+    growths = [
+        (b - a) / abs(a) for a, b in zip(values, values[1:]) if abs(a) > 1e-9
     ]
-    if not surprises:
-        return consensus
-    stat = shrink(surprises, prior=0.0, constant=6.0)
-    return consensus * (1 + stat.shrunk)
+    if not growths:
+        return values[-1]
+    stat = shrink(growths, prior=0.0, constant=6.0)
+    return values[-1] * (1 + stat.shrunk)
 
 
 def _quantiles(judged: dict[str, Any] | None) -> dict[str, float]:

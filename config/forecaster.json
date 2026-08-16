@@ -8,7 +8,6 @@
   "corpus_frozen_at": "2026-08-14",
   "source_priority": [
     "corpus",
-    "market",
     "news",
     "research"
   ],
@@ -40,7 +39,8 @@
         "ADI": "ADI",
         "DE": "DE",
         "LSE:HAS": "HAS.L"
-      }
+      },
+      "_disabled_reason": "Taken out of the priority chain on purpose. Every historical figure we need is in the filings in this repository, and reading them there keeps each number traceable to a document rather than to a vendor response. The only thing this source uniquely carried was forward analyst consensus, and positioning toward consensus is switched off, so it fed nothing the forecast depends on. Consensus figures quoted inside retrieved news articles still reach the lenses as ordinary, quotable evidence."
     },
     "news": {
       "kind": "exa_search",
@@ -125,7 +125,9 @@
       "calibrated": 0.3
     },
     "active_preset": "shrink",
-    "beta_measured": false
+    "beta_measured": false,
+    "positioning": "own_estimate_only",
+    "_positioning_reason": "Positioning toward consensus is switched off deliberately. Under this event's relative scoring, our error is divided by the Street's error, so a forecast that matches consensus scores its ratio at roughly 1.0 by construction and can never place. Consensus is still acquired, still carried on its own bus, and still rendered beside every forecast as the comparison and the baseline -- it simply no longer feeds the number we submit."
   },
   "cost": {
     "ceiling_usd": 25.0,
