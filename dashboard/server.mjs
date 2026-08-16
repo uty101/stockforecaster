@@ -400,9 +400,12 @@ const MISSION = {
     "Forecast twelve numbers - three metrics each for Home Depot, Analog Devices, Hays and Deere - "
     + "and show a visible trail from source evidence to every one of them.",
   thesis:
-    "The forecast is consensus plus lambda times the gap between our own estimate and consensus. "
-    + "Everything upstream produces the own estimate; lambda decides how much of it to act on. "
-    + "Shrinking hard to consensus on a heavily covered name is the correct answer, not a failure.",
+    "Nine lenses read the same evidence independently and argue the case separately. One deep-tier "
+    + "call weighs what survives by materiality rather than by vote count, and the estimate it "
+    + "produces is what we submit, unadjusted. Positioning toward consensus is switched off "
+    + "deliberately: our error is scored against the Street's, so a number shrunk onto consensus "
+    + "inherits the Street's error and cannot place. Consensus and the baseline still render "
+    + "beside every forecast as the comparison; they simply do not feed it.",
   scoring:
     "Accuracy is scored relative to Wall Street: min(5.0, our miss divided by the Street miss), averaged "
     + "over the twelve, lowest wins. A missing number scores 5.0, so we always ship a number. "
@@ -411,7 +414,7 @@ const MISSION = {
   approach: [
     "Filings, transcripts and slides come from the frozen 1,139-document corpus in this repo. No retrieval agent, and every number traces to a document a judge can open.",
     "Historic financials are read from those same filings, not from a market-data API.",
-    "Analyst consensus comes from the network, because it is a forward estimate the corpus never contained and it is the number our error is scored against.",
+    "Every historical figure comes from the filings in this repository, so each number traces to a document a judge can open rather than a vendor response.",
     "Nine lenses argue the case independently and are blind to each other. Lenses that see each other converge, and converging rebuilds consensus, which scores zero.",
     "Every cited quote is string-matched against its document. A lens that fails is dropped whole, and the drop is shown rather than hidden.",
     "One deep-tier call makes the judgement, weighting by materiality rather than by vote count.",
@@ -419,7 +422,8 @@ const MISSION = {
   ],
   cuts: [
     ["Balance sheet, cash flow, DCF", "None of the twelve metrics touches a balance-sheet or cash-flow line, so an income-statement model reaches every scored number and the circularity solve reaches none."],
-    ["SEC XBRL as the history source", "Written and working, then set aside: the repo's own filings are the sanctioned evidence and give a trail that can be opened rather than trusted."],
+    ["SEC XBRL and the market data feed", "Both written and working, then taken out of the chain: the filings in this repository carry every historical figure we need, and positioning toward consensus is off, so the one thing the market feed uniquely supplied fed nothing the forecast depends on."],
+    ["Positioning toward consensus", "Measured on every metric and reported in full, including the lambda that would have applied, but not applied. Matching consensus guarantees roughly the Street's own score and can never place."],
     ["Backtest driver and eval harness", "Consensus is available only as of today, with no vintage, so the historical Street bar cannot be reconstructed. Skill-versus-consensus is unobtainable, not merely unbuilt."],
     ["Bootstrap calibration", "No backtest residuals exist to bootstrap. The interval is the judge's own and is labelled uncalibrated."],
     ["Perception scoring and the news adapter", "Coverage stance moves a discount rate, and none of the twelve metrics is a valuation."],
@@ -446,11 +450,11 @@ const PIPELINE_PLAN = [
   { id: "V1", label: "Reconcile - quote matching", file: "forecaster/stages/v1_reconcile.py",
     detail: "Deterministic. Nothing that can hallucinate decides which hallucinations survive." },
   { id: "F", label: "Champion - argue, attack, survive, weigh", file: "forecaster/stages/f_challenge.py",
-    detail: "Self-reported confidence replaced by what held up under attack." },
+    detail: "Every case is argued against before anything is compared. The surviving confidence discounts a lens's weight at the judge, never as a vote." },
+  { id: "V2", label: "Comparability", file: "forecaster/stages/v2_comparability.py",
+    detail: "M&A, accounting change, 53rd week, withdrawn guidance - the four things that break a comparison with the company's own history." },
   { id: "G", label: "Judge - one deep call", file: "forecaster/stages/g_judge.py",
     detail: "Weighted by materiality, told which lenses are missing and why, returning five named quantiles." },
-  { id: "V2", label: "Comparability", file: "forecaster/stages/v2_comparability.py",
-    detail: "M&A, accounting change, 53rd week, withdrawn guidance. When one fires, lambda collapses." },
   { id: "H", label: "Position - lambda and the consensus bus", file: "forecaster/stages/h_position.py",
     detail: "Consensus is tapped once and carried untouched to lambda's second input; the baseline terminates on it." },
   { id: "I", label: "Output - results file and event tape", file: "forecaster/stages/i_output.py",
@@ -476,12 +480,13 @@ const AGENT_PLAN = [
   ["research_scout", "Proposes the web searches that find industry evidence, then reviews the haul and closes the gaps."],
   ["extract_metrics", "Pulls reported figures out of each results release, every one carrying a verbatim quote."],
   ["extract_guidance", "Guidance extracted from the results release, carrying its quote."],
-  ["extract_bridge", "The GAAP-to-adjusted bridge across five quarters."],
-  ["scan_calls", "Reads eight calls at once and reports what management stopped saying."],
+  ["extract_bridge", "The GAAP-to-adjusted bridge across five periods - an item excluded four quarters running is a permanent cost moved below the line."],
+  ["scan_calls", "Reads eight calls as one sequence and reports what management stopped saying - disclosure withdrawal is invisible in any single call."],
   ["scan_perception", "Scores the analyst Q&A across those calls for stance and conviction - our sentiment read, since the corpus carries no news."],
   ["champion", "Argues each case at its strongest, then attacks it in good faith."],
   ["judge", "The one deep call. Materiality, never vote count."],
-  ["comparability", "Is this period comparable to its own history?"]
+  ["comparability", "Is this period comparable to its own history? M&A, accounting change, a 53rd week, withdrawn guidance."],
+  ["narrative", "Writes the case from numbers already settled. It may not introduce a figure that is not already in the results file."]
 ];
 
 function forecasterFileExists(relative) {
