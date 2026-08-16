@@ -35,6 +35,7 @@ from typing import Any
 
 from ..context import RunContext
 from ..documents import Document
+from ..frontmatter import parse_frontmatter
 from .b5_extract import Extractions
 from .b_acquire import Dossier
 
@@ -241,6 +242,44 @@ def run(
             "degrade",
             "no consensus reached the evidence store, so the forecast has no Street anchor and "
             "lambda cannot be applied; the own estimate will stand and must be labelled as such",
+        )
+
+    for document in dossier.research:
+        counter += 1
+        # The stored file carries our own frontmatter. A lens quoting the header
+        # we wrote would be citing us rather than the publisher, so the claim
+        # holds the article body alone.
+        _, body = parse_frontmatter(document.text(), origin=str(document.path))
+        body = body.strip()
+        if not body:
+            store.dropped.append(
+                {
+                    "label": document.title,
+                    "doc_id": document.doc_id,
+                    "reason": "retrieved with no body text, so no quote could ever be matched against it",
+                }
+            )
+            continue
+        store.add(
+            Claim(
+                citation_id=_cite(ctx, counter),
+                kind=PROSE,
+                label=document.title,
+                # An article is not a measurement. It carries no value and no
+                # period, and a lens that wants a number from it has to quote the
+                # sentence containing one.
+                value=None,
+                units="",
+                basis=f"industry research, {document.period or 'demand'} angle",
+                period_label=document.published_at.isoformat(),
+                period_end=None,
+                # The whole document is the quote. Anything a lens quotes from it
+                # is a substring of this, which is what lets V1 check research the
+                # same way it checks an 8-K.
+                quote=body,
+                doc_id=document.doc_id,
+                source=document.source_name or "research",
+            )
         )
 
     if not store.claims:

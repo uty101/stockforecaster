@@ -40,6 +40,12 @@ from .d_model import Model
 
 STAGE = "E"
 
+# Research claims are held in the same store as reported figures but read
+# differently, so the corpus renders them in their own section. The basis string
+# is what separates them, set once in stage C.
+RESEARCH_BASIS = "industry research"
+RESEARCH_EXCERPT = 1400
+
 
 def normalise_label(label: str) -> str:
     """A lens is shown the metric label with its units beside it and will
@@ -240,12 +246,31 @@ def build_corpus(
 
     lines.append("\n## Reported claims\n")
     for claim in evidence.claims:
-        if claim.kind == "structured":
+        if claim.kind == "structured" or claim.basis.startswith(RESEARCH_BASIS):
             continue
         lines.append(
             f"- [{claim.citation_id}] {claim.label} ({claim.basis}) {claim.period_label}: "
             f"{claim.value} {claim.units} — \"{claim.quote[:240]}\""
         )
+
+    research = [claim for claim in evidence.claims if claim.basis.startswith(RESEARCH_BASIS)]
+    if research:
+        lines.append("\n## Industry research\n")
+        lines.append(
+            "Retrieved from the open web, bounded at the lock date. These are articles, not "
+            "filings: nobody audited them and the publisher has its own interest. Quote the "
+            "sentence you are relying on, so the claim can be checked against the text.\n"
+        )
+        for claim in research:
+            lines.append(
+                f"- [{claim.citation_id}] {claim.period_label} · {claim.source} · "
+                f"{claim.label} ({claim.basis})\n  {claim.quote[:RESEARCH_EXCERPT]}"
+            )
+
+    if macro:
+        lines.append("\n## Macro series (measurement, vintage pinned to the lock date)\n")
+        for series in macro:
+            lines.append(f"- {series}")
 
     lines.append("\n## Income model\n")
     for built in model.metrics:
