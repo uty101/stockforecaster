@@ -17,3 +17,14 @@
 {"message":"[200] / 5ms","label":null,"level":"info"}
 {"message":"[200] /forecast 11ms","label":null,"level":"info"}
 {"message":"[200] /forecast 5ms","label":null,"level":"info"}
+{"message":"[200] / 2ms","label":null,"level":"info"}
+{"message":"[200] /risk 2ms","label":null,"level":"info"}
+{"message":"[200] /forecast 6ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 5ms","label":null,"level":"info"}
+{"message":"[200] /model 19ms","label":null,"level":"info"}
+{"message":"[200] /risk 2ms","label":null,"level":"info"}
+{"message":"[200] /method 1ms","label":null,"level":"info"}
+{"message":"[200] /agents 2ms","label":null,"level":"info"}
+{"message":"[200] /cost 2ms","label":null,"level":"info"}
+{"message":"[200] /integrity 4ms","label":null,"level":"info"}
+{"message":"[200] / 3ms","label":null,"level":"info"}

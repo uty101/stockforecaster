@@ -300,3 +300,37 @@ class MetricKindGuard(unittest.TestCase):
         self.assertIsNone(
             _wrong_kind(self._claim(1.31, "per share", "pre-exceptional", "Basic EPS"), eps)
         )
+
+
+class PeriodKindGuard(unittest.TestCase):
+    """A full-year metric must not be built from half-year figures.
+
+    Hays reports pre-exceptional EPS for the year and again for the six months to
+    31 December. Both match on label. A series alternating between them ran
+    4.03, 0.81, 1.31, 0.02 and produced a baseline of 0.014 against a forecast of
+    1.26 — the median described neither period.
+    """
+
+    def _claim(self, period_label):
+        return c_structure.Claim(
+            citation_id="X-001", kind=c_structure.PROSE, label="Pre-exceptional basic EPS",
+            value=1.0, units="per share", basis="pre-exceptional",
+            period_label=period_label, period_end=None, quote="q", doc_id="d", source="corpus",
+        )
+
+    def test_a_half_year_figure_is_rejected_for_a_full_year_metric(self) -> None:
+        from forecaster.stages.d_model import _wrong_period
+
+        ctx = make_context(load_config(), target_for("LSE:HAS"))
+        self.assertEqual(ctx.target.period_kind, "full_year")
+        self.assertIsNotNone(_wrong_period(self._claim("Six months ended 31 December 2025"), ctx))
+        self.assertIsNotNone(_wrong_period(self._claim("Q3 FY25"), ctx))
+        self.assertIsNone(_wrong_period(self._claim("Year ended 30 June 2025"), ctx))
+
+    def test_a_full_year_figure_is_rejected_for_a_quarterly_metric(self) -> None:
+        from forecaster.stages.d_model import _wrong_period
+
+        ctx = make_context(load_config(), target_for("HD"))
+        self.assertEqual(ctx.target.period_kind, "quarter")
+        self.assertIsNotNone(_wrong_period(self._claim("Year ended 30 June 2025"), ctx))
+        self.assertIsNone(_wrong_period(self._claim("Three months ended May 3, 2026"), ctx))

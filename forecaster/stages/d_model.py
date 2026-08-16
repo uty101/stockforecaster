@@ -176,7 +176,7 @@ def _build_metric(ctx: RunContext, metric: Metric, evidence: EvidenceStore) -> M
     for claim in matched:
         if claim.value is None:
             continue
-        rejection = _wrong_kind(claim, metric)
+        rejection = _wrong_kind(claim, metric) or _wrong_period(claim, ctx)
         if rejection:
             built.notes.append(rejection)
             continue
@@ -198,6 +198,15 @@ def _build_metric(ctx: RunContext, metric: Metric, evidence: EvidenceStore) -> M
         built.notes.append(
             "no reported value for this metric survived extraction, so the model has no history "
             "and abstains rather than extrapolating from a neighbouring line"
+        )
+        return built
+
+    if len(built.observations) < 3:
+        built.notes.append(
+            f"only {len(built.observations)} comparable observation(s) survived selection, which is "
+            "too few to project from. No projection and no baseline are produced for this metric: "
+            "a number built on this series would be confident and wrong, and the lenses read the "
+            "evidence directly in any case"
         )
         return built
 
@@ -271,6 +280,47 @@ def _growth_series(observations: list[Observation]) -> list[float]:
             continue
         growths.append((current.value - previous.value) / abs(previous.value))
     return growths
+
+
+# Words that place a reported figure in a period type. A full-year metric built
+# from a series mixing full years with half years is measuring two different
+# things and its median means nothing.
+# "FY25" on its own names a fiscal year and says nothing about length, and
+# "Q3 FY25" is a quarter inside one -- so a part-year marker always wins. Only
+# these say "this figure covers a whole year".
+FULL_YEAR_WORDS = ("year ended", "full year", "annual", "twelve months")
+PART_YEAR_WORDS = ("six months", "half", "three months", "nine months", "quarter",
+                   "q1", "q2", "q3", "q4", "h1", "h2")
+
+
+def _wrong_period(claim: Any, ctx: RunContext) -> str | None:
+    """Reject a figure covering a different length of period than the one we owe.
+
+    Hays showed this plainly: a full-year metric picked up half-year figures and
+    quarterly trading-update percentages, so the series ran 4.03, 0.81, 1.31,
+    0.02 -- alternating between two period lengths, with a median describing
+    neither.
+    """
+    label = f" {(claim.period_label or '').lower()} "
+    if not label.strip():
+        return None
+
+    looks_full = any(word in label for word in FULL_YEAR_WORDS)
+    looks_part = any(word in label for word in PART_YEAR_WORDS)
+
+    if ctx.target.period_kind == "full_year":
+        if looks_part and not looks_full:
+            return (
+                f"discarded a figure for {claim.period_label!r}: this metric is reported for a "
+                "financial year, and a part-year figure in the same series makes the median "
+                "describe neither"
+            )
+    elif looks_full and not looks_part:
+        return (
+            f"discarded a figure for {claim.period_label!r}: this metric is reported for a "
+            f"{ctx.target.period_noun}, and a full-year figure is several times larger"
+        )
+    return None
 
 
 def _wrong_kind(claim: Any, metric: Metric) -> str | None:
