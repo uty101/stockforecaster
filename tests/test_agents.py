@@ -56,7 +56,7 @@ class RecordingClient(Client):
         self.sent: list[dict[str, Any]] = []
         self.replies = replies or []
 
-    def _post(self, body: dict[str, Any]) -> dict[str, Any]:
+    def _post(self, body: dict[str, Any], **context: Any) -> dict[str, Any]:
         self.sent.append(body)
         if self.replies:
             return self.replies.pop(0)

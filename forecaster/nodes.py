@@ -79,9 +79,9 @@ SOURCES = [
 
 # -- B, acquire -------------------------------------------------------------
 ACQUIRERS = [
-    _n("U1", "B", "B1 numbers", ACQUIRE,
-       note="Reported metric history per target metric. The consensus bus is tapped here; on this "
-            "build the tap is empty and says so."),
+    _n("U1", "B", "B1 numbers", AGENT, tier=CHEAP, agent="extract_metrics",
+       note="Reported metric history, pulled out of each results release with a verbatim quote "
+            "per value. The consensus bus is tapped at this node."),
     _n("U2", "B", "B1B series", ACQUIRE,
        note="Statement history as filed, held separately from the evidence store because the model "
             "needs an uninterrupted series."),

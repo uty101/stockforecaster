@@ -18,15 +18,15 @@ class Registry(unittest.TestCase):
         ids = [item.id for item in nodes.ALL]
         self.assertEqual(len(ids), len(set(ids)))
 
-    def test_the_roster_is_eighteen_agents_tiered_by_leverage(self) -> None:
+    def test_the_roster_is_nineteen_agents_tiered_by_leverage(self) -> None:
         roster = nodes.agents()
         by_tier: dict[str, int] = {}
         for item in roster:
             by_tier[item.tier] = by_tier.get(item.tier, 0) + 1
 
-        self.assertEqual(len(roster), 18)
+        self.assertEqual(len(roster), 19)
         self.assertEqual(by_tier[nodes.NONE_TIER], 1, "exactly one agent has no model")
-        self.assertEqual(by_tier[nodes.CHEAP], 6)
+        self.assertEqual(by_tier[nodes.CHEAP], 7)
         self.assertEqual(by_tier[nodes.MID], 10)
         self.assertEqual(by_tier[nodes.DEEP], 1, "exactly one call runs on the deep tier")
 

@@ -32,6 +32,7 @@ from .stages import (
     b3_research,
     b5_extract,
     b_acquire,
+    b_scan,
     c_structure,
     d_model,
     e_analyse,
@@ -86,6 +87,7 @@ def forecast(
     last_stage = "B5"
 
     extracted = b5_extract.run(ctx, dossier, client, prompts)
+    scans = b_scan.run(ctx, dossier, client, prompts)
     last_stage = "C"
 
     consensus = sources.chain.fetch("consensus", ctx.ticker, ctx.target.period)
@@ -129,6 +131,7 @@ def forecast(
         challenges=challenged,
         comparability=comparability,
         extractions=extracted,
+        scans=scans,
         integrity=sources.chain.integrity_record(),
         prompt_versions=prompts.versions(),
         last_stage=last_stage,
