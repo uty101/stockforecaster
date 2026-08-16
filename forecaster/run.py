@@ -39,6 +39,7 @@ from .stages import (
     f_challenge,
     g_judge,
     h_position,
+    i_narrative,
     i_output,
     v1_reconcile,
     v2_comparability,
@@ -117,6 +118,10 @@ def forecast(
     # structural rather than a promise.
     bus = ConsensusBus(tapped_at_node="U1", raw=consensus)
     positioned = h_position.run(ctx, judged, model, bus, comparability.fired)
+
+    # The narrative runs last, on a settled answer, and may not introduce a
+    # figure the pipeline did not produce.
+    narrative = i_narrative.run(ctx, positioned, judged, reconciled, client, prompts)
     last_stage = "I"
 
     results = i_output.run(
@@ -132,6 +137,7 @@ def forecast(
         comparability=comparability,
         extractions=extracted,
         scans=scans,
+        narrative=narrative,
         integrity=sources.chain.integrity_record(),
         prompt_versions=prompts.versions(),
         last_stage=last_stage,

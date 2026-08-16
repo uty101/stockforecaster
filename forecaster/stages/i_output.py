@@ -52,6 +52,7 @@ def run(
     comparability: Any,
     extractions: Any,
     scans: Any = None,
+    narrative: Any = None,
     integrity: dict[str, Any],
     prompt_versions: dict[str, str],
     last_stage: str,
@@ -84,6 +85,7 @@ def run(
         "evidence": evidence.to_json(),
         "extractions": extractions.to_json(),
         "scans": scans.to_json() if scans else None,
+        "narrative": narrative.to_json() if narrative else None,
         "dossier": dossier.to_json(),
         "integrity": integrity,
         "cost": {

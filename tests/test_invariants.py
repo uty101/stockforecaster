@@ -241,3 +241,25 @@ class PeriodVocabulary(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class NarrativeCannotInventAFigure(unittest.TestCase):
+    """Prose that invents a number is worse than prose that omits one, because
+    it reads exactly as authoritative."""
+
+    def test_a_figure_absent_from_the_results_file_is_rejected(self) -> None:
+        from forecaster.stages.i_narrative import _invented
+
+        allowed = {"4.72", "47250", "0.9"}
+        self.assertEqual(_invented("The forecast is 4.72 per share.", allowed), [])
+        self.assertEqual(_invented("Net sales of 47250 million.", allowed), [])
+        self.assertEqual(
+            _invented("Margins should reach 61.4 per cent.", allowed),
+            ["61.4"],
+            "a figure the pipeline never produced must be caught",
+        )
+
+    def test_a_trailing_zero_is_the_same_figure(self) -> None:
+        from forecaster.stages.i_narrative import _invented
+
+        self.assertEqual(_invented("came in at 4.720", {"4.72"}), [])
