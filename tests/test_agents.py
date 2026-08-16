@@ -275,8 +275,18 @@ class FanOut(unittest.TestCase):
         blocks = build_system_blocks("corpus " * 5000, "your question", router["mid"])
 
         self.assertTrue(blocks[0]["text"].startswith("corpus"))
-        self.assertEqual(blocks[1]["text"], "your question")
+        self.assertTrue(blocks[1]["text"].startswith("your question"))
         self.assertEqual(blocks[0].get("cache_control"), {"type": "ephemeral"})
+
+    def test_the_house_punctuation_rule_reaches_every_agent(self) -> None:
+        """Anything an agent writes can be rendered on a sheet, and the sheets do
+        not repair the text they are given."""
+        router = TierRouter(MODELS)
+        blocks = build_system_blocks("corpus " * 5000, "your question", router["mid"])
+
+        self.assertIn("no dash may join", blocks[1]["text"])
+        # It must not sit in the cached prefix, which is shared and must not move.
+        self.assertNotIn("Punctuation", blocks[0]["text"])
 
     def test_a_prefix_below_the_cache_minimum_is_not_marked(self) -> None:
         router = TierRouter(MODELS)

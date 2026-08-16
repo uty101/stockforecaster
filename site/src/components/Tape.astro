@@ -1,0 +1,77 @@
+---
+// The recorded run, newest at the top. While a run is live this polls the
+// record four times a second and stops when the run completes.
+import { tickerId } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
+
+const { company, live = true } = Astro.props;
+const id = tickerId(company.ticker);
+const tape = [...(company.tape ?? [])].reverse();
+const total = company.tape?.length ?? 0;
+
+function describe(row) {
+  if (row.request) return row.request;
+  if (row.agent) return `${row.agent}${row.tier ? ` ${row.tier}` : ""}`;
+  if (row.nodes) return row.nodes.join(" ");
+  if (row.message) return row.message;
+  if (row.metric) return row.metric;
+  return "";
+}
+---
+
+<div class="panel">
+  <div class="panel-head">
+    <span class="n">TAPE</span>
+    <span class="eyebrow">{company.ticker} record</span>
+    <span class="plus">+</span>
+  </div>
+  <div class="panel-body" style="padding:10px 14px">
+    <div class="tape" data-tape={id} data-live={live ? "1" : "0"} data-total={total}>
+      {tape.map((row, i) => (
+        <div class="row">
+          <span class="c num">{String(total - i).padStart(3, "0")}</span>
+          <span class="t num">{f.clockTime(row.ts)}</span>
+          <span class="e">{row.event}<span class="d"> {describe(row)}</span></span>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
+
+<script>
+  // Live mode only. A sealed page carries the recorded record and polls nothing.
+  for (const tape of document.querySelectorAll("[data-tape][data-live='1']")) {
+    const ticker = tape.dataset.tape;
+    let seen = Number(tape.dataset.total || 0);
+    const describe = (row) =>
+      row.request || row.agent || (row.nodes ? row.nodes.join(" ") : "") || row.message || row.metric || "";
+    const time = (ts) => {
+      const d = new Date(ts * 1000);
+      const p = (n) => String(n).padStart(2, "0");
+      return `${p(d.getUTCHours())}:${p(d.getUTCMinutes())}:${p(d.getUTCSeconds())}`;
+    };
+    const tick = async () => {
+      try {
+        const res = await fetch(`/data/${ticker}-tape.json`, { cache: "no-store" });
+        if (!res.ok) return;
+        const rows = await res.json();
+        if (rows.length > seen) {
+          for (const row of rows.slice(seen)) {
+            const el = document.createElement("div");
+            el.className = "row";
+            el.innerHTML =
+              `<span class="c num">${String(rows.indexOf(row) + 1).padStart(3, "0")}</span>` +
+              `<span class="t num">${time(row.ts)}</span>` +
+              `<span class="e">${row.event}<span class="d"> ${describe(row)}</span></span>`;
+            tape.prepend(el);
+          }
+          seen = rows.length;
+        }
+        if (rows.some((row) => row.event === "run_finished")) clearInterval(timer);
+      } catch {
+        /* the record is not reachable; the page keeps what it has */
+      }
+    };
+    const timer = setInterval(tick, 250);
+  }
+</script>

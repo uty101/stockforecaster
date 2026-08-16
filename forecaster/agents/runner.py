@@ -25,10 +25,21 @@ from .tiers import Tier
 
 STAGE_DEFAULT = "E3"
 
+# Everything an agent writes can end up rendered on a sheet, and the sheets do
+# not repair the text they are given. So the house punctuation rule is stated
+# once, here, rather than in nineteen prompt files that can drift apart.
+HOUSE_STYLE = """
+Punctuation, in every string you return: no dash may join two parts of a
+sentence. No em dash, no en dash, no hyphen with a space beside it. Where a
+clause needs separating, use a full stop and start a new sentence. Where a clause
+is subordinate, use a comma. Write a range with the word to, as in 2.35 to 2.45.
+Hyphens inside a standard compound word are fine.
+""".strip()
+
 
 def build_system_blocks(shared_corpus: str, own_question: str, tier: Tier) -> list[dict[str, Any]]:
     """Shared corpus first, always. The per-agent text can never lead."""
-    return [cacheable(shared_corpus, tier), plain(own_question)]
+    return [cacheable(shared_corpus, tier), plain(f"{own_question}\n\n{HOUSE_STYLE}")]
 
 
 def fan_out(

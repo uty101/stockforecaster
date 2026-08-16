@@ -1,104 +1,189 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
+import Panel from "../components/Panel.astro";
+import StatusCard from "../components/StatusCard.astro";
+import Strip from "../components/Strip.astro";
 import Distribution from "../components/Distribution.astro";
-import bundle from "../data/bundle.json";
+import { companies, header, sum } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
 
-const live = bundle.companies.filter((c) => !c.missing);
-const all = live.flatMap((c) => c.results.forecast.metrics);
-const judged = all.filter((m) => m.quantiles && Object.keys(m.quantiles).length === 5);
-const pill = {
-  text: `uncalibrated · ${judged.length}/${all.length} metrics carry a judged band`,
-  tone: judged.length === all.length ? "warn" : "open",
-};
+const all = companies.flatMap((c) =>
+  (c.results.forecast?.metrics ?? []).map((m) => ({ company: c, metric: m })),
+);
+const withStreet = all.filter((r) => typeof r.metric.consensus === "number");
+const totalUsd = sum(companies, (c) => c.results.cost?.spent_usd ?? 0);
 
-const fmt = (v) =>
-  typeof v !== "number"
-    ? "—"
-    : Math.abs(v) >= 1000
-      ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
-      : v.toLocaleString(undefined, { maximumFractionDigits: 3 });
+// The one dense line describing how the figure was set.
+function setBy(metric) {
+  const parts = [`preset ${metric.preset}`];
+  for (const c of metric.conditions ?? []) {
+    const input = c.input === null ? "not fired" : String(c.input);
+    parts.push(`${c.name} ${input}${typeof c.multiplier === "number" ? ` x${c.multiplier}` : ""}`);
+  }
+  parts.push(metric.lambda === 1 ? "no damping" : `damping ${f.position(metric.lambda)}`);
+  return parts.join("  ·  ");
+}
 ---
 
-<Sheet title="Forecast" system="02 · the twelve numbers and how far they sit from the street" sheet="02" pill={pill}>
-  <div class="panel">
-    <h2>Positioning is switched off</h2>
-    <p class="sub">and that is a decision, not an omission</p>
-    <p class="secondary" style="margin:0;max-width:88ch">
-      Accuracy at this event is scored as our miss divided by the Street's miss. A forecast shrunk
-      onto consensus inherits the Street's error and scores a ratio of about 1.0 by construction —
-      safe, and unable to place. So the estimate below is submitted unadjusted. Consensus and the
-      baseline are still measured and still drawn beside every number; they are comparisons, and
-      neither is an input. Every regime condition that <em>would</em> have moved lambda is still
-      recorded, and the Risk sheet shows exactly what was declined.
-    </p>
-  </div>
-
-  {live.map((company) => (
-    <div class="panel">
-      <h2>{company.results.header.company} <span class="muted">· {company.results.header.ticker} · {company.results.header.period}</span></h2>
-      <p class="sub">
-        {company.results.forecast.consensus_bus.available
-          ? "consensus bus live — tapped once, rendered for comparison, never fed forward"
-          : "no analyst consensus exists for this company in any source available to this build"}
+<Sheet title="Forecast" subsystem="Estimates" index="02">
+  <div class="lede-row">
+    <div class="lede">
+      <span class="bar"></span>
+      <p>
+        Twelve estimates, each with the Street figure it will be scored against and the range it
+        sits inside. Where no Street figure is published, the page says so.
       </p>
-
-      <div class="grid two">
-        {company.results.forecast.metrics.map((m) => (
-          <div class="metric">
-            <div class="label">{m.metric_label}</div>
-            <div class="hero">{fmt(m.forecast)} <span class="units">{m.units}</span></div>
-            <Distribution
-              quantiles={m.quantiles}
-              forecast={m.forecast}
-              baseline={m.baseline}
-              consensus={m.consensus}
-              units={m.units}
-            />
-            <p class="rationale">{m.rationale}</p>
-            {m.conditions?.length > 0 && (
-              <details>
-                <summary>every condition measured, with its input</summary>
-                <table>
-                  <tr><th>condition</th><th>input</th><th class="num">multiplier</th><th>effect</th></tr>
-                  {m.conditions.map((c) => (
-                    <tr>
-                      <td class="mono">{c.name}</td>
-                      <td class="muted">{c.input === null ? "—" : String(c.input)}</td>
-                      <td class="num">{c.multiplier ?? "—"}</td>
-                      <td class="muted">{c.effect}</td>
-                    </tr>
-                  ))}
-                </table>
-              </details>
-            )}
-          </div>
-        ))}
-      </div>
     </div>
-  ))}
-
-  <div class="panel">
-    <h2>Calibration</h2>
-    <p class="sub">read this before reading the bands</p>
-    <p class="secondary" style="margin:0;max-width:88ch">
-      There are <b>zero</b> stored backtest residuals, so the intervals above are
-      <b> the judge's own and uncalibrated</b>. They have not been checked against how often
-      reality actually lands inside them, and they must not be read as a coverage claim: a p10–p90
-      band here does not mean eighty per cent of outcomes fall inside it. Calibrating them would
-      need the Street's bar as it stood at past quarters, and no source available to this build
-      publishes consensus history — so this is unobtainable rather than merely unmeasured, and it
-      is stated here rather than left for a reader to assume otherwise.
-    </p>
+    <StatusCard
+      name="The book"
+      word={`${all.length}`}
+      summary="Estimates submitted this run"
+      tone="teal"
+      fill={1}
+      rows={[
+        ["Names", String(companies.length)],
+        ["With a Street figure", `${withStreet.length}/${all.length}`],
+        ["Spend", f.usd(totalUsd)],
+      ]}
+    />
   </div>
-</Sheet>
 
-<style>
-  .metric { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 15px 16px; }
-  .label { color: var(--text-secondary); font-size: 12.5px; font-weight: 600; }
-  .hero { font-size: 30px; font-weight: 700; letter-spacing: -.025em; margin: 3px 0 2px; font-variant-numeric: tabular-nums; }
-  .hero .units { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0; }
-  .rationale { font-size: 12.5px; color: var(--text-secondary); margin: 10px 0 0; line-height: 1.55; }
-  details { margin-top: 10px; }
-  summary { cursor: pointer; font-size: 12px; color: var(--text-muted); }
-  details table { margin-top: 8px; }
-</style>
+  {companies.map((company) => {
+    const h = header(company);
+    const metrics = company.results.forecast?.metrics ?? [];
+    return (
+      <section class="sheet-section">
+        <h2 class="section-heading">{h.company} · {h.period}</h2>
+
+        {metrics.map((metric) => {
+          const street = typeof metric.consensus === "number" ? metric.consensus : null;
+          const gap = street === null ? null : f.gapLabel(metric.own_estimate, street, metric.units);
+          return (
+            <div style="margin-top:16px">
+              <div class="grid2">
+                <Panel
+                  n="01"
+                  name="Our estimate"
+                  figure={f.metricValue(metric.forecast, metric.units)}
+                  unit={f.unitLabel(metric.units)}
+                >
+                  <p>{metric.metric_label} for {h.period}, on the basis the company reports.</p>
+                </Panel>
+                <Panel
+                  n="02"
+                  name="The Street"
+                  figure={street === null ? "—" : f.metricValue(street, metric.units)}
+                  unit={street === null ? "no coverage" : f.unitLabel(metric.units)}
+                >
+                  <p>
+                    {street === null
+                      ? "No published consensus for this line, so the estimate stands on the filings alone."
+                      : "Consensus as it stood at the lock date, taken once and carried unchanged."}
+                  </p>
+                </Panel>
+              </div>
+
+              <div class="panel" style="margin-top:16px">
+                <div class="panel-head">
+                  <span class="n">04</span>
+                  <span class="eyebrow">{metric.metric_label} · the range</span>
+                  <span class="plus">+</span>
+                </div>
+                <div class="panel-body">
+                  <Distribution metric={metric} />
+                  <p class="small t-secondary" style="margin:6px 0 0">
+                    p10 to p90 for {metric.metric_label}, with the Street on the same axis.
+                  </p>
+                </div>
+              </div>
+
+              <div class="panel" style="margin-top:16px">
+                <div class="panel-head">
+                  <span class="n">05</span>
+                  <span class="eyebrow">The gap in words</span>
+                  <span class="plus">+</span>
+                </div>
+                <div class="panel-body">
+                  <p class="prose" style="margin:0">
+                    {street === null ? (
+                      <>
+                        {metric.metric_label} of {f.metricValue(metric.forecast, metric.units)} with no
+                        published Street figure to sit against, carried at full weight.
+                      </>
+                    ) : metric.forecast === street ? (
+                      <>
+                        {metric.metric_label} of {f.metricValue(metric.forecast, metric.units)} in line with
+                        the Street, carried at {f.position(metric.lambda)} of full weight.
+                      </>
+                    ) : (
+                      <>
+                        {metric.metric_label} of {f.metricValue(metric.forecast, metric.units)} against the
+                        Street at {f.metricValue(street, metric.units)}, a gap of {gap}, carried at{" "}
+                        {f.position(metric.lambda)} of full weight.
+                      </>
+                    )}
+                  </p>
+                  <p class="meta" style="margin:12px 0 0">{setBy(metric)}</p>
+                </div>
+              </div>
+
+              <details class="panel exp" style="margin-top:16px">
+                <summary class="panel-head">
+                  <span class="n">06</span>
+                  <span class="eyebrow">What set the weight</span>
+                  <span class="plus">+</span>
+                </summary>
+                <div class="panel-body">
+                  <div class="grid2">
+                    <div>
+                      <table class="ledger">
+                        <thead>
+                          <tr><th>Condition</th><th>Measured</th><th class="n">Multiplier</th></tr>
+                        </thead>
+                        <tbody>
+                          {(metric.conditions ?? []).map((c) => (
+                            <tr>
+                              <td>{c.name}</td>
+                              <td>{c.input === null ? "not fired" : String(c.input)}</td>
+                              <td class="n">{typeof c.multiplier === "number" ? f.ratio(c.multiplier) : "—"}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <div class="stack-16">
+                      <div class="rule amber">
+                        <span class="t">Calibration</span>
+                        {metric.beta_measured
+                          ? "The multiplier on each condition is fitted to realised outcomes."
+                          : "Not yet calibrated against realised outcomes. The multipliers come from the stated preset."}
+                      </div>
+                      <div class="rule teal">
+                        <span class="t">The comparison</span>
+                        {street === null
+                          ? "No consensus is published for this line, so nothing was taken."
+                          : `Taken once at ${company.results.forecast?.consensus_bus?.tapped_at_node ?? "the source"} and carried unchanged to the position.`}
+                      </div>
+                    </div>
+                  </div>
+                  <p class="small t-secondary" style="margin:14px 0 0">{metric.rationale}</p>
+                </div>
+              </details>
+            </div>
+          );
+        })}
+      </section>
+    );
+  })}
+
+  <section class="sheet-section">
+    <Strip
+      items={[
+        { label: "Estimates", value: String(all.length), context: "Three lines for each of four names." },
+        { label: "With coverage", value: `${withStreet.length}/${all.length}`, context: "A published Street figure exists." },
+        { label: "Weight", value: f.position(1), context: "Every estimate carried unadjusted." },
+        { label: "Spend", value: f.usd(totalUsd), context: "Measured, not asserted." },
+      ]}
+    />
+  </section>
+</Sheet>

@@ -1,18 +1,10 @@
 ---
-// Shared chrome for all nine sheets: header, navigation, the fixture and
-// incomplete banners, and a status pill computed from the data rather than
-// typed in.
-import bundle from "../data/bundle.json";
+// The frame every sheet sits in: masthead, sheet navigation, meta bar, corner
+// marks and the state banners. Built once and used nine times.
+import "../styles/tokens.css";
+import { anyFixture, incomplete, lockDate, runLabel, header, generatedAt } from "../lib/read.mjs";
 
-const { title, system, sheet, pill } = Astro.props;
-
-const live = bundle.companies.filter((c) => !c.missing);
-const anyFixture = live.some((c) => c.results?.header?.fixture);
-const incomplete = live.filter(
-  (c) => c.results?.header?.last_completed_stage && c.results.header.last_completed_stage !== "I",
-);
-const lockDate = live[0]?.results?.header?.as_of ?? "—";
-const runLabel = live[0]?.results?.header?.run_id ?? "—";
+const { title, subsystem, index, project = "Forecaster", version = "v1" } = Astro.props;
 
 const SHEETS = [
   ["01", "System", "/"],
@@ -25,149 +17,125 @@ const SHEETS = [
   ["08", "Cost", "/cost"],
   ["09", "Integrity", "/integrity"],
 ];
+
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const stopped = incomplete
+  .map((c) => `${header(c).ticker} stopped at ${header(c).last_completed_stage}`)
+  .join(", ");
 ---
 
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title} — Forecaster</title>
-    <style>
-      :root {
-        color-scheme: dark;
-        /* Chart surface and ink, from the validated dark palette. */
-        --surface-0: #121211;
-        --surface-1: #1a1a19;
-        --surface-2: #232322;
-        --line: #33322f;
-        --text-primary: #ffffff;
-        --text-secondary: #c3c2b7;
-        --text-muted: #8b8a80;
-        /* Categorical slots 1-3: validated all-pairs on the dark surface. */
-        --series-1: #3987e5;
-        --series-2: #d95926;
-        --series-3: #199e70;
-        /* Status is reserved and never reused as a series colour. */
-        --good: #0ca30c;
-        --warning: #fab219;
-        --serious: #ec835a;
-        --critical: #d03b3b;
-        --radius: 12px;
-      }
-      * { box-sizing: border-box; }
-      body {
-        margin: 0;
-        background: var(--surface-0);
-        color: var(--text-primary);
-        font: 15px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-        -webkit-font-smoothing: antialiased;
-      }
-      a { color: var(--series-1); }
-      .wrap { width: min(1240px, calc(100% - 40px)); margin: 0 auto; padding: 22px 0 90px; }
-      header.top {
-        display: flex; flex-wrap: wrap; gap: 18px; align-items: baseline;
-        justify-content: space-between; padding-bottom: 14px; border-bottom: 1px solid var(--line);
-      }
-      .brand { font-weight: 700; letter-spacing: -.01em; font-size: 17px; }
-      .brand span { color: var(--text-muted); font-weight: 500; }
-      .meta { color: var(--text-muted); font-size: 12.5px; display: flex; gap: 16px; flex-wrap: wrap; }
-      .meta b { color: var(--text-secondary); font-weight: 600; }
-      nav.sheets { display: flex; flex-wrap: wrap; gap: 4px; margin: 14px 0 20px; }
-      nav.sheets a {
-        display: flex; gap: 7px; align-items: baseline; text-decoration: none;
-        padding: 7px 11px; border-radius: 8px; border: 1px solid transparent;
-        color: var(--text-secondary); font-size: 13px;
-      }
-      nav.sheets a i { font-style: normal; color: var(--text-muted); font-size: 11px; font-variant-numeric: tabular-nums; }
-      nav.sheets a:hover { background: var(--surface-1); }
-      nav.sheets a[aria-current="page"] { background: var(--surface-2); border-color: var(--line); color: var(--text-primary); }
-      h1 { font-size: 27px; margin: 0 0 4px; letter-spacing: -.02em; }
-      .sheet-system { color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: .14em; margin: 0 0 16px; }
-      .banner {
-        border-radius: var(--radius); padding: 13px 16px; margin: 0 0 18px;
-        font-size: 13.5px; line-height: 1.55;
-      }
-      .banner.fixture { background: #3a2a08; border: 1px solid var(--warning); color: #ffe9b8; }
-      .banner.incomplete { background: #3a1f16; border: 1px solid var(--serious); color: #ffdccb; }
-      .pill {
-        display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 650;
-        padding: 5px 11px; border-radius: 999px; border: 1px solid var(--line);
-        background: var(--surface-2); color: var(--text-secondary);
-      }
-      .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--text-muted); }
-      .pill.good .dot { background: var(--good); }
-      .pill.warn .dot { background: var(--warning); }
-      .pill.open .dot { background: var(--serious); }
-      .pill.bad .dot { background: var(--critical); }
-      .panel {
-        background: var(--surface-1); border: 1px solid var(--line);
-        border-radius: var(--radius); padding: 18px 20px; margin-bottom: 16px;
-      }
-      .panel h2 { font-size: 16px; margin: 0 0 3px; letter-spacing: -.01em; }
-      .panel .sub { color: var(--text-muted); font-size: 12.5px; margin: 0 0 14px; }
-      .grid { display: grid; gap: 16px; }
-      .grid.two { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
-      .grid.four { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
-      table { width: 100%; border-collapse: collapse; font-size: 13px; }
-      th, td { text-align: left; padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-      th { color: var(--text-muted); font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .07em; }
-      td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
-      .scroll { overflow-x: auto; }
-      code, .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.5px; }
-      .muted { color: var(--text-muted); }
-      .secondary { color: var(--text-secondary); }
-      .quote { border-left: 2px solid var(--line); padding-left: 11px; color: var(--text-secondary); font-size: 12.5px; }
-      footer.foot { margin-top: 34px; padding-top: 14px; border-top: 1px solid var(--line); color: var(--text-muted); font-size: 12px; }
-    </style>
+    <title>{title} · {project}</title>
   </head>
   <body>
-    <div class="wrap">
-      <header class="top">
-        <div>
-          <div class="brand">Forecaster <span>· Agents vs Wall Street</span></div>
-          <div class="meta" style="margin-top:5px">
-            <span><b>{sheet}</b> {title}</span>
-            <span>lock date <b>{lockDate}</b></span>
-            <span>run <b class="mono">{runLabel}</b></span>
-          </div>
-        </div>
-        {pill && <span class={`pill ${pill.tone ?? ""}`}><span class="dot"></span>{pill.text}</span>}
+    <div class="wrap page">
+      <span class="corner tl"></span>
+      <span class="corner br"></span>
+
+      <header class="masthead">
+        <a href="/" class="brandmark">
+          <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true">
+            <path d="M5 0 L10 5 L5 10 L0 5 Z" fill="#35D39A" />
+          </svg>
+          <span class="name">{project}</span>
+        </a>
+        <nav class="sheets">
+          {SHEETS.map(([n, name, href]) => (
+            <a href={href} aria-current={href === path ? "page" : undefined}>
+              <i>{n}</i><span>{name}</span>
+            </a>
+          ))}
+          <span class="of">/9</span>
+        </nav>
       </header>
 
-      <nav class="sheets">
-        {SHEETS.map(([n, name, href]) => (
-          <a href={href} aria-current={href === Astro.url.pathname ? "page" : undefined}>
-            <i>{n}</i>{name}
-          </a>
-        ))}
-      </nav>
+      <div class="metabar">
+        <div class="pairs">
+          <div class="pair">
+            <span class="eyebrow">Book</span>
+            <span class="v">{project}</span>
+          </div>
+          <div class="pair">
+            <span class="eyebrow">Sheet</span>
+            <span class="v">{subsystem}</span>
+          </div>
+          <div class="pair">
+            <span class="eyebrow">Version</span>
+            <span class="v">{version}</span>
+          </div>
+        </div>
+        <div class="right">
+          <div class="meta">run {runLabel}</div>
+          <div class="meta">as of {lockDate}</div>
+        </div>
+      </div>
+      <div class="sheetpos meta">{index} / 09</div>
 
       {anyFixture && (
-        <div class="banner fixture">
-          <b>Synthetic fixture — this is not a forecast.</b> These numbers came from the fixture
-          generator, not from a run against evidence. The demo fallback is a recorded run replayed
-          through this same code path, never a video.
+        <div class="notice">
+          <div class="head">
+            <svg width="11" height="10" viewBox="0 0 11 10" aria-hidden="true">
+              <path d="M5.5 0.5 L10.5 9.5 L0.5 9.5 Z" fill="none" stroke="#A77BFF" stroke-width="1" />
+              <path d="M5.5 3.6 L5.5 6.6" stroke="#A77BFF" stroke-width="1" />
+              <path d="M5.5 7.6 L5.5 8.2" stroke="#A77BFF" stroke-width="1" />
+            </svg>
+            <span class="eyebrow">Generated</span>
+          </div>
+          <div class="line">
+            <span class="lead">These figures are generated.</span>{" "}
+            <span class="rest">
+              The estimates on this sheet came from the fixture writer rather than from a reading of
+              the filings, so no figure here carries evidence behind it.
+            </span>
+          </div>
         </div>
       )}
+
       {incomplete.length > 0 && (
-        <div class="banner incomplete">
-          <b>Incomplete run.</b>{" "}
-          {incomplete.map((c) => `${c.ticker} stopped after stage ${c.results.header.last_completed_stage}`).join("; ")}.
-          Everything that did complete is rendered below; nothing has been substituted for what did not.
+        <div class="notice">
+          <div class="head">
+            <svg width="11" height="10" viewBox="0 0 11 10" aria-hidden="true">
+              <path d="M5.5 0.5 L10.5 9.5 L0.5 9.5 Z" fill="none" stroke="#A77BFF" stroke-width="1" />
+              <path d="M5.5 3.6 L5.5 6.6" stroke="#A77BFF" stroke-width="1" />
+              <path d="M5.5 7.6 L5.5 8.2" stroke="#A77BFF" stroke-width="1" />
+            </svg>
+            <span class="eyebrow">Short run</span>
+          </div>
+          <div class="line">
+            <span class="lead">The work stopped early.</span>{" "}
+            <span class="rest">
+              {stopped}. What finished is on the page. Nothing has been filled in for what did not.
+            </span>
+          </div>
         </div>
       )}
 
-      <h1>{title}</h1>
-      <p class="sheet-system">{system}</p>
+      <div class="content" style="margin-top:26px">
+        <slot />
 
-      <slot />
-
-      <footer class="foot">
-        Python writes JSON; this site polls it and computes nothing. Every number here — including
-        every sentence of rationale — was written into <code>results.json</code> by the pipeline.
-        Bundle generated {bundle.generatedAt}.
-      </footer>
+        <div class="footbar">
+          <div class="pair">
+            <div class="eyebrow">Sheet</div>
+            <div class="v">{index} {title}</div>
+          </div>
+          <div class="pair">
+            <div class="eyebrow">Run</div>
+            <div class="v">{runLabel}</div>
+          </div>
+          <div class="pair">
+            <div class="eyebrow">As of</div>
+            <div class="v">{lockDate}</div>
+          </div>
+          <div class="pair">
+            <div class="eyebrow">Built</div>
+            <div class="v">{String(generatedAt).slice(0, 16).replace("T", " ")}</div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

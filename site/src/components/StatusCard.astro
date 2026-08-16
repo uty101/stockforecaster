@@ -1,0 +1,50 @@
+---
+// A ring whose gap is proportional to the state, the state word in the accent
+// colour for that state, and the rows that set it.
+const { name, word, summary, tone = "teal", fill = 1, rows = [] } = Astro.props;
+
+const COLOUR = { teal: "#35D39A", violet: "#A77BFF", red: "#FF4D5E", amber: "#E0A94A", blue: "#5381A6" };
+const stroke = COLOUR[tone] ?? COLOUR.teal;
+const r = 14;
+const circumference = 2 * Math.PI * r;
+const shown = Math.max(0, Math.min(1, fill)) * circumference;
+---
+
+<div class="panel statuscard">
+  <div class="panel-head">
+    <span class="eyebrow">{name}</span>
+    <span class="plus">+</span>
+  </div>
+  <div class="panel-body">
+    <div class="ring-row">
+      <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true" style="flex:none">
+        <circle cx="15" cy="15" r={r} fill="none" stroke="#1A2230" stroke-width="2" />
+        <circle
+          cx="15"
+          cy="15"
+          r={r}
+          fill="none"
+          stroke={stroke}
+          stroke-width="2"
+          stroke-dasharray={`${shown.toFixed(2)} ${(circumference - shown).toFixed(2)}`}
+          transform="rotate(-90 15 15)"
+        />
+      </svg>
+      <div>
+        <div class={`status-word t-${tone}`}>{word}</div>
+        <div class="summary">{summary}</div>
+      </div>
+    </div>
+    {rows.length > 0 && (
+      <div class="kv">
+        {rows.map((row) => (
+          <div class="row">
+            <span class="k">{row[0]}</span>
+            <span class="v num">{row[1]}</span>
+          </div>
+        ))}
+      </div>
+    )}
+    <slot />
+  </div>
+</div>

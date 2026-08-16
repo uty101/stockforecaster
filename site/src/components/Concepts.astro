@@ -1,0 +1,14 @@
+---
+// Three or four cards stating a sequence. Number, title, one line.
+const { items = [] } = Astro.props;
+---
+
+<div class="concepts">
+  {items.map((item, i) => (
+    <div class="concept">
+      <div class="n">{String(i + 1).padStart(2, "0")}</div>
+      <div class="t">{item.title}</div>
+      <div class="d">{item.line}</div>
+    </div>
+  ))}
+</div>

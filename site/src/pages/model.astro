@@ -1,93 +1,187 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
-import bundle from "../data/bundle.json";
+import Panel from "../components/Panel.astro";
+import StatusCard from "../components/StatusCard.astro";
+import Strip from "../components/Strip.astro";
+import Spark from "../components/Spark.astro";
+import { companies, header } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
 
-const live = bundle.companies.filter((c) => !c.missing);
-const measured = live.flatMap((c) => c.results.model.metrics).filter((m) => m.reproduction_error !== null);
-const total = live.flatMap((c) => c.results.model.metrics).length;
-const pill = { text: `${measured.length}/${total} metrics state a measured error`, tone: measured.length === total ? "good" : "warn" };
-const pct = (v) => (typeof v === "number" ? `${v > 0 ? "+" : ""}${v.toFixed(2)}%` : "unmeasured");
-const fmt = (v) => (typeof v !== "number" ? "—" : Math.abs(v) >= 1000 ? v.toLocaleString(undefined, { maximumFractionDigits: 0 }) : v.toLocaleString(undefined, { maximumFractionDigits: 3 }));
+// The reproduction check comes first: how wrong the history has been before it
+// is trusted with a projection.
+const worstOf = (company) => {
+  const errors = (company.results.model?.metrics ?? [])
+    .map((m) => m.reproduction_error)
+    .filter((n) => typeof n === "number");
+  if (!errors.length) return null;
+  return errors.reduce((a, b) => (Math.abs(a) > Math.abs(b) ? a : b));
+};
+
+const worstAll = companies
+  .map(worstOf)
+  .filter((n) => typeof n === "number")
+  .reduce((a, b) => (Math.abs(a) > Math.abs(b) ? a : b), 0);
+
+const totalObs = companies.reduce(
+  (n, c) => n + (c.results.model?.metrics ?? []).reduce((m, x) => m + (x.observations ?? []).length, 0),
+  0,
+);
+const totalNotes = companies.reduce(
+  (n, c) => n + (c.results.model?.metrics ?? []).reduce((m, x) => m + (x.notes ?? []).length, 0),
+  0,
+);
 ---
 
-<Sheet title="Model" system="04 · the model states its own measured error first" sheet="04" pill={pill}>
-  <div class="panel">
-    <h2>An income model, not three statements</h2>
-    <p class="sub">a deliberate cut, with the reason</p>
-    <p class="secondary" style="margin:0;max-width:92ch">
-      None of the twelve metrics we owe touches a balance-sheet or cash-flow line. There is no
-      working capital, no debt, no cash and no interest expense anywhere in them. A linked balance
-      sheet with a circular interest solve would have been real engineering that reaches nothing we
-      are scored on, so what is built is the half that reaches all of it: history as filed, a ratio
-      base of medians with the scaled MAD beside each, a projection, and the reproduction check.
-      Two tests from the brief — the balance sheet tying to the cent, and no DCF assumption moving
-      the forecast — are therefore not applicable, and are declared rather than quietly dropped.
-    </p>
-  </div>
-
-  <div class="panel">
-    <h2>Reproduction check</h2>
-    <p class="sub">each recent period re-projected using only what was known before it — this leads the sheet because a model states its measured error before it is trusted with a projection</p>
-    <table>
-      <tr><th>company</th><th>metric</th><th class="num">observations</th><th class="num">median error</th><th class="num">projection</th><th>method</th></tr>
-      {live.flatMap((c) => c.results.model.metrics.map((m) => (
-        <tr>
-          <td class="muted">{c.ticker}</td>
-          <td><b>{m.metric}</b></td>
-          <td class="num">{m.observations.length}</td>
-          <td class="num" style={Math.abs(m.reproduction_error ?? 0) > 10 ? "color:var(--serious)" : ""}>{pct(m.reproduction_error)}</td>
-          <td class="num">{fmt(m.projection)}</td>
-          <td class="muted" style="font-size:12px">{m.projection_method}</td>
-        </tr>
-      )))}
-    </table>
-  </div>
-
-  {live.map((c) => (
-    <div class="panel">
-      <h2>{c.results.header.company} <span class="muted">· income history as filed</span></h2>
-      <p class="sub">never substituting a restated figure into a period whose original filing predates it</p>
-      {c.results.model.metrics.map((m) => (
-        <details>
-          <summary><b>{m.metric}</b> — {m.observations.length} reported periods, {m.reproduction.length} re-projected</summary>
-          {m.notes.length > 0 && <ul class="notes">{m.notes.map((n) => <li>{n}</li>)}</ul>}
-          <div class="scroll">
-            <table>
-              <tr><th>period</th><th class="num">reported</th><th>basis</th><th>citation</th></tr>
-              {m.observations.map((o) => (
-                <tr><td>{o.period_label}</td><td class="num">{fmt(o.value)}</td><td class="muted">{o.basis}</td><td class="mono muted">{o.citation_id}</td></tr>
-              ))}
-            </table>
-          </div>
-          {m.reproduction.length > 0 && (
-            <div class="scroll" style="margin-top:12px">
-              <table>
-                <tr><th>re-projected period</th><th class="num">predicted</th><th class="num">actual</th><th class="num">error</th></tr>
-                {m.reproduction.map((r) => (
-                  <tr><td>{r.period_label}</td><td class="num">{fmt(r.predicted)}</td><td class="num">{fmt(r.actual)}</td><td class="num">{r.error_pct}%</td></tr>
-                ))}
-              </table>
-            </div>
-          )}
-        </details>
-      ))}
+<Sheet title="Model" subsystem="History" index="04">
+  <div class="lede-row">
+    <div class="lede">
+      <span class="bar"></span>
+      <p>
+        The reported series, period by period, and the figure it extends to. The error against
+        periods the company has already reported sits above the statement, not below it.
+      </p>
     </div>
-  ))}
-
-  <div class="panel">
-    <h2>Balance sheet · cash flow · DCF</h2>
-    <p class="sub">absent, and here is why rather than a blank tab</p>
-    <p class="secondary" style="margin:0;max-width:92ch">
-      These three sub-sheets are not rendered because the components behind them were not built.
-      The decision is above. If a future run owes a metric that touches working capital, debt or
-      terminal value, they become necessary and this note becomes wrong — which is the point of
-      writing it down here rather than leaving three empty tabs implying they are coming.
-    </p>
+    <StatusCard
+      name="Reproduction"
+      word={Math.abs(worstAll) < 5 ? "Close" : "Wide"}
+      summary="Widest error against a reported period"
+      tone={Math.abs(worstAll) < 5 ? "teal" : "amber"}
+      fill={Math.min(1, 5 / Math.max(1, Math.abs(worstAll)))}
+      rows={[
+        ["Widest error", f.signedPctPoints(worstAll)],
+        ["Reported values read", f.count(totalObs)],
+        ["Values set aside", f.count(totalNotes)],
+      ]}
+    />
   </div>
+
+  {companies.map((company) => {
+    const h = header(company);
+    const metrics = company.results.model?.metrics ?? [];
+    const forecast = company.results.forecast?.metrics ?? [];
+    // Periods across the top, most recent at the right.
+    const periods = [
+      ...new Map(
+        metrics
+          .flatMap((m) => m.observations ?? [])
+          .filter((o) => o.period_end)
+          .map((o) => [o.period_end, o]),
+      ).entries(),
+    ]
+      .sort((a, b) => String(a[0]).localeCompare(String(b[0])))
+      .slice(-10);
+
+    return (
+      <section class="sheet-section">
+        <h2 class="section-heading">{h.company} · {h.period}</h2>
+
+        <div class="grid2" style="margin-top:16px">
+          {metrics.map((metric) => (
+            <Panel
+              n="RC"
+              name={`${metric.metric} · reproduction`}
+              figure={f.signedPctPoints(metric.reproduction_error)}
+              unit="widest error"
+              tone={typeof metric.reproduction_error === "number" && Math.abs(metric.reproduction_error) < 5 ? "t-teal" : "t-amber"}
+            >
+              <p>
+                {(metric.reproduction ?? []).length} reported periods rebuilt from history alone,
+                {" "}then compared with what the company printed.
+              </p>
+            </Panel>
+          ))}
+        </div>
+
+        <div class="panel scroll-x" style="margin-top:16px">
+          <div class="panel-head">
+            <span class="eyebrow">Reported series · {metrics[0]?.units ?? ""}</span>
+            <span class="plus">+</span>
+          </div>
+          <div class="panel-body">
+            <table class="ledger">
+              <thead>
+                <tr>
+                  <th class="sticky">Line</th>
+                  {periods.map(([end, o]) => <th class="n">{o.period_label?.slice(0, 22) ?? end}</th>)}
+                  <th class="n est">{h.period} est</th>
+                  <th class="n">Trail</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metrics.map((metric) => {
+                  const byEnd = new Map((metric.observations ?? []).map((o) => [o.period_end, o]));
+                  const projected = forecast.find((x) => x.metric_label === metric.metric)?.forecast ?? metric.projection;
+                  const series = periods.map(([end]) => byEnd.get(end)?.value).filter((v) => typeof v === "number");
+                  return (
+                    <tr>
+                      <td class="sticky">{metric.metric}</td>
+                      {periods.map(([end]) => {
+                        const o = byEnd.get(end);
+                        return (
+                          <td class="n">
+                            {o ? f.metricValue(o.value, metric.units) : "—"}
+                          </td>
+                        );
+                      })}
+                      <td class="n est t-white">{f.metricValue(projected, metric.units)}</td>
+                      <td class="n"><Spark values={series} projected={projected} /></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            <p class="meta" style="margin:12px 0 0">
+              Values as reported in the filing for each period. The estimate column is separated at the
+              right. Cost of sales, operating expense and the segment lines are not carried: the
+              releases read for this run state the metrics above, not a full statement.
+            </p>
+          </div>
+        </div>
+
+        <div class="grid2" style="margin-top:16px">
+          {metrics.map((metric) => (
+            <details class="panel exp">
+              <summary class="panel-head">
+                <span class="eyebrow">{metric.metric} · what set the projection</span>
+                <span class="plus">+</span>
+              </summary>
+              <div class="panel-body">
+                <table class="ledger">
+                  <tbody>
+                    <tr><td>Method</td><td>{metric.projection_method}</td></tr>
+                    <tr><td>Growth rate</td><td class="n">{f.pct((metric.growth?.shrunk ?? 0) * 100)}</td></tr>
+                    <tr><td>Observations</td><td class="n">{f.count(metric.growth?.observations)}</td></tr>
+                    <tr><td>Weight on the trailing rate</td><td class="n">{f.ratio(metric.growth?.shrinkage_weight)}</td></tr>
+                    <tr><td>Last reported level</td><td class="n">{f.metricValue(metric.level?.raw, metric.units)}</td></tr>
+                  </tbody>
+                </table>
+                {(metric.notes ?? []).length > 0 && (
+                  <div class="rule amber" style="margin-top:14px">
+                    <span class="t">Set aside</span>
+                    {(metric.notes ?? [])[0]}
+                  </div>
+                )}
+              </div>
+            </details>
+          ))}
+        </div>
+      </section>
+    );
+  })}
+
+  <section class="sheet-section">
+    <Strip
+      items={[
+        { label: "Reported values", value: f.count(totalObs), context: "Read from the filings, each cited." },
+        { label: "Widest error", value: f.signedPctPoints(worstAll), context: "Against a period already reported." },
+        { label: "Set aside", value: f.count(totalNotes), context: "Values that could not be put on one scale." },
+        { label: "Names", value: String(companies.length), context: "Each with its own series." },
+      ]}
+    />
+  </section>
 </Sheet>
 
 <style>
-  details { border-top: 1px solid var(--line); padding: 10px 0; }
-  summary { cursor: pointer; font-size: 13px; }
-  .notes { font-size: 12px; color: var(--serious); margin: 8px 0; padding-left: 18px; }
+  .est { border-left: 2px solid var(--line-strong); padding-left: 12px !important; }
+  td.sticky, th.sticky { position: sticky; left: 0; background: var(--panel); }
 </style>

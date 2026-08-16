@@ -1,19 +1,19 @@
 {
-  "generatedAt": "2026-08-16T13:41:04.954Z",
+  "generatedAt": "2026-08-16T14:04:32.405Z",
   "companies": {
     "HD": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-69b2de74\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-70673bff\\results.json",
       "lastCompletedStage": "I",
-      "costUsd": 1.0942,
+      "costUsd": 1.216,
       "provenance": [
         {
           "metric": "Net sales",
-          "value": 47320,
+          "value": 47280,
           "source": "this run"
         },
         {
           "metric": "Adjusted diluted EPS",
-          "value": 4.63,
+          "value": 4.68,
           "source": "this run"
         },
         {
@@ -26,12 +26,12 @@
         {
           "label": "Net sales",
           "cell": "C7",
-          "value": 47320
+          "value": 47280
         },
         {
           "label": "Adjusted diluted EPS",
           "cell": "C8",
-          "value": 4.63
+          "value": 4.68
         },
         {
           "label": "Comparable sales, total company",
@@ -41,23 +41,23 @@
       ]
     },
     "ADI": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-69b2de74\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-70673bff\\results.json",
       "lastCompletedStage": "I",
-      "costUsd": 0.9215,
+      "costUsd": 1.1045,
       "provenance": [
         {
           "metric": "Revenue",
-          "value": 3935,
+          "value": 3932,
           "source": "this run"
         },
         {
           "metric": "Adjusted diluted EPS",
-          "value": 3.34,
+          "value": 3.355,
           "source": "this run"
         },
         {
           "metric": "Adjusted gross margin",
-          "value": 72.9,
+          "value": 73,
           "source": "this run"
         }
       ],
@@ -65,24 +65,24 @@
         {
           "label": "Revenue",
           "cell": "C7",
-          "value": 3935
+          "value": 3932
         },
         {
           "label": "Adjusted diluted EPS",
           "cell": "C8",
-          "value": 3.34
+          "value": 3.355
         },
         {
           "label": "Adjusted gross margin",
           "cell": "C9",
-          "value": 72.9
+          "value": 73
         }
       ]
     },
     "LSE:HAS": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-69b2de74\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-70673bff\\results.json",
       "lastCompletedStage": "I",
-      "costUsd": 1.2342,
+      "costUsd": 0.9842,
       "provenance": [
         {
           "metric": "Net fees",
@@ -91,7 +91,7 @@
         },
         {
           "metric": "Pre-exceptional basic EPS",
-          "value": 1.2,
+          "value": 1.275,
           "source": "this run"
         },
         {
@@ -109,7 +109,7 @@
         {
           "label": "Pre-exceptional basic EPS",
           "cell": "C8",
-          "value": 1.2
+          "value": 1.275
         },
         {
           "label": "Pre-exceptional operating profit",
@@ -119,23 +119,23 @@
       ]
     },
     "DE": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-69b2de74\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-70673bff\\results.json",
       "lastCompletedStage": "I",
-      "costUsd": 1.4661,
+      "costUsd": 0.4393,
       "provenance": [
         {
           "metric": "Worldwide net sales and revenues",
-          "value": 12350,
+          "value": 10731.54221,
           "source": "this run"
         },
         {
           "metric": "Diluted EPS (GAAP)",
-          "value": 4.8,
+          "value": 6.55,
           "source": "this run"
         },
         {
           "metric": "Production & Precision Ag operating profit",
-          "value": 545,
+          "value": 554.2409638554217,
           "source": "this run"
         }
       ],
@@ -143,17 +143,17 @@
         {
           "label": "Worldwide net sales and revenues",
           "cell": "C7",
-          "value": 12350
+          "value": 10731.54221
         },
         {
           "label": "Diluted EPS (GAAP)",
           "cell": "C8",
-          "value": 4.8
+          "value": 6.55
         },
         {
           "label": "Production & Precision Ag operating profit",
           "cell": "C9",
-          "value": 545
+          "value": 554.2409638554217
         }
       ]
     }

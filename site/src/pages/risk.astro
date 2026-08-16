@@ -1,66 +1,153 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
-import bundle from "../data/bundle.json";
+import Panel from "../components/Panel.astro";
+import StatusCard from "../components/StatusCard.astro";
+import Strip from "../components/Strip.astro";
+import { companies, primary, header, sum } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
 
-const live = bundle.companies.filter((c) => !c.missing);
-const fired = live.filter((c) => c.results.comparability?.any_fired);
-const pill = { text: fired.length ? `comparability broke on ${fired.length}` : "no comparability flag fired", tone: fired.length ? "open" : "good" };
+const ceiling = primary.results.cost?.ceiling_usd ?? 0;
+const spentAll = sum(companies, (c) => c.results.cost?.spent_usd ?? 0);
+const headroom = ceiling - spentAll;
+const metrics = primary.results.forecast?.metrics ?? [];
+const lambda = metrics[0]?.lambda ?? null;
+const fired = companies.flatMap((c) => c.results.comparability?.fired ?? []);
+const dropped = companies.flatMap((c) => c.results.reconciliation?.dropped ?? []);
+const challenges = primary.results.challenge?.challenges ?? [];
+const erosion = challenges.length
+  ? challenges.reduce((n, c) => n + (c.erosion ?? 0), 0) / challenges.length
+  : null;
+
+const W = 560;
+const barW = W - 20;
+const takenW = ceiling ? Math.max(2, (spentAll / ceiling) * barW) : 0;
 ---
 
-<Sheet title="Risk" system="05 · deviation from consensus as a budget, and what was declined" sheet="05" pill={pill}>
-  <div class="panel">
-    <h2>The budget that was not spent</h2>
-    <p class="sub">positioning is off, so the whole ceiling was declined — but every condition was still measured</p>
-    <p class="secondary" style="margin:0;max-width:92ch">
-      This sheet exists to show deviation from consensus as a budget: a ceiling, an amount taken,
-      and what each condition did to it. On this run the amount taken is the full deviation, because
-      positioning toward consensus is switched off by configuration. That makes the conditions below
-      a record of what the system <em>would</em> have done — measured on real inputs, reported in
-      full, and not applied. Reporting the positioning we declined is more useful than reporting
-      none at all.
-    </p>
+<Sheet title="Risk" subsystem="Deviation" index="05">
+  <div class="lede-row">
+    <div class="lede">
+      <span class="bar"></span>
+      <p>
+        Every estimate that sits away from the Street spends a budget. This sheet states the size of
+        each position, what stops it, and how much of the budget the run used.
+      </p>
+    </div>
+    <StatusCard
+      name="Deviation"
+      word={lambda === 1 ? "Full" : "Damped"}
+      summary="Weight carried on each estimate"
+      tone={lambda === 1 ? "amber" : "teal"}
+      fill={typeof lambda === "number" ? lambda : 0}
+      rows={[
+        ["Position size", f.position(lambda)],
+        ["Comparability flags", String(fired.length)],
+        ["Excluded readings", String(dropped.length)],
+        ["Spend", `${f.usd(spentAll)} of ${f.usd(ceiling)}`],
+      ]}
+    />
   </div>
 
-  {live.map((c) => (
-    <div class="panel">
-      <h2>{c.results.header.company} <span class="muted">· {c.ticker}</span></h2>
-      <p class="sub">{c.results.forecast.consensus_bus.available ? "consensus available for comparison" : "no consensus exists — there was never a budget to spend"}</p>
-      <table>
-        <tr><th>metric</th><th class="num">our number</th><th class="num">street</th><th class="num">baseline</th><th class="num">lambda</th><th>conditions measured</th></tr>
-        {c.results.forecast.metrics.map((m) => (
-          <tr>
-            <td><b>{m.metric_label}</b></td>
-            <td class="num">{m.forecast === null ? "—" : m.forecast.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
-            <td class="num muted">{m.consensus === null ? "—" : m.consensus.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
-            <td class="num muted">{m.baseline === null ? "—" : m.baseline.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
-            <td class="num">{m.lambda}</td>
-            <td class="muted" style="font-size:12px">{(m.conditions ?? []).map((x) => x.name).join(", ")}</td>
-          </tr>
-        ))}
-      </table>
+  <section class="sheet-section">
+    <div class="grid2" style="grid-template-columns: minmax(0,1.35fr) minmax(0,1fr)">
+      <div class="stack-16">
+        <Panel n="01" name="Position size" figure={f.position(lambda)} unit="of full weight">
+          <p>
+            Each estimate is submitted at its own figure rather than pulled toward the Street.
+            Positioning is switched off for this run, so the measured conditions did not move it.
+          </p>
+        </Panel>
+        <Panel n="02" name="The stop" figure={erosion === null ? "—" : f.ratio(erosion)} unit="confidence given up">
+          <p>
+            Each workstream states its strongest case and then the case against it. What survives that
+            exchange is what the weighting sees.
+          </p>
+        </Panel>
+        <Panel n="03" name="Spend limit" figure={f.usd(ceiling)} unit="ceiling">
+          <p>
+            The run stops before the ceiling rather than after it. {f.usd(spentAll)} was used across the
+            four names, leaving {f.usd(headroom)}.
+          </p>
+        </Panel>
+        <Panel n="04" name="Exposure" figure={String(companies.length * 3)} unit="estimates at risk">
+          <p>
+            Twelve lines carry a figure. A line with no published Street figure is scored against the
+            floor, so an absent comparison is exposure rather than shelter.
+          </p>
+        </Panel>
+        <Panel n="05" name="Allocation" figure={String(fired.length)} unit="flags fired">
+          <p>
+            A base year that moved is the condition that damps a position. It fired on{" "}
+            {companies.filter((c) => c.results.comparability?.any_fired).length} of {companies.length} names.
+          </p>
+        </Panel>
+      </div>
 
-      <div class="cmp">
-        <b>Comparability.</b>{" "}
-        {c.results.comparability?.degraded
-          ? <span style="color:var(--serious)">{c.results.comparability.degrade_reason}</span>
-          : c.results.comparability?.any_fired
-            ? <span style="color:var(--serious)">Fired on {c.results.comparability.fired.join(", ")} — the historical priors this system runs on do not apply cleanly to this period.</span>
-            : <span>Nothing fired. This period is comparable with the company's own history on all four checks.</span>}
-        <table style="margin-top:10px">
-          <tr><th>check</th><th>fired</th><th>evidence</th></tr>
-          {(c.results.comparability?.flags ?? []).map((f) => (
-            <tr>
-              <td class="mono">{f.check}</td>
-              <td>{f.fired ? <span style="color:var(--serious)">yes</span> : <span class="muted">no</span>}</td>
-              <td class="muted" style="font-size:12px">{f.evidence}</td>
-            </tr>
-          ))}
-        </table>
+      <div class="stack-16">
+        <div class="panel">
+          <div class="panel-head">
+            <span class="eyebrow">Budget</span>
+            <span class="plus">+</span>
+          </div>
+          <div class="panel-body">
+            <svg viewBox={`0 0 ${W} 56`} width="100%" role="img" aria-label="Spend against the ceiling">
+              <rect x="10" y="16" width={barW} height="14" fill="none" stroke="#1A2230" stroke-width="1" />
+              <rect x="10" y="16" width={takenW} height="14" fill="none" stroke="#35D39A" stroke-width="1" />
+              <line x1={10 + takenW} y1="10" x2={10 + takenW} y2="36" stroke="#35D39A" stroke-width="1" />
+              <text x="10" y="48" class="tick">taken {f.usd(spentAll)}</text>
+              <text x={W - 10} y="48" text-anchor="end" class="tick">headroom {f.usd(headroom)}</text>
+            </svg>
+            <p class="small t-secondary" style="margin:6px 0 0">
+              Spend across the four names against the ceiling set before the run.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <span class="eyebrow">State</span>
+            <span class="plus">+</span>
+          </div>
+          <div class="panel-body" style="text-align:center">
+            <svg width="86" height="96" viewBox="0 0 86 96" role="img" aria-label="Deviation held">
+              <path
+                d="M43 5 L79 18 V50 C79 71 63 84 43 91 C23 84 7 71 7 50 V18 Z"
+                fill="none"
+                stroke="#35D39A"
+                stroke-width="1"
+              />
+              <path d="M43 20 V76" stroke="#1A2230" stroke-width="1" />
+              <path d="M20 34 H66" stroke="#1A2230" stroke-width="1" />
+              <path d="M27 52 L39 64 L61 38" fill="none" stroke="#35D39A" stroke-width="1" />
+            </svg>
+            <div style="margin-top:10px">
+              <span class={`state ${dropped.length ? "open" : "pass"}`}>
+                {dropped.length ? "one reading excluded" : "held"}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rule teal">
+          <span class="t">Deviation rules</span>
+          A figure moves only on evidence in the filings. A quote that does not match its filing takes
+          its workstream out. A base year that moved damps the position. Spend stops at the ceiling.
+        </div>
       </div>
     </div>
-  ))}
+  </section>
+
+  <section class="sheet-section">
+    <Strip
+      items={[
+        { label: "Position size", value: f.position(lambda), context: "Carried on every estimate." },
+        { label: "Flags fired", value: String(fired.length), context: "Base years that moved.", tone: fired.length ? "amber" : "teal" },
+        { label: "Excluded", value: String(dropped.length), context: "Readings whose quote did not match.", tone: dropped.length ? "red" : "teal" },
+        { label: "Headroom", value: f.usd(headroom), context: "Left under the ceiling.", tone: "teal" },
+      ]}
+    />
+  </section>
 </Sheet>
 
 <style>
-  .cmp { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; }
+  .tick { font-size: 10px; fill: var(--faint); font-family: var(--mono); }
 </style>

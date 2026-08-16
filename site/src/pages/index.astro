@@ -1,192 +1,138 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
-import bundle from "../data/bundle.json";
+import SignalFlow from "../components/SignalFlow.astro";
+import Gates from "../components/Gates.astro";
+import Tape from "../components/Tape.astro";
+import StatusCard from "../components/StatusCard.astro";
+import Strip from "../components/Strip.astro";
+import { companies, primary, header, nodes, sum, callsOf } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
 
-const live = bundle.companies.filter((c) => !c.missing);
-const nodes = bundle.nodes ?? [];
-const tape = live.flatMap((c) => c.tape ?? []);
+const runs = companies.map((c) => ({
+  ticker: c.ticker,
+  company: header(c).company,
+  period: header(c).period,
+  claims: (c.results.evidence?.claims ?? []).length,
+  checked: c.results.reconciliation?.citations_checked ?? 0,
+  matched: c.results.reconciliation?.citations_matched ?? 0,
+  usd: c.results.cost?.spent_usd ?? 0,
+  events: (c.tape ?? []).length,
+  stage: header(c).last_completed_stage,
+}));
 
-// Everything on this sheet is counted from the data. Nothing is typed in.
-const firedNodes = new Set();
-for (const event of tape) {
-  if (event.node) firedNodes.add(event.node);
-  for (const n of event.nodes ?? []) firedNodes.add(n);
-}
-const droppedLenses = new Set(
-  live.flatMap((c) => (c.results.reconciliation?.dropped ?? []).map((d) => d.node_id)),
-);
-
-const STAGES = [
-  ["A", "sources"],
-  ["B", "acquire"],
-  ["C", "structure"],
-  ["D", "model"],
-  ["E", "analyse"],
-  ["V1", "reconcile"],
-  ["F", "challenge"],
-  ["G", "judge"],
-  ["V2", "comparability"],
-  ["H", "position"],
-  ["I", "output"],
-];
-
-const totals = {
-  events: tape.length,
-  cost: live.reduce((n, c) => n + (c.results.cost?.spent_usd ?? 0), 0),
-  claims: live.reduce((n, c) => n + (c.results.evidence?.counts?.claims ?? 0), 0),
-  deep: live.reduce((n, c) => n + (c.results.cost?.deep_calls ?? 0), 0),
-  wall: live.reduce(
-    (n, c) => n + ((c.tape ?? []).find((e) => e.event === "run_finished")?.duration_s ?? 0),
+const totalClaims = sum(runs, (r) => r.claims);
+const totalChecked = sum(runs, (r) => r.checked);
+const totalMatched = sum(runs, (r) => r.matched);
+const totalUsd = sum(runs, (r) => r.usd);
+const totalEvents = sum(runs, (r) => r.events);
+const tokens = sum(companies, (c) =>
+  callsOf(c).reduce(
+    (n, call) =>
+      n + (call.input_tokens ?? 0) + (call.output_tokens ?? 0) + (call.cache_read_tokens ?? 0) + (call.cache_write_tokens ?? 0),
     0,
   ),
-};
-
-// Invariants: built (a test enforces it) versus measured (a run demonstrated it).
-const anyDrop = live.some((c) => (c.results.reconciliation?.dropped ?? []).length > 0);
-const INVARIANTS = [
-  ["Point in time", "built", "Two independent locks — the adapter filters on the filing date and the chain re-checks everything returned. A test trips it with a document filed one day late."],
-  ["Typed provenance", "built", "A claim cannot be constructed without a source and a verbatim quote; the constructor raises."],
-  ["Fail closed", anyDrop ? "measured" : "built", anyDrop ? "Demonstrated on this run: a lens citing an ID that was not in the store was dropped whole." : "Enforced by V1; no lens failed on this run."],
-  ["Lenses blind to each other", "built", "There is no parameter through which one lens's view could reach another. Structural, not a promise in a prompt."],
-  ["Materiality, never vote count", "built", "The judge weighs on measured swing per sigma and on what survived being argued against."],
-  ["Every case argued against", "measured", "The champion stage develops each surviving view then attacks it; the surviving confidence, not the stated one, reaches the judge."],
-  ["Baseline on every chart", "built", "Drawn beside every forecast, and never an input to it."],
-  ["Robust statistics", "built", "Medians and scaled MAD throughout; winsorize before any mean; shrink anything under eight observations."],
-  ["No API between pipeline and site", "built", "Python writes JSON; this page reads it. No metric is computed here."],
-];
-
-const GATES = [
-  ["pass", "Sources run against the network", `${live.length} companies acquired live this run — no cached responses on the acquisition path.`, ""],
-  ["pass", "Evidence trail complete", `${totals.claims} claims, each carrying a source and a verbatim quote.`, ""],
-  ["pass", "One deep-tier call per run", `${totals.deep} deep calls across ${live.length} runs; the client raises before a second.`, ""],
-  ["open", "Baseline scored", "Requires actuals, which arrive when the companies report on 18–20 August — after this entry closes.", "Blocks any claim of measured skill."],
-  ["open", "Lambda fitted rather than asserted", "The regression needs the Street's bar as it stood at past quarters. No source available publishes consensus history.", "Blocks the central positioning claim — which is why positioning is switched off rather than run on a guessed number."],
-  ["open", "Per-regime beta table", "Same missing input as above.", "Blocks the thesis as a statistical model."],
-];
-
-const counters = {
-  nodes: `${firedNodes.size}/${nodes.length}`,
-  agents: bundle.prompts.length,
-  deterministic: nodes.filter((n) => n.kind === "deterministic" || n.kind === "gate").length,
-  gates: `${GATES.filter((g) => g[0] === "pass").length}/${GATES.length}`,
-};
-
-const pill = { text: `${firedNodes.size} of ${nodes.length} nodes fired`, tone: "good" };
+);
+const elapsed = companies.map((c) => {
+  const tape = c.tape ?? [];
+  if (tape.length < 2) return 0;
+  return tape[tape.length - 1].ts - tape[0].ts;
+});
+const totalElapsed = elapsed.reduce((a, b) => a + b, 0);
+const complete = runs.filter((r) => r.stage === "I").length;
 ---
 
-<Sheet title="System" system="01 · the architecture as it actually ran" sheet="01" pill={pill}>
-  <div class="panel">
-    <h2>Signal flow</h2>
-    <p class="sub">every node from the registry, in its stage column, lit from the event tape · a dropped lens draws as an open circuit</p>
-    <div class="scroll">
-      <div class="circuit">
-        {STAGES.map(([stage, label]) => (
-          <div class="col">
-            <div class="colhead"><b>{stage}</b> {label}</div>
-            {nodes.filter((n) => n.stage === stage).map((n) => (
-              <div class={`node ${firedNodes.has(n.id) ? "lit" : ""} ${droppedLenses.has(n.id) ? "open" : ""} ${n.available === false ? "dark" : ""}`}
-                   title={n.note || n.label}>
-                <span class="nid">{n.id}</span>
-                <span class="nlabel">{n.label}</span>
-                <span class="ntier">{n.tier === "none" ? "no model" : n.tier}</span>
-                {droppedLenses.has(n.id) && <span class="cross">✕ dropped</span>}
-                {n.available === false && <span class="cross muted">no source</span>}
-              </div>
-            ))}
+<Sheet title="At the root" subsystem="Coverage" index="01">
+  <div class="lede-row">
+    <div class="lede">
+      <span class="bar"></span>
+      <p>
+        Four names, twelve estimates. Each one traces from a figure on this page back to the filing
+        it was read from, through the workstreams that argued it and the checks that kept it.
+      </p>
+    </div>
+    <StatusCard
+      name="Coverage"
+      word={complete === runs.length ? "Complete" : "Partial"}
+      summary={`${complete} of ${runs.length} names carried to the estimate`}
+      tone={complete === runs.length ? "teal" : "amber"}
+      fill={complete / Math.max(1, runs.length)}
+      rows={[
+        ["Names", String(runs.length)],
+        ["Estimates", String(runs.length * 3)],
+        ["Claims read", f.count(totalClaims)],
+        ["Quotes matched", `${f.count(totalMatched)}/${f.count(totalChecked)}`],
+        ["Spend", f.usd(totalUsd)],
+      ]}
+    />
+  </div>
+
+  <section class="sheet-section">
+    <h2 class="section-heading">From filing to estimate</h2>
+    <p class="prose small t-secondary" style="margin:8px 0 0">
+      Drawn from the {header(primary).ticker} run. Line weight and speed carry the number of checked
+      claims each route moved. Select any box for what it read and what it did.
+    </p>
+    <SignalFlow company={primary} />
+    <Gates company={primary} />
+  </section>
+
+  <section class="sheet-section">
+    <h2 class="section-heading">The run</h2>
+    <div class="grid2" style="margin-top:16px; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr)">
+      <Tape company={primary} />
+      <div class="panel">
+        <div class="panel-head">
+          <span class="n">SUM</span>
+          <span class="eyebrow">Every name</span>
+          <span class="plus">+</span>
+        </div>
+        <div class="panel-body">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Period</th>
+                <th class="n">Claims</th>
+                <th class="n">Matched</th>
+                <th class="n">Spend</th>
+              </tr>
+            </thead>
+            <tbody>
+              {runs.map((r) => (
+                <tr>
+                  <td>{r.ticker}</td>
+                  <td>{r.period}</td>
+                  <td class="n">{f.count(r.claims)}</td>
+                  <td class="n">{r.matched}/{r.checked}</td>
+                  <td class="n">{f.usd(r.usd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div class="kv" style="margin-top:16px">
+            <div class="row"><span class="k">Tokens</span><span class="v num">{f.tokens(tokens)}</span></div>
+            <div class="row"><span class="k">Elapsed</span><span class="v num">{f.seconds(totalElapsed)}</span></div>
+            <div class="row"><span class="k">Events recorded</span><span class="v num">{f.count(totalEvents)}</span></div>
           </div>
-        ))}
+        </div>
       </div>
     </div>
-    <div class="legendrow">
-      <span><i class="sw lit"></i>fired this run</span>
-      <span><i class="sw"></i>built, did not fire</span>
-      <span><i class="sw open"></i>open circuit — lens dropped at V1</span>
-      <span><i class="sw dark"></i>no source behind it, kept and labelled</span>
-    </div>
-  </div>
+  </section>
 
-  <div class="grid four">
-    <div class="stat"><div class="k">{counters.nodes}</div><div class="v">nodes fired</div></div>
-    <div class="stat"><div class="k">{counters.agents}</div><div class="v">agents, one with no model</div></div>
-    <div class="stat"><div class="k">${totals.cost.toFixed(2)}</div><div class="v">measured spend, $25 ceiling</div></div>
-    <div class="stat"><div class="k">{counters.gates}</div><div class="v">gates passed</div></div>
-  </div>
-
-  <div class="panel">
-    <h2>Gates</h2>
-    <p class="sub">built is not the same as measured — these rows decide whether a number here is a finding or an assertion</p>
-    <table>
-      <tr><th>state</th><th>gate</th><th>detail</th><th>what an open gate blocks</th></tr>
-      {GATES.map(([state, title, detail, blocks]) => (
-        <tr>
-          <td><span class={`pill ${state === "pass" ? "good" : "open"}`} style="font-size:11px"><span class="dot"></span>{state}</span></td>
-          <td><b>{title}</b></td>
-          <td class="muted">{detail}</td>
-          <td class="muted">{blocks || "—"}</td>
-        </tr>
-      ))}
-    </table>
-  </div>
-
-  <div class="panel">
-    <h2>Invariants</h2>
-    <p class="sub">built means a test enforces it · measured means this run demonstrated it</p>
-    <table>
-      {INVARIANTS.map(([name, state, detail]) => (
-        <tr>
-          <td style="width:210px"><b>{name}</b></td>
-          <td style="width:96px"><span class={`pill ${state === "measured" ? "good" : "warn"}`} style="font-size:11px"><span class="dot"></span>{state}</span></td>
-          <td class="muted">{detail}</td>
-        </tr>
-      ))}
-    </table>
-  </div>
-
-  <div class="panel">
-    <h2>Run summary</h2>
-    <p class="sub">counted from the tape</p>
-    <table>
-      <tr><th>company</th><th class="num">events</th><th class="num">cost</th><th class="num">wall clock</th><th class="num">claims</th><th>last stage</th></tr>
-      {live.map((c) => {
-        const finished = (c.tape ?? []).find((e) => e.event === "run_finished");
-        return (
-          <tr>
-            <td><b>{c.ticker}</b> <span class="muted">{c.results.header.period}</span></td>
-            <td class="num">{(c.tape ?? []).length}</td>
-            <td class="num">${(c.results.cost?.spent_usd ?? 0).toFixed(3)}</td>
-            <td class="num">{finished ? `${finished.duration_s}s` : "—"}</td>
-            <td class="num">{c.results.evidence?.counts?.claims ?? 0}</td>
-            <td class="mono">{c.results.header.last_completed_stage}</td>
-          </tr>
-        );
-      })}
-    </table>
-  </div>
+  <section class="sheet-section">
+    <Strip
+      items={[
+        { label: "Estimates", value: String(runs.length * 3), context: "Three metrics for each of four names." },
+        { label: "Claims read", value: f.count(totalClaims), context: "Each carrying the quote it came from." },
+        {
+          label: "Quotes matched",
+          value: `${f.count(totalMatched)}/${f.count(totalChecked)}`,
+          context: "Checked back against the filing text.",
+          tone: totalMatched === totalChecked ? "teal" : "amber",
+        },
+        { label: "Spend", value: f.usd(totalUsd), context: "Measured across the four runs." },
+        { label: "Parts running", value: String(nodes.length), context: `${nodes.filter((n) => n.covered).length} covered by a check.` },
+      ]}
+    />
+  </section>
 </Sheet>
-
-<style>
-  .circuit { display: flex; gap: 10px; min-width: 940px; align-items: flex-start; }
-  .col { flex: 1; min-width: 78px; }
-  .colhead { font-size: 10.5px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 7px; }
-  .colhead b { color: var(--text-secondary); }
-  .node {
-    background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px;
-    padding: 7px 8px; margin-bottom: 6px; font-size: 11px; display: flex; flex-direction: column; gap: 1px;
-  }
-  .node.lit { border-color: var(--series-1); background: #14243a; }
-  .node.open { border-color: var(--critical); background: #2c1414; }
-  .node.dark { opacity: .45; border-style: dashed; }
-  .nid { font-family: ui-monospace, monospace; color: var(--text-muted); font-size: 10px; }
-  .node.lit .nid { color: var(--series-1); }
-  .nlabel { color: var(--text-primary); line-height: 1.25; }
-  .ntier { color: var(--text-muted); font-size: 10px; }
-  .cross { color: var(--critical); font-size: 10px; }
-  .legendrow { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 12px; font-size: 11.5px; color: var(--text-secondary); }
-  .sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; border: 1px solid var(--line); background: var(--surface-2); margin-right: 6px; }
-  .sw.lit { border-color: var(--series-1); background: #14243a; }
-  .sw.open { border-color: var(--critical); background: #2c1414; }
-  .sw.dark { border-style: dashed; opacity: .5; }
-  .stat { background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius); padding: 15px 17px; }
-  .stat .k { font-size: 26px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
-  .stat .v { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
-</style>

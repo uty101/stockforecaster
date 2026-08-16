@@ -1,0 +1,581 @@
+2026-08-16T13:56:02.521Z log | 
+2026-08-16T13:56:02.527Z log | == final run ===============================================================
+2026-08-16T13:56:02.531Z log |   log file               C:\Hackathon_Utkarsh_Malhotra\logs\final-run-20260816T135602Z.log
+2026-08-16T13:56:02.535Z log |   started (UTC)          2026-08-16T13:56:02.521228+00:00
+2026-08-16T13:56:02.538Z log |   repo root              C:\Hackathon_Utkarsh_Malhotra
+2026-08-16T13:56:02.589Z log |   git commit             c99eb748d50235562e40807c3736d2414d2502f8
+2026-08-16T13:56:02.594Z log |   working tree           DIRTY -- 4 file(s) modified
+2026-08-16T13:56:02.596Z log |     M  forecaster/stages/d_model.py
+2026-08-16T13:56:02.598Z log |     M  site/.astro/dev.log
+2026-08-16T13:56:02.600Z log |     M  tests/test_invariants.py
+2026-08-16T13:56:02.602Z log |     ?? logs/final-run-20260816T135602Z.log
+2026-08-16T13:56:02.604Z log |   command                C:\Python314\python.exe -m forecaster.final_run
+2026-08-16T13:56:02.606Z log |   argv                   ["C:\\Hackathon_Utkarsh_Malhotra\\forecaster\\final_run.py"]
+2026-08-16T13:56:02.608Z log |   python                 3.14.4 at C:\Python314\python.exe
+2026-08-16T13:56:02.610Z log |   as_of                  2026-08-16
+2026-08-16T13:56:02.612Z log |   corpus frozen          2026-08-14
+2026-08-16T13:56:02.614Z log |   cost ceiling           $25.0
+2026-08-16T13:56:02.616Z log | 
+2026-08-16T13:56:02.618Z log |   4 companies queued:
+2026-08-16T13:56:02.620Z log |     1. HD       Home Depot           FY2026Q2   -> HD-FY2026Q2.xlsx
+2026-08-16T13:56:02.622Z log |        metrics: Net sales (USDm), Adjusted diluted EPS (USD / share), Comparable sales, total company (%)
+2026-08-16T13:56:02.624Z log |     2. ADI      Analog Devices       FY2026Q3   -> ADI-FY2026Q3.xlsx
+2026-08-16T13:56:02.626Z log |        metrics: Revenue (USDm), Adjusted diluted EPS (USD / share), Adjusted gross margin (%)
+2026-08-16T13:56:02.628Z log |     3. LSE:HAS  Hays plc             FY2026     -> HAS-FY2026.xlsx
+2026-08-16T13:56:02.630Z log |        metrics: Net fees (GBPm), Pre-exceptional basic EPS (GBp), Pre-exceptional operating profit (GBPm)
+2026-08-16T13:56:02.632Z log |     4. DE       Deere & Company      FY2026Q3   -> DE-FY2026Q3.xlsx
+2026-08-16T13:56:02.634Z log |        metrics: Worldwide net sales and revenues (USDm), Diluted EPS (GAAP) (USD / share), Production & Precision Ag operating profit (USDm)
+2026-08-16T13:56:02.636Z log | 
+2026-08-16T13:56:02.638Z log |   Per-company detail below is the event tape as it is emitted. The complete
+2026-08-16T13:56:02.639Z log |   tape, including every dropped extraction, is in each run's events.jsonl.
+2026-08-16T13:56:02.641Z log | 
+2026-08-16T13:56:02.643Z log | == pipeline ================================================================
+2026-08-16T13:56:02.651Z log | [HD] RUN pipeline started, as_of 2026-08-16
+2026-08-16T13:56:02.656Z log | [HD] A   -- stage A started
+2026-08-16T13:56:02.724Z log | [HD] A   source: filings(HD) answered by corpus
+2026-08-16T13:56:02.730Z log | [HD] A   source: transcripts(HD) answered by corpus
+2026-08-16T13:56:02.734Z log | [HD] A   source: slides(HD) answered by corpus
+2026-08-16T13:56:02.738Z log | [HD] A   source: corpus did not answer consensus(HD, FY2026Q2) -- returned nothing
+2026-08-16T13:56:03.157Z log | [HD] A   source: consensus(HD, FY2026Q2) answered by market (after corpus declined)
+2026-08-16T13:56:03.161Z log | [HD] A   source: corpus did not answer actuals(HD) -- returned nothing
+2026-08-16T13:56:03.166Z log | [HD] A   source: market did not answer actuals(HD) -- returned nothing
+2026-08-16T13:56:03.170Z log | [HD] A   source: news did not answer actuals(HD) -- returned nothing
+2026-08-16T13:56:03.174Z log | [HD] A   source: research did not answer actuals(HD) -- returned nothing
+2026-08-16T13:56:03.178Z log | [HD] A   source: NOTHING answered actuals(HD); tried corpus, market, news, research
+2026-08-16T13:56:03.182Z log | [HD] A   source: corpus did not answer prices(HD) -- returned nothing
+2026-08-16T13:56:03.186Z log | [HD] A   source: market did not answer prices(HD) -- method not implemented
+2026-08-16T13:56:03.190Z log | [HD] A   source: news did not answer prices(HD) -- method not implemented
+2026-08-16T13:56:03.194Z log | [HD] A   source: research did not answer prices(HD) -- method not implemented
+2026-08-16T13:56:03.198Z log | [HD] A   source: NOTHING answered prices(HD); tried corpus, market, news, research
+2026-08-16T13:56:03.202Z log | [HD] A   source: corpus did not answer peers(HD) -- returned nothing
+2026-08-16T13:56:03.206Z log | [HD] A   source: market did not answer peers(HD) -- returned nothing
+2026-08-16T13:56:03.210Z log | [HD] A   source: news did not answer peers(HD) -- returned nothing
+2026-08-16T13:56:03.214Z log | [HD] A   source: research did not answer peers(HD) -- returned nothing
+2026-08-16T13:56:03.217Z log | [HD] A   source: NOTHING answered peers(HD); tried corpus, market, news, research
+2026-08-16T13:56:03.222Z log | [HD] A   source: corpus did not answer fx(HD) -- returned nothing
+2026-08-16T13:56:03.225Z log | [HD] A   source: market did not answer fx(HD) -- returned nothing
+2026-08-16T13:56:03.229Z log | [HD] A   source: news did not answer fx(HD) -- returned nothing
+2026-08-16T13:56:03.234Z log | [HD] A   source: research did not answer fx(HD) -- returned nothing
+2026-08-16T13:56:03.238Z log | [HD] A   source: NOTHING answered fx(HD); tried corpus, market, news, research
+2026-08-16T13:56:03.242Z log | [HD] A   source: corpus did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:56:03.246Z log | [HD] A   source: market did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:56:03.250Z log | [HD] A   source: news did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:56:03.254Z log | [HD] A   source: research did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:56:03.258Z log | [HD] A   source: NOTHING answered macro(fx_gbp_usd); tried corpus, market, news, research
+2026-08-16T13:56:03.262Z log | [HD] A   degrade: no source answers actuals, prices, peers, fx, macro; every stage that would have used them says so rather than substituting a value
+2026-08-16T13:56:03.266Z log | [HD] A   -- stage A finished in 0.611s {"cost_usd": 0.0, "sources": ["corpus", "market", "news", "research"], "available": {"filings": true, "transcripts": true, "slides": true, "consensus": true, "actuals": false, "prices": false, "peers": false, "fx": false, "macro": false}}
+2026-08-16T13:56:03.270Z log | [HD] B   -- stage B started
+2026-08-16T13:56:03.274Z log | [HD] A   source: filings(HD) answered by corpus
+2026-08-16T13:56:03.278Z log | [HD] A   source: transcripts(HD) answered by corpus
+2026-08-16T13:56:03.282Z log | [HD] A   source: slides(HD) answered by corpus
+2026-08-16T13:56:03.287Z log | [HD] B   acquisition skipped: earnings_releases: 38 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2023-11-14__hd-us-20231114-q3-8k__101815, 2023-08-15__hd-us-20230815-q2-8k__101814, 2023-06-13__hd-us-20230613-fy-8k__101819, 2023-05-16__hd-us-20230516-q1-8k__101818, 2023-02-21__hd-us-20230221-q4-8k__101845, 2022-11-15__hd-us-20221115-q3-8k__101843, +32 more
+2026-08-16T13:56:03.291Z log | [HD] B   acquisition skipped: periodic_reports: 35 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2021-11-16__hd-us-20211116-q3-10q__101833, 2021-08-17__hd-us-20210817-q2-10q__101831, 2021-05-18__hd-us-20210518-q1-10q__101836, 2021-03-24__hd-us-20210324-fy-10k__778674, 2021-02-23__hd-us-20210223-q4-10k__101817, 2020-11-17__hd-us-20201117-q3-10q__101837, +29 more
+2026-08-16T13:56:03.295Z log | [HD] B   acquisition skipped: other_filings: 10 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2023-04-03__hd-us-20230403-filing__437654, 2022-04-04__hd-us-20220404-filing__437656, 2021-04-05__hd-us-20210405-filing__437659, 2020-04-21__hd-us-20200421-filing__437657, 2020-04-06__hd-us-20200406-filing__437661, 2019-04-08__hd-us-20190408-filing__437663, +4 more
+2026-08-16T13:56:03.300Z log | [HD] B   acquisition skipped: earnings_calls: 121 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2024-11-12__hd-us-20241112-call-qna__38097, 2024-11-12__hd-us-20241112-call-pres-2__38080, 2024-08-13__hd-us-20240813-call-qna__38106, 2024-08-13__hd-us-20240813-call-pres__38086, 2024-05-14__hd-us-20240514-call-qna__38064, 2024-05-14__hd-us-20240514-call-pres__38045, +34 more
+2026-08-16T13:56:03.304Z log | [HD] B   acquisition skipped: slides: 4 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2016-05-19__hd-us-20160519-slide__437781, 2015-12-08__hd-us-20151208-slide__437784, 2015-12-08__hd-us-20151208-slide-2__1551724, 2015-05-21__hd-us-20150521-slide__437786
+2026-08-16T13:56:03.308Z log | [HD] B   degrade: acquired nothing for consensus, fx_rates, industry_sizing, macro, peers, prices; each is named in the dossier with its reason and no default is substituted
+2026-08-16T13:56:03.315Z log | [HD] B   -- stage B finished in 0.044s {"cost_usd": 0.0, "dossier": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-2763a2cb\\dossier-HD-2026-08-16.json", "earnings_releases": 14, "periodic_reports": 24, "other_filings": 6, "earnings_calls": 8, "slides": 12, "research": 0}
+2026-08-16T13:56:03.319Z log | [HD] B3  -- stage B3 started
+2026-08-16T13:56:03.323Z log | [HD] B3  agent research_scout served from cache, $0.00
+2026-08-16T13:56:12.912Z log | [HD] B3  agent research_scout [cheap/claude-haiku-4-5-20251001] 3.21s $0.0026 in=1710 out=170 cache_w=0 cache_r=0
+2026-08-16T13:56:17.631Z log | [HD] B3  -- stage B3 finished in 14.312s {"documents": 35, "queries": 9, "publishers": 26}
+2026-08-16T13:56:17.635Z log | [HD] B5  -- stage B5 started
+2026-08-16T13:56:17.642Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.652Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.657Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.659Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.663Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.666Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.670Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.674Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.677Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.680Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.683Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:17.688Z log | [HD] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:56:18.319Z log | [HD] B5  agent extract_guidance served from cache, $0.00
+2026-08-16T13:56:18.327Z log | [HD] B5  -- stage B5 finished in 0.692s {"metric_documents": 12, "metric_values": 180, "guidance_items": 11, "dropped": 43} [44 value(s) dropped on quote mismatch; each one is in events.jsonl]
+2026-08-16T13:56:18.331Z log | [HD] B_SCAN -- stage B_SCAN started
+2026-08-16T13:56:35.483Z log | [HD] B_SCAN agent scan_calls [cheap/claude-haiku-4-5-20251001] 17.13s $0.0771 in=70500 out=1314 cache_w=0 cache_r=0
+2026-08-16T13:56:39.457Z log | [HD] B_SCAN agent extract_bridge [cheap/claude-haiku-4-5-20251001] 3.95s $0.0325 in=30628 out=373 cache_w=0 cache_r=0
+2026-08-16T13:56:41.044Z log | [HD] B_SCAN agent scan_perception [cheap/claude-haiku-4-5-20251001] 5.55s $0.0203 in=18884 out=278 cache_w=0 cache_r=0
+2026-08-16T13:56:41.054Z log | [HD] B_SCAN -- stage B_SCAN finished in 22.722s {"produced": 3, "failed": 0}
+2026-08-16T13:56:41.058Z log | [HD] A   source: corpus did not answer consensus(HD, FY2026Q2) -- returned nothing
+2026-08-16T13:56:41.402Z log | [HD] A   source: consensus(HD, FY2026Q2) answered by market (after corpus declined)
+2026-08-16T13:56:41.406Z log | [HD] C   -- stage C started
+2026-08-16T13:56:41.411Z log | [HD] C   -- stage C finished in 0.005s {"cost_usd": 0.0, "claims": 169, "guidance": 11, "documents": 112, "dropped": 56, "verification_split": {"prose": 178, "structured": 2, "derived": 0}}
+2026-08-16T13:56:41.416Z log | [HD] D   -- stage D started
+2026-08-16T13:56:41.429Z log | [HD] D   -- stage D finished in 0.014s {"cost_usd": 0.0, "projected": 3, "degraded": false}
+2026-08-16T13:56:41.434Z log | [HD] E   -- stage E started
+2026-08-16T13:56:41.437Z log | [HD] E   agent lens_mechanical [none/none] 0.0s $0.0 in=0 out=0 cache_w=0 cache_r=0
+2026-08-16T13:57:12.661Z log | [HD] E   agent lens_guidance [mid/claude-sonnet-5] 31.2s $0.1053 in=756 out=3269 cache_w=14407 cache_r=0
+2026-08-16T13:57:27.050Z log | [HD] E   agent lens_peer_read [mid/claude-sonnet-5] 14.36s $0.0256 in=638 out=1289 cache_w=0 cache_r=14407
+2026-08-16T13:57:29.006Z log | [HD] E   agent lens_demand [mid/claude-sonnet-5] 16.32s $0.026 in=647 out=1318 cache_w=0 cache_r=14407
+2026-08-16T13:57:33.821Z log | [HD] E   agent lens_market [mid/claude-sonnet-5] 21.13s $0.0372 in=668 out=2059 cache_w=0 cache_r=14407
+2026-08-16T13:57:37.550Z log | [HD] E   agent lens_margins [mid/claude-sonnet-5] 24.86s $0.0427 in=641 out=2433 cache_w=0 cache_r=14407
+2026-08-16T13:57:39.596Z log | [HD] E   agent lens_macro [mid/claude-sonnet-5] 26.89s $0.0461 in=695 out=2645 cache_w=0 cache_r=14407
+2026-08-16T13:57:41.942Z log | [HD] E   agent lens_forensics [mid/claude-sonnet-5] 29.25s $0.0502 in=701 out=2919 cache_w=0 cache_r=14407
+2026-08-16T13:57:42.544Z log | [HD] E   agent lens_drivers [mid/claude-sonnet-5] 29.87s $0.0526 in=678 out=3081 cache_w=0 cache_r=14407
+2026-08-16T13:57:42.551Z log | [HD] E   -- stage E finished in 61.118s {"ran": 9, "failed": 0}
+2026-08-16T13:57:42.555Z log | [HD] V1  -- stage V1 started
+2026-08-16T13:57:42.559Z log | [HD] V1  -- stage V1 finished in 0.004s {"cost_usd": 0.0, "surviving": 9, "dropped": 0, "verification_rate": 1.0}
+2026-08-16T13:57:42.563Z log | [HD] F   -- stage F started
+2026-08-16T13:57:57.930Z log | [HD] F   agent champion [mid/claude-sonnet-5] 15.36s $0.0214 in=1441 out=1140 cache_w=0 cache_r=0
+2026-08-16T13:58:11.471Z log | [HD] F   agent champion [mid/claude-sonnet-5] 13.51s $0.021 in=1885 out=1026 cache_w=0 cache_r=0
+2026-08-16T13:58:13.775Z log | [HD] F   agent champion [mid/claude-sonnet-5] 15.83s $0.0263 in=2679 out=1218 cache_w=0 cache_r=0
+2026-08-16T13:58:20.846Z log | [HD] F   agent champion [mid/claude-sonnet-5] 22.89s $0.0361 in=2563 out=1894 cache_w=0 cache_r=0
+2026-08-16T13:58:21.432Z log | [HD] F   agent champion [mid/claude-sonnet-5] 23.47s $0.0338 in=2186 out=1815 cache_w=0 cache_r=0
+2026-08-16T13:58:24.525Z log | [HD] F   agent champion [mid/claude-sonnet-5] 26.56s $0.0434 in=2969 out=2299 cache_w=0 cache_r=0
+2026-08-16T13:58:25.560Z log | [HD] F   agent champion [mid/claude-sonnet-5] 14.07s $0.0207 in=1875 out=1003 cache_w=0 cache_r=0
+2026-08-16T13:58:25.631Z log | [HD] F   agent champion [mid/claude-sonnet-5] 27.68s $0.0403 in=2237 out=2237 cache_w=0 cache_r=0
+2026-08-16T13:58:28.796Z log | [HD] F   agent champion [mid/claude-sonnet-5] 15.01s $0.0248 in=2506 out=1154 cache_w=0 cache_r=0
+2026-08-16T13:58:28.804Z log | [HD] F   -- stage F finished in 46.24s {"challenged": 9, "failed": 0}
+2026-08-16T13:58:28.807Z log | [HD] G   -- stage G started
+2026-08-16T13:59:32.953Z log | [HD] G   agent judge [deep/claude-opus-5] 64.14s $0.1643 in=9576 out=4657 cache_w=0 cache_r=0
+2026-08-16T13:59:32.959Z log | [HD] G   -- stage G finished in 64.151s {"degraded": false, "metrics": 3}
+2026-08-16T13:59:32.963Z log | [HD] V2  -- stage V2 started
+2026-08-16T13:59:32.970Z log | [HD] V2  agent comparability served from cache, $0.00
+2026-08-16T13:59:32.975Z log | [HD] V2  degrade: comparability broke on acquisition_or_disposal; the historical priors this system runs on do not apply cleanly to this period and the forecast should be read with that in mind
+2026-08-16T13:59:32.980Z log | [HD] V2  -- stage V2 finished in 0.017s {"any_fired": true, "fired": ["acquisition_or_disposal"]}
+2026-08-16T13:59:32.984Z log | [HD] H   -- stage H started
+2026-08-16T13:59:32.989Z log | [HD] H   position: Net sales lambda=1.0 (preset shrink) own=47280.0 consensus=47235.4491 forecast=47280.0 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T13:59:32.993Z log | [HD] H   position: Adjusted diluted EPS lambda=1.0 (preset shrink) own=4.68 consensus=4.7326 forecast=4.68 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T13:59:32.997Z log | [HD] H   position: Comparable sales, total company lambda=1.0 (preset shrink) own=0.9 consensus=None forecast=0.9 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T13:59:33.001Z log | [HD] H   -- stage H finished in 0.017s {"cost_usd": 0.0, "positioned": 3, "consensus_available": true, "positioning": "own_estimate_only"}
+2026-08-16T13:59:43.877Z log | [HD] OUT agent narrative [mid/claude-sonnet-5] 10.86s $0.021 in=2835 out=832 cache_w=0 cache_r=0
+2026-08-16T13:59:43.882Z log | [HD] OUT drop: narrative headline introduced 2026, 0.6, which is not in the results file; the passage is discarded rather than printed
+2026-08-16T13:59:43.886Z log | [HD] OUT drop: narrative case introduced 2026, 2.5, -4.5, 0.6, -1.3, 2026, 3.65, 2025, which is not in the results file; the passage is discarded rather than printed
+2026-08-16T13:59:43.892Z log | [HD] I   -- stage I started
+2026-08-16T13:59:43.912Z log | [HD] I   -- stage I finished in 0.02s {"cost_usd": 0.0, "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-2763a2cb\\results.json", "bytes": 505521}
+2026-08-16T13:59:43.916Z log | [HD] RUN pipeline finished in 221.27s, cost $1.2166, results C:\Hackathon_Utkarsh_Malhotra\runs\HD-2026-08-16-2763a2cb\results.json
+2026-08-16T13:59:43.925Z log | [ADI] RUN pipeline started, as_of 2026-08-16
+2026-08-16T13:59:43.930Z log | [ADI] A   -- stage A started
+2026-08-16T13:59:43.973Z log | [ADI] A   source: filings(ADI) answered by corpus
+2026-08-16T13:59:43.979Z log | [ADI] A   source: transcripts(ADI) answered by corpus
+2026-08-16T13:59:43.983Z log | [ADI] A   source: slides(ADI) answered by corpus
+2026-08-16T13:59:43.987Z log | [ADI] A   source: corpus did not answer consensus(ADI, FY2026Q3) -- returned nothing
+2026-08-16T13:59:44.314Z log | [ADI] A   source: consensus(ADI, FY2026Q3) answered by market (after corpus declined)
+2026-08-16T13:59:44.318Z log | [ADI] A   source: corpus did not answer actuals(ADI) -- returned nothing
+2026-08-16T13:59:44.322Z log | [ADI] A   source: market did not answer actuals(ADI) -- returned nothing
+2026-08-16T13:59:44.326Z log | [ADI] A   source: news did not answer actuals(ADI) -- returned nothing
+2026-08-16T13:59:44.330Z log | [ADI] A   source: research did not answer actuals(ADI) -- returned nothing
+2026-08-16T13:59:44.336Z log | [ADI] A   source: NOTHING answered actuals(ADI); tried corpus, market, news, research
+2026-08-16T13:59:44.340Z log | [ADI] A   source: corpus did not answer prices(ADI) -- returned nothing
+2026-08-16T13:59:44.344Z log | [ADI] A   source: market did not answer prices(ADI) -- method not implemented
+2026-08-16T13:59:44.348Z log | [ADI] A   source: news did not answer prices(ADI) -- method not implemented
+2026-08-16T13:59:44.352Z log | [ADI] A   source: research did not answer prices(ADI) -- method not implemented
+2026-08-16T13:59:44.356Z log | [ADI] A   source: NOTHING answered prices(ADI); tried corpus, market, news, research
+2026-08-16T13:59:44.362Z log | [ADI] A   source: corpus did not answer peers(ADI) -- returned nothing
+2026-08-16T13:59:44.366Z log | [ADI] A   source: market did not answer peers(ADI) -- returned nothing
+2026-08-16T13:59:44.370Z log | [ADI] A   source: news did not answer peers(ADI) -- returned nothing
+2026-08-16T13:59:44.374Z log | [ADI] A   source: research did not answer peers(ADI) -- returned nothing
+2026-08-16T13:59:44.378Z log | [ADI] A   source: NOTHING answered peers(ADI); tried corpus, market, news, research
+2026-08-16T13:59:44.384Z log | [ADI] A   source: corpus did not answer fx(ADI) -- returned nothing
+2026-08-16T13:59:44.389Z log | [ADI] A   source: market did not answer fx(ADI) -- returned nothing
+2026-08-16T13:59:44.393Z log | [ADI] A   source: news did not answer fx(ADI) -- returned nothing
+2026-08-16T13:59:44.397Z log | [ADI] A   source: research did not answer fx(ADI) -- returned nothing
+2026-08-16T13:59:44.401Z log | [ADI] A   source: NOTHING answered fx(ADI); tried corpus, market, news, research
+2026-08-16T13:59:44.407Z log | [ADI] A   source: corpus did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:59:44.411Z log | [ADI] A   source: market did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:59:44.415Z log | [ADI] A   source: news did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:59:44.419Z log | [ADI] A   source: research did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T13:59:44.423Z log | [ADI] A   source: NOTHING answered macro(fx_gbp_usd); tried corpus, market, news, research
+2026-08-16T13:59:44.427Z log | [ADI] A   degrade: no source answers actuals, prices, peers, fx, macro; every stage that would have used them says so rather than substituting a value
+2026-08-16T13:59:44.433Z log | [ADI] A   -- stage A finished in 0.504s {"cost_usd": 0.0, "sources": ["corpus", "market", "news", "research"], "available": {"filings": true, "transcripts": true, "slides": true, "consensus": true, "actuals": false, "prices": false, "peers": false, "fx": false, "macro": false}}
+2026-08-16T13:59:44.437Z log | [ADI] B   -- stage B started
+2026-08-16T13:59:44.441Z log | [ADI] A   source: filings(ADI) answered by corpus
+2026-08-16T13:59:44.445Z log | [ADI] A   source: transcripts(ADI) answered by corpus
+2026-08-16T13:59:44.449Z log | [ADI] A   source: slides(ADI) answered by corpus
+2026-08-16T13:59:44.456Z log | [ADI] B   acquisition skipped: earnings_releases: 37 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2023-05-24__adi-us-20230524-q2-8k__102668, 2023-02-15__adi-us-20230215-q1-8k__102661, 2022-11-22__adi-us-20221122-q4-8k__102656, 2022-08-17__adi-us-20220817-q3-8k__102658, 2022-05-18__adi-us-20220518-q2-8k__102659, 2022-02-16__adi-us-20220216-q1-8k__102680, +31 more
+2026-08-16T13:59:44.460Z log | [ADI] B   acquisition skipped: periodic_reports: 26 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2020-11-24__adi-us-20201124-fy-10k__730756, 2020-10-24__adi-us-20201024-q4-10k__102667, 2020-08-19__adi-us-20200819-q3-10q__102689, 2020-05-20__adi-us-20200520-q2-10q__486241, 2020-02-19__adi-us-20200219-q1-10q__488756, 2019-11-26__adi-us-20191126-q4-10k__488627, +20 more
+2026-08-16T13:59:44.464Z log | [ADI] B   acquisition skipped: other_filings: 22 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2024-02-29__adi-us-20240229-filing__487762, 2024-02-29__adi-us-20240229-filing-2__488034, 2024-01-19__adi-us-20240119-filing__487783, 2024-01-19__adi-us-20240119-filing-2__488783, 2023-02-21__adi-us-20230221-filing__486319, 2023-01-20__adi-us-20230120-filing__487764, +16 more
+2026-08-16T13:59:44.468Z log | [ADI] B   acquisition skipped: earnings_calls: 83 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2024-05-22__adi-us-20240522-call-qna__40076, 2024-05-22__adi-us-20240522-call-pres__40060, 2024-02-21__adi-us-20240221-call-qna__40081, 2024-02-21__adi-us-20240221-call-pres__40063, 2023-11-21__adi-us-20231121-call-qna__40074, 2023-11-21__adi-us-20231121-call-pres__40059, +34 more
+2026-08-16T13:59:44.472Z log | [ADI] B   degrade: acquired nothing for consensus, fx_rates, industry_sizing, macro, peers, prices; each is named in the dossier with its reason and no default is substituted
+2026-08-16T13:59:44.479Z log | [ADI] B   -- stage B finished in 0.041s {"cost_usd": 0.0, "dossier": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-2763a2cb\\dossier-ADI-2026-08-16.json", "earnings_releases": 14, "periodic_reports": 24, "other_filings": 6, "earnings_calls": 8, "slides": 11, "research": 0}
+2026-08-16T13:59:44.483Z log | [ADI] B3  -- stage B3 started
+2026-08-16T13:59:44.487Z log | [ADI] B3  agent research_scout served from cache, $0.00
+2026-08-16T13:59:55.369Z log | [ADI] B3  agent research_scout [cheap/claude-haiku-4-5-20251001] 4.25s $0.0031 in=1851 out=243 cache_w=0 cache_r=0
+2026-08-16T13:59:59.809Z log | [ADI] B3  -- stage B3 finished in 15.326s {"documents": 40, "queries": 10, "publishers": 29}
+2026-08-16T13:59:59.813Z log | [ADI] B5  -- stage B5 started
+2026-08-16T13:59:59.820Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.831Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.833Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.836Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.840Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.844Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.848Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.852Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.856Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.858Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.862Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:59:59.866Z log | [ADI] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:00:00.272Z log | [ADI] B5  agent extract_guidance served from cache, $0.00
+2026-08-16T14:00:00.279Z log | [ADI] B5  -- stage B5 finished in 0.466s {"metric_documents": 12, "metric_values": 104, "guidance_items": 5, "dropped": 127} [127 value(s) dropped on quote mismatch; each one is in events.jsonl]
+2026-08-16T14:00:00.283Z log | [ADI] B_SCAN -- stage B_SCAN started
+2026-08-16T14:00:23.523Z log | [ADI] B_SCAN agent scan_calls [cheap/claude-haiku-4-5-20251001] 23.22s $0.0743 in=65636 out=1742 cache_w=0 cache_r=0
+2026-08-16T14:00:28.133Z log | [ADI] B_SCAN agent extract_bridge [cheap/claude-haiku-4-5-20251001] 4.6s $0.037 in=34677 out=474 cache_w=0 cache_r=0
+2026-08-16T14:00:28.876Z log | [ADI] B_SCAN agent scan_perception [cheap/claude-haiku-4-5-20251001] 5.34s $0.0203 in=18991 out=254 cache_w=0 cache_r=0
+2026-08-16T14:00:28.888Z log | [ADI] B_SCAN -- stage B_SCAN finished in 28.605s {"produced": 3, "failed": 0}
+2026-08-16T14:00:28.892Z log | [ADI] A   source: corpus did not answer consensus(ADI, FY2026Q3) -- returned nothing
+2026-08-16T14:00:29.063Z log | [ADI] A   source: consensus(ADI, FY2026Q3) answered by market (after corpus declined)
+2026-08-16T14:00:29.067Z log | [ADI] C   -- stage C started
+2026-08-16T14:00:29.072Z log | [ADI] C   -- stage C finished in 0.005s {"cost_usd": 0.0, "claims": 103, "guidance": 5, "documents": 115, "dropped": 130, "verification_split": {"prose": 106, "structured": 2, "derived": 0}}
+2026-08-16T14:00:29.076Z log | [ADI] D   -- stage D started
+2026-08-16T14:00:29.084Z log | [ADI] D   -- stage D finished in 0.008s {"cost_usd": 0.0, "projected": 3, "degraded": false}
+2026-08-16T14:00:29.088Z log | [ADI] E   -- stage E started
+2026-08-16T14:00:29.092Z log | [ADI] E   agent lens_mechanical [none/none] 0.0s $0.0 in=0 out=0 cache_w=0 cache_r=0
+2026-08-16T14:00:47.518Z log | [ADI] E   agent lens_guidance [mid/claude-sonnet-5] 18.42s $0.0664 in=760 out=1853 cache_w=9692 cache_r=0
+2026-08-16T14:01:01.103Z log | [ADI] E   agent lens_demand [mid/claude-sonnet-5] 13.56s $0.0238 in=653 out=1264 cache_w=0 cache_r=9692
+2026-08-16T14:01:02.882Z log | [ADI] E   agent lens_peer_read [mid/claude-sonnet-5] 15.33s $0.0265 in=643 out=1445 cache_w=0 cache_r=9692
+2026-08-16T14:01:03.044Z log | [ADI] E   agent lens_market [mid/claude-sonnet-5] 15.51s $0.0273 in=673 out=1489 cache_w=0 cache_r=9692
+2026-08-16T14:01:05.496Z log | [ADI] E   agent lens_margins [mid/claude-sonnet-5] 17.94s $0.0312 in=644 out=1755 cache_w=0 cache_r=9692
+2026-08-16T14:01:09.192Z log | [ADI] E   agent lens_macro [mid/claude-sonnet-5] 21.63s $0.0338 in=699 out=1922 cache_w=0 cache_r=9692
+2026-08-16T14:01:11.384Z log | [ADI] E   agent lens_forensics [mid/claude-sonnet-5] 23.83s $0.0398 in=704 out=2319 cache_w=0 cache_r=9692
+2026-08-16T14:01:12.224Z log | [ADI] E   agent lens_drivers [mid/claude-sonnet-5] 24.68s $0.039 in=681 out=2270 cache_w=0 cache_r=9692
+2026-08-16T14:01:12.231Z log | [ADI] E   -- stage E finished in 43.143s {"ran": 9, "failed": 0}
+2026-08-16T14:01:12.235Z log | [ADI] V1  -- stage V1 started
+2026-08-16T14:01:12.239Z log | [ADI] V1  -- stage V1 finished in 0.004s {"cost_usd": 0.0, "surviving": 9, "dropped": 0, "verification_rate": 1.0}
+2026-08-16T14:01:12.243Z log | [ADI] F   -- stage F started
+2026-08-16T14:01:12.250Z log | [ADI] F   agent champion served from cache, $0.00
+2026-08-16T14:01:26.018Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 13.76s $0.0213 in=1784 out=1062 cache_w=0 cache_r=0
+2026-08-16T14:01:28.133Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 15.85s $0.0247 in=2504 out=1144 cache_w=0 cache_r=0
+2026-08-16T14:01:28.296Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 16.03s $0.0223 in=1921 out=1100 cache_w=0 cache_r=0
+2026-08-16T14:01:30.915Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 18.63s $0.0292 in=1958 out=1555 cache_w=0 cache_r=0
+2026-08-16T14:01:33.682Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 21.4s $0.0336 in=2214 out=1795 cache_w=0 cache_r=0
+2026-08-16T14:01:34.726Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 22.45s $0.0342 in=2328 out=1814 cache_w=0 cache_r=0
+2026-08-16T14:01:40.573Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 14.55s $0.0212 in=1969 out=1019 cache_w=0 cache_r=0
+2026-08-16T14:01:47.002Z log | [ADI] F   agent champion [mid/claude-sonnet-5] 18.85s $0.0289 in=2132 out=1503 cache_w=0 cache_r=0
+2026-08-16T14:01:47.010Z log | [ADI] F   -- stage F finished in 34.766s {"challenged": 9, "failed": 0}
+2026-08-16T14:01:47.014Z log | [ADI] G   -- stage G started
+2026-08-16T14:02:26.151Z log | [ADI] G   agent judge [deep/claude-opus-5] 39.13s $0.1141 in=8749 out=2816 cache_w=0 cache_r=0
+2026-08-16T14:02:26.157Z log | [ADI] G   -- stage G finished in 39.143s {"degraded": false, "metrics": 3}
+2026-08-16T14:02:26.161Z log | [ADI] V2  -- stage V2 started
+2026-08-16T14:02:26.167Z log | [ADI] V2  agent comparability served from cache, $0.00
+2026-08-16T14:02:26.171Z log | [ADI] V2  -- stage V2 finished in 0.01s {"any_fired": false, "fired": []}
+2026-08-16T14:02:26.178Z log | [ADI] H   -- stage H started
+2026-08-16T14:02:26.182Z log | [ADI] H   position: Revenue lambda=1.0 (preset shrink) own=3932.0 consensus=3925.03652 forecast=3932.0 | conditions: no_condition_fired on input None xNone -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.200
+2026-08-16T14:02:26.186Z log | [ADI] H   position: Adjusted diluted EPS lambda=1.0 (preset shrink) own=3.355 consensus=3.33389 forecast=3.355 | conditions: no_condition_fired on input None xNone -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.200
+2026-08-16T14:02:26.190Z log | [ADI] H   position: Adjusted gross margin lambda=1.0 (preset shrink) own=73.0 consensus=None forecast=73.0 | conditions: no_condition_fired on input None xNone -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.200
+2026-08-16T14:02:26.194Z log | [ADI] H   -- stage H finished in 0.016s {"cost_usd": 0.0, "positioned": 3, "consensus_available": true, "positioning": "own_estimate_only"}
+2026-08-16T14:02:36.372Z log | [ADI] OUT agent narrative [mid/claude-sonnet-5] 10.16s $0.0181 in=2655 out=678 cache_w=0 cache_r=0
+2026-08-16T14:02:36.378Z log | [ADI] OUT drop: narrative headline introduced 3.9, which is not in the results file; the passage is discarded rather than printed
+2026-08-16T14:02:36.382Z log | [ADI] OUT drop: narrative case introduced 2.5, 3.925, 3,623, which is not in the results file; the passage is discarded rather than printed
+2026-08-16T14:02:36.388Z log | [ADI] I   -- stage I started
+2026-08-16T14:02:36.406Z log | [ADI] I   -- stage I finished in 0.018s {"cost_usd": 0.0, "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-2763a2cb\\results.json", "bytes": 514021}
+2026-08-16T14:02:36.410Z log | [ADI] RUN pipeline finished in 172.49s, cost $1.1047, results C:\Hackathon_Utkarsh_Malhotra\runs\ADI-2026-08-16-2763a2cb\results.json
+2026-08-16T14:02:36.418Z log | [LSE:HAS] RUN pipeline started, as_of 2026-08-16
+2026-08-16T14:02:36.424Z log | [LSE:HAS] A   -- stage A started
+2026-08-16T14:02:36.469Z log | [LSE:HAS] A   source: filings(LSE:HAS) answered by corpus
+2026-08-16T14:02:36.475Z log | [LSE:HAS] A   source: transcripts(LSE:HAS) answered by corpus
+2026-08-16T14:02:36.479Z log | [LSE:HAS] A   source: slides(LSE:HAS) answered by corpus
+2026-08-16T14:02:36.483Z log | [LSE:HAS] A   source: corpus did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:36.927Z log | [LSE:HAS] A   source: market did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:36.931Z log | [LSE:HAS] A   source: news did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:36.935Z log | [LSE:HAS] A   source: research did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:36.940Z log | [LSE:HAS] A   source: NOTHING answered consensus(LSE:HAS, FY2026); tried corpus, market, news, research
+2026-08-16T14:02:36.944Z log | [LSE:HAS] A   source: corpus did not answer actuals(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.948Z log | [LSE:HAS] A   source: market did not answer actuals(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.953Z log | [LSE:HAS] A   source: news did not answer actuals(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.957Z log | [LSE:HAS] A   source: research did not answer actuals(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.962Z log | [LSE:HAS] A   source: NOTHING answered actuals(LSE:HAS); tried corpus, market, news, research
+2026-08-16T14:02:36.966Z log | [LSE:HAS] A   source: corpus did not answer prices(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.970Z log | [LSE:HAS] A   source: market did not answer prices(LSE:HAS) -- method not implemented
+2026-08-16T14:02:36.975Z log | [LSE:HAS] A   source: news did not answer prices(LSE:HAS) -- method not implemented
+2026-08-16T14:02:36.979Z log | [LSE:HAS] A   source: research did not answer prices(LSE:HAS) -- method not implemented
+2026-08-16T14:02:36.983Z log | [LSE:HAS] A   source: NOTHING answered prices(LSE:HAS); tried corpus, market, news, research
+2026-08-16T14:02:36.987Z log | [LSE:HAS] A   source: corpus did not answer peers(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.991Z log | [LSE:HAS] A   source: market did not answer peers(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.995Z log | [LSE:HAS] A   source: news did not answer peers(LSE:HAS) -- returned nothing
+2026-08-16T14:02:36.999Z log | [LSE:HAS] A   source: research did not answer peers(LSE:HAS) -- returned nothing
+2026-08-16T14:02:37.003Z log | [LSE:HAS] A   source: NOTHING answered peers(LSE:HAS); tried corpus, market, news, research
+2026-08-16T14:02:37.007Z log | [LSE:HAS] A   source: corpus did not answer fx(LSE:HAS) -- returned nothing
+2026-08-16T14:02:37.011Z log | [LSE:HAS] A   source: market did not answer fx(LSE:HAS) -- returned nothing
+2026-08-16T14:02:37.015Z log | [LSE:HAS] A   source: news did not answer fx(LSE:HAS) -- returned nothing
+2026-08-16T14:02:37.019Z log | [LSE:HAS] A   source: research did not answer fx(LSE:HAS) -- returned nothing
+2026-08-16T14:02:37.023Z log | [LSE:HAS] A   source: NOTHING answered fx(LSE:HAS); tried corpus, market, news, research
+2026-08-16T14:02:37.027Z log | [LSE:HAS] A   source: corpus did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:02:37.031Z log | [LSE:HAS] A   source: market did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:02:37.035Z log | [LSE:HAS] A   source: news did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:02:37.039Z log | [LSE:HAS] A   source: research did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:02:37.042Z log | [LSE:HAS] A   source: NOTHING answered macro(fx_gbp_usd); tried corpus, market, news, research
+2026-08-16T14:02:37.046Z log | [LSE:HAS] A   degrade: no source answers consensus, actuals, prices, peers, fx, macro; every stage that would have used them says so rather than substituting a value
+2026-08-16T14:02:37.050Z log | [LSE:HAS] A   -- stage A finished in 0.628s {"cost_usd": 0.0, "sources": ["corpus", "market", "news", "research"], "available": {"filings": true, "transcripts": true, "slides": true, "consensus": false, "actuals": false, "prices": false, "peers": false, "fx": false, "macro": false}}
+2026-08-16T14:02:37.054Z log | [LSE:HAS] B   -- stage B started
+2026-08-16T14:02:37.058Z log | [LSE:HAS] A   source: filings(LSE:HAS) answered by corpus
+2026-08-16T14:02:37.062Z log | [LSE:HAS] A   source: transcripts(LSE:HAS) answered by corpus
+2026-08-16T14:02:37.066Z log | [LSE:HAS] A   source: slides(LSE:HAS) answered by corpus
+2026-08-16T14:02:37.070Z log | [LSE:HAS] B   degrade: LSE:HAS files no 10-Q or 10-K; the statement history is taken from 25 half-year and full-year results announcements instead, so it is half-yearly rather than quarterly
+2026-08-16T14:02:37.074Z log | [LSE:HAS] B   acquisition skipped: earnings_releases: 44 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2024-07-11__has-ln-20240711-q4-8k__119729, 2024-04-16__has-ln-20240416-q3-8k__119732, 2024-02-22__has-ln-20240222-h1-8k__119744, 2024-01-09__has-ln-20240109-q2-8k__119739, 2023-10-12__has-ln-20231012-q1-8k__119723, 2023-08-24__has-ln-20230824-h2-8k__119735, +34 more
+2026-08-16T14:02:37.078Z log | [LSE:HAS] B   acquisition skipped: periodic_reports: 1 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2015-09-18__has-ln-20150918-h2-8k__671208
+2026-08-16T14:02:37.082Z log | [LSE:HAS] B   acquisition skipped: other_filings: 59 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2026-07-01__has-ln-20260701-filing-3__1554843, 2026-07-01__has-ln-20260701-filing-2__1554160, 2026-06-29__has-ln-20260629-filing__1549803, 2026-06-29__has-ln-20260629-filing-2__1549804, 2026-06-22__has-ln-20260622-filing__1537053, 2026-06-22__has-ln-20260622-filing-4__1537785, +34 more
+2026-08-16T14:02:37.087Z log | [LSE:HAS] B   acquisition skipped: earnings_calls: 84 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2025-02-20__has-ln-20250220-call-q2-qna__75042, 2025-02-20__has-ln-20250220-call-q2-pres__75025, 2025-01-15__has-ln-20250115-call-qna__74993, 2025-01-15__has-ln-20250115-call-pres__74975, 2025-01-15__has-ln-20250115-call-pres-2__545589, 2024-10-11__has-ln-20241011-call-q1-qna__75043, +34 more
+2026-08-16T14:02:37.091Z log | [LSE:HAS] B   acquisition skipped: slides: 4 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2020-08-27__has-ln-20200827-slide__75001, 2020-02-20__has-ln-20200220-slide__545794, 2019-08-29__has-ln-20190829-slide__546317, 2019-02-21__has-ln-20190221-slide__545625
+2026-08-16T14:02:37.094Z log | [LSE:HAS] B   degrade: acquired nothing for consensus, fx_rates, industry_sizing, macro, peers, prices; each is named in the dossier with its reason and no default is substituted
+2026-08-16T14:02:37.101Z log | [LSE:HAS] B   -- stage B finished in 0.047s {"cost_usd": 0.0, "dossier": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-2763a2cb\\dossier-LSE_HAS-2026-08-16.json", "earnings_releases": 14, "periodic_reports": 24, "other_filings": 6, "earnings_calls": 8, "slides": 12, "research": 0}
+2026-08-16T14:02:37.105Z log | [LSE:HAS] B3  -- stage B3 started
+2026-08-16T14:02:37.109Z log | [LSE:HAS] B3  agent research_scout served from cache, $0.00
+2026-08-16T14:02:38.450Z log | [LSE:HAS] B3  agent research_scout served from cache, $0.00
+2026-08-16T14:02:39.100Z log | [LSE:HAS] B3  -- stage B3 finished in 1.995s {"documents": 35, "queries": 9, "publishers": 29}
+2026-08-16T14:02:39.104Z log | [LSE:HAS] B5  -- stage B5 started
+2026-08-16T14:02:39.112Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.126Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.128Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.132Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.138Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.141Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.143Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.149Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.151Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.155Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.158Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:39.162Z log | [LSE:HAS] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:02:40.400Z log | [LSE:HAS] B5  agent extract_guidance served from cache, $0.00
+2026-08-16T14:02:40.412Z log | [LSE:HAS] B5  -- stage B5 finished in 1.306s {"metric_documents": 11, "metric_values": 201, "guidance_items": 0, "dropped": 142} [145 value(s) dropped on quote mismatch; each one is in events.jsonl]
+2026-08-16T14:02:40.416Z log | [LSE:HAS] B_SCAN -- stage B_SCAN started
+2026-08-16T14:02:40.427Z log | [LSE:HAS] B_SCAN agent scan_calls served from cache, $0.00
+2026-08-16T14:02:40.436Z log | [LSE:HAS] B_SCAN agent extract_bridge served from cache, $0.00
+2026-08-16T14:02:40.438Z log | [LSE:HAS] B_SCAN agent scan_perception served from cache, $0.00
+2026-08-16T14:02:40.445Z log | [LSE:HAS] B_SCAN -- stage B_SCAN finished in 0.029s {"produced": 3, "failed": 0}
+2026-08-16T14:02:40.449Z log | [LSE:HAS] A   source: corpus did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:40.615Z log | [LSE:HAS] A   source: market did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:40.619Z log | [LSE:HAS] A   source: news did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:40.624Z log | [LSE:HAS] A   source: research did not answer consensus(LSE:HAS, FY2026) -- returned nothing
+2026-08-16T14:02:40.628Z log | [LSE:HAS] A   source: NOTHING answered consensus(LSE:HAS, FY2026); tried corpus, market, news, research
+2026-08-16T14:02:40.632Z log | [LSE:HAS] C   -- stage C started
+2026-08-16T14:02:40.637Z log | [LSE:HAS] C   degrade: no consensus reached the evidence store, so the forecast has no Street anchor and lambda cannot be applied; the own estimate will stand and must be labelled as such
+2026-08-16T14:02:40.642Z log | [LSE:HAS] C   -- stage C finished in 0.009s {"cost_usd": 0.0, "claims": 199, "guidance": 0, "documents": 102, "dropped": 144, "verification_split": {"prose": 199, "structured": 0, "derived": 0}}
+2026-08-16T14:02:40.646Z log | [LSE:HAS] D   -- stage D started
+2026-08-16T14:02:40.658Z log | [LSE:HAS] D   degrade: the reproduction check could not run for every metric, so the model's structural bias is unmeasured for those and the judge is told so rather than shown a zero
+2026-08-16T14:02:40.662Z log | [LSE:HAS] D   -- stage D finished in 0.016s {"cost_usd": 0.0, "projected": 2, "degraded": true}
+2026-08-16T14:02:40.666Z log | [LSE:HAS] E   -- stage E started
+2026-08-16T14:02:40.670Z log | [LSE:HAS] E   agent lens_mechanical [none/none] 0.0s $0.0 in=0 out=0 cache_w=0 cache_r=0
+2026-08-16T14:03:06.020Z log | [LSE:HAS] E   agent lens_guidance [mid/claude-sonnet-5] 25.33s $0.1083 in=761 out=2520 cache_w=18201 cache_r=0
+2026-08-16T14:03:20.392Z log | [LSE:HAS] E   agent lens_peer_read [mid/claude-sonnet-5] 14.31s $0.0279 in=646 out=1369 cache_w=0 cache_r=18201
+2026-08-16T14:03:20.836Z log | [LSE:HAS] E   agent lens_demand [mid/claude-sonnet-5] 14.79s $0.026 in=655 out=1237 cache_w=0 cache_r=18201
+2026-08-16T14:03:27.586Z log | [LSE:HAS] E   agent lens_margins [mid/claude-sonnet-5] 21.54s $0.0415 in=649 out=2270 cache_w=0 cache_r=18201
+2026-08-16T14:03:30.812Z log | [LSE:HAS] E   agent lens_macro [mid/claude-sonnet-5] 24.73s $0.0434 in=703 out=2388 cache_w=0 cache_r=18201
+2026-08-16T14:03:44.563Z log | [LSE:HAS] E   agent lens_market [mid/claude-sonnet-5] 38.52s $0.063 in=676 out=3702 cache_w=0 cache_r=18201
+2026-08-16T14:03:46.721Z log | [LSE:HAS] E   agent lens_drivers [mid/claude-sonnet-5] 40.69s $0.0715 in=694 out=4264 cache_w=0 cache_r=18201
+2026-08-16T14:03:54.058Z log | [LSE:HAS] E   agent lens_forensics [mid/claude-sonnet-5] 47.97s $0.0797 in=717 out=4806 cache_w=0 cache_r=18201
+2026-08-16T14:03:54.066Z log | [LSE:HAS] E   -- stage E finished in 73.399s {"ran": 9, "failed": 0}
+2026-08-16T14:03:54.069Z log | [LSE:HAS] V1  -- stage V1 started
+2026-08-16T14:03:54.073Z log | [LSE:HAS] V1  LENS DROPPED: lens_drivers dropped whole: quoted text that is not in claim LSEHAS-015; the claim reads 'FY2 6 pre-exceptional operating profit is expected to be in line with market consensus expectations of £45. 2m' (citation LSEHAS-015)
+2026-08-16T14:03:54.077Z log | [LSE:HAS] V1  -- stage V1 finished in 0.008s {"cost_usd": 0.0, "surviving": 8, "dropped": 1, "verification_rate": 0.9865}
+2026-08-16T14:03:54.081Z log | [LSE:HAS] F   -- stage F started
+2026-08-16T14:04:18.798Z log | [LSE:HAS] F   agent champion [mid/claude-sonnet-5] 24.7s $0.0341 in=1381 out=1995 cache_w=0 cache_r=0
+2026-08-16T14:04:19.069Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4K9PMDWJtZojFMVNR"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.071Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4KDrBMv9vnVTSLakC"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.075Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4KB85UNreKsxjJcj6"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.082Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4KDqyHHCHetNANH5X"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.090Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4K9dbbxZ2XtYeMjb8"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.107Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4K9t52ykZEKrFkfdf"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.331Z log | [LSE:HAS] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4LHqgiMrqeEgUAaAE"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.337Z log | [LSE:HAS] F   degrade: lens_guidance was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4KB85UNreKsxjJcj6"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.341Z log | [LSE:HAS] F   degrade: lens_demand was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4K9PMDWJtZojFMVNR"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.345Z log | [LSE:HAS] F   degrade: lens_market was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4K9t52ykZEKrFkfdf"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.349Z log | [LSE:HAS] F   degrade: lens_margins was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4KDrBMv9vnVTSLakC"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.353Z log | [LSE:HAS] F   degrade: lens_forensics was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4K9dbbxZ2XtYeMjb8"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.358Z log | [LSE:HAS] F   degrade: lens_peer_read was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4KDqyHHCHetNANH5X"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.362Z log | [LSE:HAS] F   degrade: lens_macro was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4LHqgiMrqeEgUAaAE"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:19.366Z log | [LSE:HAS] F   -- stage F finished in 25.285s {"challenged": 1, "failed": 7}
+2026-08-16T14:04:19.370Z log | [LSE:HAS] G   -- stage G started
+2026-08-16T14:04:19.620Z log | [LSE:HAS] G   agent judge failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4MaETPUSCz5wiqkW3"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.624Z log | [LSE:HAS] G   degrade: the judge call failed (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4MaETPUSCz5wiqkW3"}); this is the labelled fallback
+2026-08-16T14:04:19.628Z log | [LSE:HAS] G   -- stage G finished in 0.258s {"degraded": true, "metrics": 3}
+2026-08-16T14:04:19.633Z log | [LSE:HAS] V2  -- stage V2 started
+2026-08-16T14:04:19.639Z log | [LSE:HAS] V2  agent comparability served from cache, $0.00
+2026-08-16T14:04:19.643Z log | [LSE:HAS] V2  degrade: comparability broke on acquisition_or_disposal, withdrawn_guidance; the historical priors this system runs on do not apply cleanly to this period and the forecast should be read with that in mind
+2026-08-16T14:04:19.647Z log | [LSE:HAS] V2  -- stage V2 finished in 0.015s {"any_fired": true, "fired": ["acquisition_or_disposal", "withdrawn_guidance"]}
+2026-08-16T14:04:19.652Z log | [LSE:HAS] H   -- stage H started
+2026-08-16T14:04:19.656Z log | [LSE:HAS] H   position: Net fees lambda=1.0 (preset shrink) own=897.0 consensus=None forecast=897.0 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T14:04:19.662Z log | [LSE:HAS] H   position: Pre-exceptional basic EPS lambda=1.0 (preset shrink) own=1.275 consensus=None forecast=1.275 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T14:04:19.668Z log | [LSE:HAS] H   position: Pre-exceptional operating profit lambda=1.0 (preset shrink) own=45.2 consensus=None forecast=45.2 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T14:04:19.672Z log | [LSE:HAS] H   -- stage H finished in 0.02s {"cost_usd": 0.0, "positioned": 3, "consensus_available": false, "positioning": "own_estimate_only"}
+2026-08-16T14:04:19.925Z log | [LSE:HAS] OUT agent narrative failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4NwLgrRYuMW6UY7LE"}; retry: no, attempts exhausted
+2026-08-16T14:04:19.929Z log | [LSE:HAS] OUT degrade: the narrative agent did not run (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4NwLgrRYuMW6UY7LE"}); no written case exists
+2026-08-16T14:04:19.933Z log | [LSE:HAS] I   -- stage I started
+2026-08-16T14:04:19.952Z log | [LSE:HAS] I   -- stage I finished in 0.02s {"cost_usd": 0.0, "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-2763a2cb\\results.json", "bytes": 600573}
+2026-08-16T14:04:19.956Z log | [LSE:HAS] RUN pipeline finished in 103.54s, cost $0.9897, results C:\Hackathon_Utkarsh_Malhotra\runs\LSE_HAS-2026-08-16-2763a2cb\results.json
+2026-08-16T14:04:19.964Z log | [DE] RUN pipeline started, as_of 2026-08-16
+2026-08-16T14:04:19.970Z log | [DE] A   -- stage A started
+2026-08-16T14:04:20.012Z log | [DE] A   source: filings(DE) answered by corpus
+2026-08-16T14:04:20.018Z log | [DE] A   source: transcripts(DE) answered by corpus
+2026-08-16T14:04:20.022Z log | [DE] A   source: slides(DE) answered by corpus
+2026-08-16T14:04:20.029Z log | [DE] A   source: corpus did not answer consensus(DE, FY2026Q3) -- returned nothing
+2026-08-16T14:04:20.402Z log | [DE] A   source: consensus(DE, FY2026Q3) answered by market (after corpus declined)
+2026-08-16T14:04:20.406Z log | [DE] A   source: corpus did not answer actuals(DE) -- returned nothing
+2026-08-16T14:04:20.410Z log | [DE] A   source: market did not answer actuals(DE) -- returned nothing
+2026-08-16T14:04:20.414Z log | [DE] A   source: news did not answer actuals(DE) -- returned nothing
+2026-08-16T14:04:20.418Z log | [DE] A   source: research did not answer actuals(DE) -- returned nothing
+2026-08-16T14:04:20.422Z log | [DE] A   source: NOTHING answered actuals(DE); tried corpus, market, news, research
+2026-08-16T14:04:20.427Z log | [DE] A   source: corpus did not answer prices(DE) -- returned nothing
+2026-08-16T14:04:20.431Z log | [DE] A   source: market did not answer prices(DE) -- method not implemented
+2026-08-16T14:04:20.434Z log | [DE] A   source: news did not answer prices(DE) -- method not implemented
+2026-08-16T14:04:20.438Z log | [DE] A   source: research did not answer prices(DE) -- method not implemented
+2026-08-16T14:04:20.442Z log | [DE] A   source: NOTHING answered prices(DE); tried corpus, market, news, research
+2026-08-16T14:04:20.446Z log | [DE] A   source: corpus did not answer peers(DE) -- returned nothing
+2026-08-16T14:04:20.450Z log | [DE] A   source: market did not answer peers(DE) -- returned nothing
+2026-08-16T14:04:20.454Z log | [DE] A   source: news did not answer peers(DE) -- returned nothing
+2026-08-16T14:04:20.458Z log | [DE] A   source: research did not answer peers(DE) -- returned nothing
+2026-08-16T14:04:20.462Z log | [DE] A   source: NOTHING answered peers(DE); tried corpus, market, news, research
+2026-08-16T14:04:20.466Z log | [DE] A   source: corpus did not answer fx(DE) -- returned nothing
+2026-08-16T14:04:20.470Z log | [DE] A   source: market did not answer fx(DE) -- returned nothing
+2026-08-16T14:04:20.474Z log | [DE] A   source: news did not answer fx(DE) -- returned nothing
+2026-08-16T14:04:20.479Z log | [DE] A   source: research did not answer fx(DE) -- returned nothing
+2026-08-16T14:04:20.483Z log | [DE] A   source: NOTHING answered fx(DE); tried corpus, market, news, research
+2026-08-16T14:04:20.487Z log | [DE] A   source: corpus did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:04:20.491Z log | [DE] A   source: market did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:04:20.495Z log | [DE] A   source: news did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:04:20.499Z log | [DE] A   source: research did not answer macro(fx_gbp_usd) -- returned nothing
+2026-08-16T14:04:20.503Z log | [DE] A   source: NOTHING answered macro(fx_gbp_usd); tried corpus, market, news, research
+2026-08-16T14:04:20.507Z log | [DE] A   degrade: no source answers actuals, prices, peers, fx, macro; every stage that would have used them says so rather than substituting a value
+2026-08-16T14:04:20.511Z log | [DE] A   -- stage A finished in 0.543s {"cost_usd": 0.0, "sources": ["corpus", "market", "news", "research"], "available": {"filings": true, "transcripts": true, "slides": true, "consensus": true, "actuals": false, "prices": false, "peers": false, "fx": false, "macro": false}}
+2026-08-16T14:04:20.515Z log | [DE] B   -- stage B started
+2026-08-16T14:04:20.519Z log | [DE] A   source: filings(DE) answered by corpus
+2026-08-16T14:04:20.523Z log | [DE] A   source: transcripts(DE) answered by corpus
+2026-08-16T14:04:20.527Z log | [DE] A   source: slides(DE) answered by corpus
+2026-08-16T14:04:20.532Z log | [DE] B   acquisition skipped: earnings_releases: 34 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2023-02-17__de-us-20230217-q1-8k__105833, 2022-11-23__de-us-20221123-q4-8k__105825, 2022-08-19__de-us-20220819-q3-8k__105811, 2022-05-20__de-us-20220520-q2-8k__105815, 2022-02-18__de-us-20220218-q1-8k__105812, 2021-11-24__de-us-20211124-q4-8k__105843, +28 more
+2026-08-16T14:04:20.536Z log | [DE] B   acquisition skipped: periodic_reports: 27 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2021-08-20__de-us-20210820-q3-10q__105837, 2021-05-21__de-us-20210521-q2-10q__105821, 2021-02-19__de-us-20210219-q1-10q__105814, 2020-11-25__de-us-20201125-q4-10k__105845, 2020-08-20__de-us-20200820-q3-10q__105822, 2020-05-21__de-us-20200521-q2-10q__469470, +21 more
+2026-08-16T14:04:20.540Z log | [DE] B   acquisition skipped: other_filings: 23 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2024-01-10__de-us-20240110-filing-2__469128, 2023-01-11__de-us-20230111-filing__469242, 2023-01-11__de-us-20230111-filing-2__469489, 2022-01-07__de-us-20220107-filing__469237, 2022-01-07__de-us-20220107-filing-2__469706, 2021-01-08__de-us-20210108-filing__469179, +17 more
+2026-08-16T14:04:20.545Z log | [DE] B   acquisition skipped: earnings_calls: 110 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2024-11-21__de-us-20241121-call-q4-qna__46471, 2024-11-21__de-us-20241121-call-q4-pres__46452, 2024-08-15__de-us-20240815-call-qna__46445, 2024-08-15__de-us-20240815-call-pres__46429, 2024-05-16__de-us-20240516-call-qna__46474, 2024-05-16__de-us-20240516-call-pres__46458, +34 more
+2026-08-16T14:04:20.548Z log | [DE] B   acquisition skipped: slides: 39 document(s) skipped on budget; downstream coverage is not complete [reason: budget exhausted] 2023-11-22__de-us-20231122-slide__46466, 2023-10-18__de-us-20231018-slide__46435, 2023-08-18__de-us-20230818-slide__46427, 2023-05-19__de-us-20230519-slide__46428, 2023-02-17__de-us-20230217-slide__46447, 2022-11-23__de-us-20221123-slide__46423, +33 more
+2026-08-16T14:04:20.553Z log | [DE] B   degrade: acquired nothing for consensus, fx_rates, industry_sizing, macro, peers, prices; each is named in the dossier with its reason and no default is substituted
+2026-08-16T14:04:20.559Z log | [DE] B   -- stage B finished in 0.044s {"cost_usd": 0.0, "dossier": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-2763a2cb\\dossier-DE-2026-08-16.json", "earnings_releases": 14, "periodic_reports": 24, "other_filings": 6, "earnings_calls": 8, "slides": 12, "research": 0}
+2026-08-16T14:04:20.563Z log | [DE] B3  -- stage B3 started
+2026-08-16T14:04:20.568Z log | [DE] B3  agent research_scout served from cache, $0.00
+2026-08-16T14:04:27.574Z log | [DE] B3  agent research_scout failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4weqo7LiGAypmqnMu"}; retry: no, attempts exhausted
+2026-08-16T14:04:27.578Z log | [DE] B3  degrade: the research scout failed on round 2 (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z4weqo7LiGAypmqnMu"}); research falls back to the configured queries for this round
+2026-08-16T14:04:27.582Z log | [DE] B3  -- stage B3 finished in 7.019s {"documents": 24, "queries": 6, "publishers": 19}
+2026-08-16T14:04:27.586Z log | [DE] B5  -- stage B5 started
+2026-08-16T14:04:27.594Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.605Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.607Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.611Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.614Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.618Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.622Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.626Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.630Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.634Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.637Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.641Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T14:04:27.993Z log | [DE] B5  agent extract_guidance served from cache, $0.00
+2026-08-16T14:04:28.036Z log | [DE] B5  -- stage B5 finished in 0.45s {"metric_documents": 12, "metric_values": 189, "guidance_items": 1, "dropped": 100} [100 value(s) dropped on quote mismatch; each one is in events.jsonl]
+2026-08-16T14:04:28.041Z log | [DE] B_SCAN -- stage B_SCAN started
+2026-08-16T14:04:28.360Z log | [DE] B_SCAN agent scan_calls failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z511FhLMMwZimtoqqu"}; retry: no, attempts exhausted
+2026-08-16T14:04:28.643Z log | [DE] B_SCAN agent scan_perception failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z529DLHfc4Dz5nVsqa"}; retry: no, attempts exhausted
+2026-08-16T14:04:28.656Z log | [DE] B_SCAN agent extract_bridge failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z529Dc27PBMyiQayRV"}; retry: no, attempts exhausted
+2026-08-16T14:04:28.662Z log | [DE] B_SCAN degrade: scan_calls produced nothing (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z511FhLMMwZimtoqqu"}); what it would have contributed is absent rather than substituted
+2026-08-16T14:04:28.667Z log | [DE] B_SCAN degrade: extract_bridge produced nothing (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z529Dc27PBMyiQayRV"}); what it would have contributed is absent rather than substituted
+2026-08-16T14:04:28.671Z log | [DE] B_SCAN degrade: scan_perception produced nothing (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z529DLHfc4Dz5nVsqa"}); what it would have contributed is absent rather than substituted
+2026-08-16T14:04:28.675Z log | [DE] B_SCAN -- stage B_SCAN finished in 0.634s {"produced": 0, "failed": 3}
+2026-08-16T14:04:28.679Z log | [DE] A   source: corpus did not answer consensus(DE, FY2026Q3) -- returned nothing
+2026-08-16T14:04:28.838Z log | [DE] A   source: consensus(DE, FY2026Q3) answered by market (after corpus declined)
+2026-08-16T14:04:28.842Z log | [DE] C   -- stage C started
+2026-08-16T14:04:28.847Z log | [DE] C   -- stage C finished in 0.005s {"cost_usd": 0.0, "claims": 187, "guidance": 1, "documents": 101, "dropped": 104, "verification_split": {"prose": 186, "structured": 2, "derived": 0}}
+2026-08-16T14:04:28.851Z log | [DE] D   -- stage D started
+2026-08-16T14:04:28.865Z log | [DE] D   -- stage D finished in 0.014s {"cost_usd": 0.0, "projected": 3, "degraded": false}
+2026-08-16T14:04:28.869Z log | [DE] E   -- stage E started
+2026-08-16T14:04:28.873Z log | [DE] E   agent lens_mechanical [none/none] 0.0s $0.0 in=0 out=0 cache_w=0 cache_r=0
+2026-08-16T14:04:29.132Z log | [DE] E   agent lens_guidance failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z54NfEuXgK6e8LxYYa"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.386Z log | [DE] E   agent lens_market failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55SuCiq3pbfnoMRQy"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.392Z log | [DE] E   agent lens_macro failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55VscV4hVEhKhHxT9"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.395Z log | [DE] E   agent lens_drivers failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55NSRxuv1z83mhG3w"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.399Z log | [DE] E   agent lens_demand failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55X7kaBWpr42dPTiF"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.403Z log | [DE] E   agent lens_forensics failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55V8eFyddXiZzbJUY"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.405Z log | [DE] E   agent lens_peer_read failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55Xrn7HmWnRrP3CnS"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.421Z log | [DE] E   agent lens_margins failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55TePCuANU1Z1Hf6Y"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.428Z log | [DE] E   LENS DROPPED: lens_guidance failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z54NfEuXgK6e8LxYYa"}
+2026-08-16T14:04:29.433Z log | [DE] E   LENS DROPPED: lens_drivers failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55NSRxuv1z83mhG3w"}
+2026-08-16T14:04:29.437Z log | [DE] E   LENS DROPPED: lens_demand failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55X7kaBWpr42dPTiF"}
+2026-08-16T14:04:29.442Z log | [DE] E   LENS DROPPED: lens_market failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55SuCiq3pbfnoMRQy"}
+2026-08-16T14:04:29.447Z log | [DE] E   LENS DROPPED: lens_margins failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55TePCuANU1Z1Hf6Y"}
+2026-08-16T14:04:29.453Z log | [DE] E   LENS DROPPED: lens_forensics failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55V8eFyddXiZzbJUY"}
+2026-08-16T14:04:29.458Z log | [DE] E   LENS DROPPED: lens_peer_read failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55Xrn7HmWnRrP3CnS"}
+2026-08-16T14:04:29.463Z log | [DE] E   LENS DROPPED: lens_macro failed and produced no view: HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z55VscV4hVEhKhHxT9"}
+2026-08-16T14:04:29.467Z log | [DE] E   -- stage E finished in 0.598s {"ran": 1, "failed": 8}
+2026-08-16T14:04:29.472Z log | [DE] V1  -- stage V1 started
+2026-08-16T14:04:29.477Z log | [DE] V1  -- stage V1 finished in 0.005s {"cost_usd": 0.0, "surviving": 1, "dropped": 0, "verification_rate": 1.0}
+2026-08-16T14:04:29.483Z log | [DE] F   -- stage F started
+2026-08-16T14:04:29.702Z log | [DE] F   agent champion failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z56pzoZL3zjFiD6FxT"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.708Z log | [DE] F   degrade: lens_mechanical was not challenged (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z56pzoZL3zjFiD6FxT"}); its view reaches the judge with its own stated confidence, which has not been tested
+2026-08-16T14:04:29.712Z log | [DE] F   -- stage F finished in 0.231s {"challenged": 0, "failed": 1}
+2026-08-16T14:04:29.717Z log | [DE] G   -- stage G started
+2026-08-16T14:04:29.966Z log | [DE] G   agent judge failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z57wUNKGyPKLDyXzkr"}; retry: no, attempts exhausted
+2026-08-16T14:04:29.971Z log | [DE] G   degrade: the judge call failed (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z57wUNKGyPKLDyXzkr"}); this is the labelled fallback
+2026-08-16T14:04:29.975Z log | [DE] G   -- stage G finished in 0.258s {"degraded": true, "metrics": 3}
+2026-08-16T14:04:29.978Z log | [DE] V2  -- stage V2 started
+2026-08-16T14:04:29.985Z log | [DE] V2  agent comparability served from cache, $0.00
+2026-08-16T14:04:29.989Z log | [DE] V2  degrade: comparability broke on acquisition_or_disposal, accounting_change; the historical priors this system runs on do not apply cleanly to this period and the forecast should be read with that in mind
+2026-08-16T14:04:29.993Z log | [DE] V2  -- stage V2 finished in 0.015s {"any_fired": true, "fired": ["acquisition_or_disposal", "accounting_change"]}
+2026-08-16T14:04:29.997Z log | [DE] H   -- stage H started
+2026-08-16T14:04:30.001Z log | [DE] H   position: Worldwide net sales and revenues lambda=1.0 (preset shrink) own=10731.54221 consensus=10731.54221 forecast=10731.54221 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T14:04:30.005Z log | [DE] H   position: Diluted EPS (GAAP) lambda=1.0 (preset shrink) own=6.55 consensus=4.69639 forecast=6.55 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T14:04:30.009Z log | [DE] H   position: Production & Precision Ag operating profit lambda=1.0 (preset shrink) own=554.2409638554217 consensus=None forecast=554.2409638554217 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T14:04:30.014Z log | [DE] H   -- stage H finished in 0.016s {"cost_usd": 0.0, "positioned": 3, "consensus_available": true, "positioning": "own_estimate_only"}
+2026-08-16T14:04:30.226Z log | [DE] OUT agent narrative failed after 1 attempts -- HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z592haaSKMX3nGHH6r"}; retry: no, attempts exhausted
+2026-08-16T14:04:30.230Z log | [DE] OUT degrade: the narrative agent did not run (HTTP 400: {"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase credits."},"request_id":"req_011Ce6Z592haaSKMX3nGHH6r"}); no written case exists
+2026-08-16T14:04:30.234Z log | [DE] I   -- stage I started
+2026-08-16T14:04:30.254Z log | [DE] I   -- stage I finished in 0.02s {"cost_usd": 0.0, "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-2763a2cb\\results.json", "bytes": 510054}
+2026-08-16T14:04:30.258Z log | [DE] RUN pipeline finished in 10.3s, cost $0.4393, results C:\Hackathon_Utkarsh_Malhotra\runs\DE-2026-08-16-2763a2cb\results.json
+2026-08-16T14:04:30.261Z log | 
+2026-08-16T14:04:30.263Z log | == pipeline summary ========================================================
+2026-08-16T14:04:30.265Z log |   run id                 2763a2cb
+2026-08-16T14:04:30.267Z log |   HD                     OK
+2026-08-16T14:04:30.269Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\HD-2026-08-16-2763a2cb\results.json
+2026-08-16T14:04:30.283Z log |     cost      $1.2166
+2026-08-16T14:04:30.288Z log |     stage     I
+2026-08-16T14:04:30.290Z log |   ADI                    OK
+2026-08-16T14:04:30.292Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\ADI-2026-08-16-2763a2cb\results.json
+2026-08-16T14:04:30.304Z log |     cost      $1.1047
+2026-08-16T14:04:30.308Z log |     stage     I
+2026-08-16T14:04:30.310Z log |   LSE:HAS                OK
+2026-08-16T14:04:30.312Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\LSE_HAS-2026-08-16-2763a2cb\results.json
+2026-08-16T14:04:30.324Z log |     cost      $0.9897
+2026-08-16T14:04:30.329Z log |     stage     I
+2026-08-16T14:04:30.331Z log |   DE                     OK
+2026-08-16T14:04:30.333Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\DE-2026-08-16-2763a2cb\results.json
+2026-08-16T14:04:30.347Z log |     cost      $0.4393
+2026-08-16T14:04:30.352Z log |     stage     I
+2026-08-16T14:04:30.354Z log | 
+2026-08-16T14:04:30.356Z log | == workbooks ===============================================================
+2026-08-16T14:04:30.358Z log | $ node src\forecast-to-workbooks.mjs
+2026-08-16T14:04:30.417Z out |   HD       HD-FY2026Q2.xlsx     47280  4.68  0.9
+2026-08-16T14:04:30.424Z out |   ADI      ADI-FY2026Q3.xlsx    3932  3.355  73
+2026-08-16T14:04:30.431Z out |   LSE:HAS  HAS-FY2026.xlsx      897  1.275  45.2
+2026-08-16T14:04:30.437Z out |   DE       DE-FY2026Q3.xlsx     10731.54221  6.55  554.2409638554217
+2026-08-16T14:04:30.440Z out | 
+2026-08-16T14:04:30.442Z out | Wrote 4 workbooks.
+2026-08-16T14:04:30.446Z log |   exit code 0
+2026-08-16T14:04:30.448Z log | 
+2026-08-16T14:04:30.450Z log | == verification ============================================================
+2026-08-16T14:04:30.452Z log | $ node scripts\check-forecasts.mjs submission
+2026-08-16T14:04:30.609Z out | PASS HD-FY2026Q2.xlsx
+2026-08-16T14:04:30.615Z out | PASS ADI-FY2026Q3.xlsx
+2026-08-16T14:04:30.618Z out | PASS HAS-FY2026.xlsx
+2026-08-16T14:04:30.622Z out | PASS DE-FY2026Q3.xlsx
+2026-08-16T14:04:30.624Z out | 
+2026-08-16T14:04:30.626Z out | All four forecast workbooks are ready for manual upload.
+2026-08-16T14:04:30.631Z log |   exit code 0
+2026-08-16T14:04:30.634Z log | 
+2026-08-16T14:04:30.640Z log | == workbooks written =======================================================
+2026-08-16T14:04:30.642Z log |   HD                     PASS
+2026-08-16T14:04:30.644Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\HD-FY2026Q2.xlsx
+2026-08-16T14:04:30.646Z log |     on disk   yes, 5536 bytes
+2026-08-16T14:04:30.648Z log |   ADI                    PASS
+2026-08-16T14:04:30.650Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\ADI-FY2026Q3.xlsx
+2026-08-16T14:04:30.652Z log |     on disk   yes, 5538 bytes
+2026-08-16T14:04:30.654Z log |   LSE:HAS                PASS
+2026-08-16T14:04:30.657Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\HAS-FY2026.xlsx
+2026-08-16T14:04:30.658Z log |     on disk   yes, 5485 bytes
+2026-08-16T14:04:30.661Z log |   DE                     PASS
+2026-08-16T14:04:30.663Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\DE-FY2026Q3.xlsx
+2026-08-16T14:04:30.667Z log |     on disk   yes, 5582 bytes
+2026-08-16T14:04:30.671Z log | 
+2026-08-16T14:04:30.674Z log | == outcome =================================================================
+2026-08-16T14:04:30.676Z log |   companies forecast     4/4
+2026-08-16T14:04:30.678Z log |   companies retried      none
+2026-08-16T14:04:30.682Z log |   companies failed       none
+2026-08-16T14:04:30.686Z log |   workbooks verified     all four PASS
+2026-08-16T14:04:30.690Z log |   exit code              0 -- four workbooks written, verified, and every number forecast in this run
+2026-08-16T14:04:30.692Z log |   uploads                manual by rule; the agent does not post to OpenStocks
+2026-08-16T14:04:30.694Z log | log closed: C:\Hackathon_Utkarsh_Malhotra\logs\final-run-20260816T135602Z.log

@@ -85,11 +85,69 @@ const prompts = fs.existsSync(promptDir)
     })
   : [];
 
+// Which parts of the run have a check written against their failure modes.
+// Read by scanning the test files for the module each part is implemented in,
+// so the fraction on the gates panel cannot be stale or asserted.
+const MODULE_OF = {
+  A: "a_sources",
+  C: "c_structure",
+  D: "d_model",
+  E: "e_analyse",
+  V1: "v1_reconcile",
+  F: "f_challenge",
+  G: "g_judge",
+  V2: "v2_comparability",
+  V3: "h_position",
+  H: "h_position",
+  I: "i_output",
+};
+const MODULE_BY_NODE = {
+  U1: "b_acquire",
+  U2: "b_acquire",
+  U3: "b_acquire",
+  U4: "b5_extract",
+  U5: "b3_research",
+  U6: "b_acquire",
+  U7: "b5_extract",
+  U8: "b_scan",
+  U9: "b_scan",
+};
+
+const testDir = path.join(root, "tests");
+const testFiles = fs.existsSync(testDir)
+  ? fs.readdirSync(testDir).filter((f) => f.startsWith("test_") && f.endsWith(".py"))
+  : [];
+const testText = testFiles.map((f) => fs.readFileSync(path.join(testDir, f), "utf8")).join("\n");
+const testCount = (testText.match(/def test_/g) ?? []).length;
+
+const exercised = new Set();
+for (const name of new Set([...Object.values(MODULE_OF), ...Object.values(MODULE_BY_NODE)])) {
+  if (new RegExp(`\\b${name}\\b`).test(testText)) exercised.add(name);
+}
+
+const registry = companies.find((c) => c.results)?.results?.nodes ?? [];
+const nodesWithCoverage = registry.map((node) => {
+  const module = MODULE_BY_NODE[node.id] ?? MODULE_OF[node.stage] ?? null;
+  return { ...node, module, covered: Boolean(module && exercised.has(module)) };
+});
+
+// The check results themselves, if a run of them has been recorded.
+let tests = { total: testCount, passed: null, failed: null, ranAt: null };
+const testReport = path.join(root, "runs", "_tests.json");
+if (fs.existsSync(testReport)) {
+  try {
+    tests = { ...tests, ...JSON.parse(fs.readFileSync(testReport, "utf8")) };
+  } catch {
+    /* an unreadable report leaves the panel saying so */
+  }
+}
+
 const bundle = {
   generatedAt: new Date().toISOString(),
   companies,
   prompts,
-  nodes: companies.find((c) => c.results)?.results?.nodes ?? [],
+  nodes: nodesWithCoverage,
+  tests,
 };
 
 fs.writeFileSync(path.join(outDir, "bundle.json"), JSON.stringify(bundle, null, 1), "utf8");

@@ -10,7 +10,13 @@
     "check:submission": "npm run check:entry && npm run check:forecasts",
     "dashboard": "node dashboard/server.mjs",
     "test": "node --test \"test/**/*.test.mjs\"",
-    "test:starter": "python3 -m unittest discover -s starter -p 'test_*.py'"
+    "test:starter": "python3 -m unittest discover -s starter -p 'test_*.py'",
+    "site:prep": "node site/prep.mjs",
+    "site:dev": "node site/prep.mjs && npm --prefix site run dev",
+    "site:build": "node site/prep.mjs && npm --prefix site run build",
+    "check:tests": "node scripts/record-tests.mjs",
+    "check:punctuation": "node scripts/check-punctuation.mjs",
+    "build:architecture": "npm run check:tests && npm run site:build && node scripts/check-punctuation.mjs --data-warn && node scripts/seal.mjs"
   },
   "dependencies": {
     "astro": "^7.2.2",

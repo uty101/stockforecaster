@@ -1,0 +1,15 @@
+---
+// A row of cells at the foot of a sheet. A figure takes an accent only where
+// the figure is itself a judgement.
+const { items = [] } = Astro.props;
+---
+
+<div class="strip">
+  {items.map((item) => (
+    <div class="cell">
+      <div class="eyebrow">{item.label}</div>
+      <div class={`figure num v ${item.tone ? `t-${item.tone}` : ""}`}>{item.value}</div>
+      <div class="c">{item.context}</div>
+    </div>
+  ))}
+</div>

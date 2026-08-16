@@ -1,0 +1,40 @@
+---
+// The workhorse. A hairline box with a numbered header strip. Where a figure is
+// passed it sits right, at 26px, with its unit under it. Where none is passed
+// the prose runs full width.
+const { n = "", name, figure = null, unit = null, tone = "", expandable = false } = Astro.props;
+---
+
+{expandable ? (
+  <details class="panel exp">
+    <summary class="panel-head">
+      {n && <span class="n">{n}</span>}
+      <span class="eyebrow">{name}</span>
+      <span class="plus">+</span>
+    </summary>
+    <div class="panel-body">
+      <slot />
+    </div>
+  </details>
+) : (
+  <div class="panel">
+    <div class="panel-head">
+      {n && <span class="n">{n}</span>}
+      <span class="eyebrow">{name}</span>
+      <span class="plus">+</span>
+    </div>
+    <div class="panel-body">
+      {figure !== null ? (
+        <div class="panel-split">
+          <div><slot /></div>
+          <div class="fig">
+            <div class={`figure num ${tone}`}>{figure}</div>
+            {unit && <div class="unit">{unit}</div>}
+          </div>
+        </div>
+      ) : (
+        <slot />
+      )}
+    </div>
+  </div>
+)}

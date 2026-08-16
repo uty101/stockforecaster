@@ -1,96 +1,163 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
-import bundle from "../data/bundle.json";
+import Panel from "../components/Panel.astro";
+import StatusCard from "../components/StatusCard.astro";
+import Strip from "../components/Strip.astro";
+import { prompts, nodes, companies, costByAgent, primary } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
 
-const prompts = bundle.prompts ?? [];
-const live = bundle.companies.filter((c) => !c.missing);
-const nodes = bundle.nodes ?? [];
-const agentNodes = nodes.filter((n) => n.agent);
-
-// The roster is generated from the prompt directory. A prompt file without a
-// node, or a node without a prompt file, is a mismatch and is shown as one --
-// a hand-kept roster drifts and then confidently describes a system that is not
-// running.
-const promptNames = new Set(prompts.map((p) => p.name));
-const nodeAgents = new Set(agentNodes.map((n) => n.agent));
-const orphanPrompts = [...promptNames].filter((n) => !nodeAgents.has(n));
-const orphanNodes = [...nodeAgents].filter((n) => !promptNames.has(n));
-const inSync = orphanPrompts.length === 0 && orphanNodes.length === 0;
-const pill = { text: inSync ? `roster in sync · ${prompts.length} prompts` : `${orphanPrompts.length + orphanNodes.length} mismatched`, tone: inSync ? "good" : "bad" };
-
-const byLayer = {};
-for (const p of prompts) (byLayer[p.layer ?? "unfiled"] ??= []).push(p);
-
-const calls = live.flatMap((c) => c.results.cost?.calls ?? []);
-const usage = {};
-for (const call of calls) {
-  const u = (usage[call.agent] ??= { calls: 0, usd: 0, tokens: 0 });
-  u.calls += 1; u.usd += call.usd; u.tokens += call.input_tokens + call.output_tokens;
+// The roster is read from the prompt directory, so a reader that exists without
+// a card here cannot go unnoticed.
+const spend = new Map();
+for (const company of companies) {
+  for (const row of costByAgent(company)) {
+    const prior = spend.get(row.agent) ?? { usd: 0, calls: 0, model: row.model };
+    spend.set(row.agent, { usd: prior.usd + row.usd, calls: prior.calls + row.calls, model: row.model });
+  }
 }
+
+const registryAgents = new Set(nodes.filter((n) => n.agent).map((n) => n.agent));
+const rosterNames = new Set(prompts.map((p) => p.name));
+const orphans = [...registryAgents].filter((a) => !rosterNames.has(a));
+const unplaced = prompts.filter((p) => !registryAgents.has(p.name));
+const inSync = orphans.length === 0 && unplaced.length === 0;
+
+const layers = [...new Set(prompts.map((p) => p.layer ?? "unplaced"))].sort();
+const tiers = prompts.reduce((acc, p) => {
+  acc[p.tier] = (acc[p.tier] ?? 0) + 1;
+  return acc;
+}, {});
+
+const layerSpend = layers.map((layer) => {
+  const rows = prompts.filter((p) => (p.layer ?? "unplaced") === layer);
+  const usd = rows.reduce((n, p) => n + (spend.get(p.name)?.usd ?? 0), 0);
+  return { layer, count: rows.length, usd };
+});
+const maxSpend = Math.max(0.0001, ...layerSpend.map((l) => l.usd));
 ---
 
-<Sheet title="Agents" system="07 · the roster, generated from the prompt directory" sheet="07" pill={pill}>
-  <div class="grid two">
-    <div class="panel">
-      <h2>Why one agent has no model</h2>
-      <p class="sub">Mechanical, U12</p>
-      <p class="secondary" style="margin:0">
-        The Mechanical lens is arithmetic: share count, currency translation, calendar effects. It
-        costs nothing, it cannot hallucinate, and it is the one lens still standing when the API is
-        unavailable — which is not hypothetical, because the API went down during this build and
-        Mechanical was the only view that would still have produced a number. It also has an
-        explicit insufficient-inputs path: a deterministic lens always answers, and under materiality
-        weighting a lens that cannot decline would read as the most confident view in every run
-        purely because it is the only one that cannot.
+<Sheet title="Agents" subsystem="Roster" index="07">
+  <div class="lede-row">
+    <div class="lede">
+      <span class="bar"></span>
+      <p>
+        Every reader on the book, what it is asked to read, and what it cost. The roster is taken
+        from the written instructions themselves rather than kept as a separate list.
       </p>
     </div>
-    <div class="panel">
-      <h2>Why exactly one call runs on the deep tier</h2>
-      <p class="sub">the judge, U23</p>
-      <p class="secondary" style="margin:0">
-        The judge is the only agent that sees the full picture — every surviving view, what survived
-        being argued against, the model's measured error, and an explicit list of which lenses are
-        missing and why. That is the highest-leverage decision in the system and the only one worth
-        the most capable model. The client raises before a second deep call rather than billing for
-        it, and a test asserts the count.
-      </p>
-    </div>
+    <StatusCard
+      name="Roster"
+      word={inSync ? "In sync" : "Adrift"}
+      summary="Roster against the written instructions"
+      tone={inSync ? "teal" : "red"}
+      fill={inSync ? 1 : 0.4}
+      rows={[
+        ["Readers", String(prompts.length)],
+        ["Cheap tier", String(tiers.cheap ?? 0)],
+        ["Mid tier", String(tiers.mid ?? 0)],
+        ["Deep tier", String(tiers.deep ?? 0)],
+        ["Without a model", String(tiers.none ?? 0)],
+      ]}
+    />
   </div>
 
-  {!inSync && (
-    <div class="panel" style="border-color:var(--critical)">
-      <h2>Roster mismatch</h2>
-      <p class="sub">the build should fail on this</p>
-      {orphanPrompts.length > 0 && <p>Prompt files with no node: <b class="mono">{orphanPrompts.join(", ")}</b></p>}
-      {orphanNodes.length > 0 && <p>Nodes with no prompt file: <b class="mono">{orphanNodes.join(", ")}</b></p>}
-    </div>
-  )}
-
-  {Object.entries(byLayer).sort().map(([layer, items]) => (
-    <div class="panel">
-      <h2>{layer}</h2>
-      <p class="sub">{items.length} agent{items.length === 1 ? "" : "s"}</p>
-      <div class="scroll">
-        <table>
-          <tr><th>agent</th><th>node</th><th>tier</th><th>model</th><th class="num">version</th><th class="num">calls</th><th class="num">spend</th><th>what makes it different</th></tr>
-          {items.map((p) => {
-            const u = usage[p.name];
-            const model = p.tier === "none" ? "—" : p.tier === "deep" ? "claude-opus-5" : p.tier === "mid" ? "claude-sonnet-5" : "claude-haiku-4-5";
+  <section class="sheet-section">
+    <h2 class="section-heading">Layers, sized by spend</h2>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-body">
+        <svg viewBox={`0 0 560 ${layerSpend.length * 30 + 16}`} width="100%" role="img"
+          aria-label="Each layer sized by what it cost">
+          {layerSpend.map((row, i) => {
+            const y = i * 30 + 8;
+            const width = (row.usd / maxSpend) * 300;
             return (
-              <tr>
-                <td><b class="mono">{p.name}</b></td>
-                <td class="mono muted">{p.node}</td>
-                <td>{p.tier === "none" ? <span class="muted">no model</span> : p.tier}</td>
-                <td class="muted mono" style="font-size:11.5px">{model}</td>
-                <td class="num">{p.version}</td>
-                <td class="num">{u?.calls ?? 0}</td>
-                <td class="num">{u ? `$${u.usd.toFixed(3)}` : "$0.000"}</td>
-                <td class="muted" style="font-size:12px">{p.summary}</td>
-              </tr>
+              <g>
+                <text x="0" y={y + 15} class="tick">{row.layer}</text>
+                <rect x="190" y={y} width={Math.max(1, width)} height="20" fill="none" stroke="#A77BFF" stroke-width="1" />
+                <text x={196 + Math.max(1, width)} y={y + 15} class="tick">
+                  {f.usd(row.usd, 3)} · {row.count}
+                </text>
+              </g>
             );
           })}
-        </table>
+        </svg>
+        <p class="small t-secondary" style="margin:6px 0 0">
+          Layers run in the order shown. The nine workstreams in the analyse layer run together.
+        </p>
       </div>
     </div>
+  </section>
+
+  {layers.map((layer) => (
+    <section class="sheet-section">
+      <h2 class="section-heading">{layer}</h2>
+      <div class="panel scroll-x" style="margin-top:16px">
+        <div class="panel-body">
+          <table class="ledger">
+            <thead>
+              <tr>
+                <th>Reader</th>
+                <th>Tier</th>
+                <th>Model</th>
+                <th class="n">Version</th>
+                <th class="n">Calls</th>
+                <th class="n">Spend</th>
+                <th>What it reads</th>
+              </tr>
+            </thead>
+            <tbody>
+              {prompts
+                .filter((p) => (p.layer ?? "unplaced") === layer)
+                .map((p) => {
+                  const row = spend.get(p.name);
+                  return (
+                    <tr>
+                      <td>{p.name}</td>
+                      <td><span class={`state ${p.tier === "none" ? "abstained" : "agent"}`}>{p.tier}</span></td>
+                      <td class="t-secondary">{row?.model ?? "no model"}</td>
+                      <td class="n">{p.version ?? "—"}</td>
+                      <td class="n">{row ? f.count(row.calls) : "—"}</td>
+                      <td class="n">{row ? f.usd(row.usd, 3) : "—"}</td>
+                      <td class="t-secondary">{p.summary ?? "—"}</td>
+                    </tr>
+                  );
+                })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
   ))}
+
+  <section class="sheet-section">
+    <div class="grid2">
+      <Panel n="01" name="The reader without a model" figure={String(tiers.none ?? 0)} unit="on the roster">
+        <p>
+          One workstream extends the reported series and nothing else. It reaches a figure from the
+          filings by arithmetic, so it still returns a view when nothing else can.
+        </p>
+      </Panel>
+      <Panel n="02" name="One call on the deep tier" figure={String(tiers.deep ?? 0)} unit="deep tier">
+        <p>
+          The weighting is the only place where the whole book is read at once. Everything before it
+          reads one document or one question, which the cheaper tiers do at the same accuracy.
+        </p>
+      </Panel>
+    </div>
+  </section>
+
+  <section class="sheet-section">
+    <Strip
+      items={[
+        { label: "Readers", value: String(prompts.length), context: "Taken from the written instructions." },
+        { label: "Workstreams", value: String(nodes.filter((n) => n.stage === "E").length), context: "Running together on each name." },
+        { label: "Deep calls", value: String(primary.results.cost?.deep_calls ?? 0), context: "One weighting for each name." },
+        { label: "Roster", value: inSync ? "in sync" : "adrift", context: "Checked against the registry.", tone: inSync ? "teal" : "red" },
+      ]}
+    />
+  </section>
 </Sheet>
+
+<style>
+  .tick { font-size: 10px; fill: var(--faint); font-family: var(--mono); }
+</style>

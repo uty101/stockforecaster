@@ -1,0 +1,41 @@
+---
+// 60 by 16, no axis, no label. A dot marks the latest value and a dashed line
+// marks the median of the series.
+const { values: v = [], projected: p = null } = Astro.props;
+
+const series = (v ?? []).filter((n) => typeof n === "number" && Number.isFinite(n));
+const all = p !== null && Number.isFinite(p) ? [...series, p] : series;
+const W = 60;
+const H = 16;
+
+let path = "";
+let dot = null;
+let medianY = null;
+
+if (all.length > 1) {
+  const min = Math.min(...all);
+  const max = Math.max(...all);
+  const span = max - min || 1;
+  const x = (i) => (i / (all.length - 1)) * (W - 2) + 1;
+  const y = (n) => H - 2 - ((n - min) / span) * (H - 4);
+  path = all.map((n, i) => `${i ? "L" : "M"}${x(i).toFixed(1)} ${y(n).toFixed(1)}`).join(" ");
+  dot = { x: x(all.length - 1), y: y(all[all.length - 1]) };
+  const sorted = [...all].sort((a, b) => a - b);
+  const mid = sorted.length % 2
+    ? sorted[(sorted.length - 1) / 2]
+    : (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2;
+  medianY = y(mid);
+}
+---
+
+{path ? (
+  <svg width={W} height={H} viewBox={`0 0 ${W} ${H}`} aria-hidden="true" style="vertical-align:middle">
+    {medianY !== null && (
+      <line x1="0" y1={medianY} x2={W} y2={medianY} stroke="#4E5C6E" stroke-width="0.5" stroke-dasharray="4 4" />
+    )}
+    <path d={path} fill="none" stroke="#79899C" stroke-width="1" />
+    {dot && <circle cx={dot.x} cy={dot.y} r="1.6" fill="#35D39A" />}
+  </svg>
+) : (
+  <span class="meta">—</span>
+)}

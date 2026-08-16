@@ -1,0 +1,513 @@
+---
+// The whole route from filing to estimate, drawn as a circuit.
+//
+// Geometry is computed from the node registry, so a component added to the run
+// appears here without anyone drawing it. Edge weight and speed come from the
+// number of verified claims each route carried on this run.
+import { nodes as allNodes, nodeLoad, lensRows, tickerId } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
+
+const { company } = Astro.props;
+const results = company.results;
+const id = tickerId(company.ticker);
+const load = nodeLoad(company);
+const lenses = lensRows(company);
+const lensByNode = new Map(lenses.map((l) => [l.node_id, l]));
+
+// One line under each name, in the language of the desk rather than the build.
+const SAYS = {
+  J1: "Filings, transcripts and slides",
+  J2: "Street estimates and coverage",
+  J3: "Trade press, date bounded",
+  J4: "No options feed for this listing",
+  J5: "The four names in scope",
+  J6: "No macro series answered",
+  J7: "Company issued material",
+  U1: "Reported figures, each with its quote",
+  U2: "The reported series by period",
+  U3: "Filings pulled for the period",
+  U4: "Guided ranges as issued",
+  U5: "Industry reading around the quarter",
+  U6: "Not answered on this run",
+  U7: "Statutory to adjusted bridge",
+  U8: "What management said on the call",
+  U9: "How the quarter is being read",
+  U10: "Every claim, quote and filing",
+  U11: "Trailing history and its error",
+  U12: "Extrapolation from the reported series",
+  U13: "The guided range and its history",
+  U14: "Volume, price and mix",
+  U15: "Customer and supplier demand",
+  U16: "Where the Street sits",
+  U17: "Margin path and operating leverage",
+  U18: "Accruals and cash conversion",
+  U19: "What comparables have printed",
+  U20: "Rates, currency and input costs",
+  U21: "Every quote checked against its filing",
+  U22: "The strongest case, then the case against",
+  U23: "Weighs the surviving work into one range",
+  U24: "Whether the base year still compares",
+  U25: "Sizing against the comparison",
+  U26: "The figure submitted",
+  OUT: "The estimate and its write up",
+};
+
+const KIND_TONE = {
+  source: "blue",
+  agent: "violet",
+  deterministic: "teal",
+  acquire: "teal",
+  gate: "teal",
+  output: "teal",
+};
+const COLOUR = { teal: "#35D39A", violet: "#A77BFF", red: "#FF4D5E", amber: "#E0A94A", blue: "#5381A6", line: "#1A2230" };
+
+// The one node the estimate turns on.
+const CONSEQUENCE = "U23";
+
+const COLUMNS = [
+  ["A", "sources"],
+  ["B", "acquire"],
+  ["C", "evidence"],
+  ["D", "history"],
+  ["E", "workstreams"],
+  ["V1", "citations"],
+  ["F", "challenge"],
+  ["G", "weighting"],
+  ["V2", "comparability"],
+  ["H", "position"],
+  ["I", "output"],
+];
+
+// V3 sits on the comparison rail rather than in the column run.
+const RAIL_NODE = "U25";
+const columnOf = (node) => (node.id === RAIL_NODE ? null : node.stage === "V3" ? "H" : node.stage);
+
+const BOX_W = 128;
+const BOX_H = 46;
+const COL_GAP = 40;
+const ROW_GAP = 12;
+const TOP = 56;
+
+const grouped = COLUMNS.map(([letter, name]) => ({
+  letter,
+  name,
+  items: allNodes.filter((n) => columnOf(n) === letter),
+}));
+
+const tallest = Math.max(...grouped.map((g) => g.items.length));
+const bodyH = tallest * (BOX_H + ROW_GAP);
+const railY = TOP + bodyH + 54;
+const HEIGHT = railY + 54;
+const WIDTH = COLUMNS.length * (BOX_W + COL_GAP);
+
+const pos = new Map();
+grouped.forEach((group, ci) => {
+  const x = ci * (BOX_W + COL_GAP);
+  const total = group.items.length;
+  const offset = (bodyH - total * (BOX_H + ROW_GAP)) / 2;
+  group.items.forEach((node, ri) => {
+    pos.set(node.id, {
+      x,
+      y: TOP + offset + ri * (BOX_H + ROW_GAP),
+      cx: x + BOX_W / 2,
+      cy: TOP + offset + ri * (BOX_H + ROW_GAP) + BOX_H / 2,
+      col: ci,
+    });
+  });
+  group.x = x;
+});
+
+// The rail node sits in series on the comparison conductor.
+pos.set(RAIL_NODE, {
+  x: WIDTH / 2 - BOX_W / 2,
+  y: railY - BOX_H / 2,
+  cx: WIDTH / 2,
+  cy: railY,
+  col: -1,
+});
+
+const toneOf = (node) => {
+  if (node.id === CONSEQUENCE) return "red";
+  return KIND_TONE[node.kind] ?? "teal";
+};
+
+// Claim volume per route, read from the run.
+const claimCount = (results.evidence?.claims ?? []).length;
+const guidanceCount = (results.evidence?.guidance ?? []).length;
+const checked = results.reconciliation?.citations_checked ?? 0;
+
+function volumeOf(sourceId) {
+  const lens = lensByNode.get(sourceId);
+  if (lens) return lens.dropped ? 0 : lens.citations;
+  const row = load.get(sourceId);
+  if (sourceId === "U10") return checked;
+  if (sourceId === "U1") return claimCount;
+  if (sourceId === "U4") return guidanceCount;
+  if (row?.calls) return row.calls;
+  return 1;
+}
+
+const RAIL = [
+  ["U1", "B", "acquire"],
+];
+
+// Every route on the drawing. Volume decides width and speed; a dropped source
+// is drawn open rather than absent.
+const edges = [];
+const push = (from, to, opts = {}) => {
+  if (!pos.has(from) || !pos.has(to)) return;
+  edges.push({ from, to, ...opts });
+};
+
+const sources = allNodes.filter((n) => n.stage === "A");
+const acquire = allNodes.filter((n) => n.stage === "B");
+const lensNodes = allNodes.filter((n) => n.stage === "E");
+
+for (const s of sources) push(s.id, "U1", { rail: "B", off: !s.available });
+for (const a of acquire) push(a.id, "U10", { rail: "C", off: !a.available });
+push("U10", "U11");
+for (const l of lensNodes) {
+  const view = lensByNode.get(l.id);
+  push("U10", l.id, { rail: "E", dropped: view?.dropped, volume: volumeOf(l.id) });
+}
+for (const l of lensNodes) {
+  const view = lensByNode.get(l.id);
+  push(l.id, "U21", { rail: "V1", dropped: view?.dropped, volume: volumeOf(l.id) });
+}
+push("U11", "U12", { volume: claimCount });
+push("U21", "U22");
+push("U22", "U23");
+push("U23", "U24");
+push("U24", "U26");
+push("U26", "OUT");
+
+const volumes = edges.map((e) => e.volume ?? 1).filter((v) => v > 0);
+const maxV = Math.max(1, ...volumes);
+const minV = Math.min(...volumes, maxV);
+
+// Busiest route completes a cycle in 1.1s, quietest in 2.8s.
+function shape(edge) {
+  const v = edge.volume ?? minV;
+  const t = maxV === minV ? 1 : (v - minV) / (maxV - minV);
+  return {
+    width: (1 + t * 1.5).toFixed(2),
+    seconds: (2.8 - t * 1.7).toFixed(2),
+  };
+}
+
+// Where many routes meet one collector, they run onto a vertical rail rather
+// than crossing each other.
+function path(edge) {
+  const a = pos.get(edge.from);
+  const b = pos.get(edge.to);
+  const x1 = a.x + BOX_W;
+  const x2 = b.x;
+  const mid = x1 + (x2 - x1) / 2;
+  if (Math.abs(a.cy - b.cy) < 1) return `M${x1} ${a.cy} H${x2}`;
+  return `M${x1} ${a.cy} H${mid} V${b.cy} H${x2}`;
+}
+
+const flowing = edges.filter((e) => !e.dropped && !e.off);
+// Above forty simultaneous routes the quietest lose the overlay, not everything.
+const animated = new Set(
+  flowing
+    .map((e, i) => ({ i, v: e.volume ?? 1 }))
+    .sort((a, b) => b.v - a.v)
+    .slice(0, 40)
+    .map((e) => e.i),
+);
+
+const detail = Object.fromEntries(
+  allNodes.map((n) => {
+    const row = load.get(n.id) ?? {};
+    const view = lensByNode.get(n.id);
+    return [
+      n.id,
+      {
+        label: n.label,
+        says: SAYS[n.id] ?? "",
+        note: n.note ?? "",
+        kind: n.kind,
+        tier: n.tier,
+        available: n.available,
+        agent: n.agent ?? "",
+        covered: Boolean(n.covered),
+        tokens: row.tokens ?? null,
+        seconds: row.seconds ?? null,
+        usd: row.usd ?? null,
+        calls: row.calls ?? 0,
+        state: view ? view.state : n.available ? "pass" : "open",
+        citations: view ? view.citations : null,
+      },
+    ];
+  }),
+);
+
+const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
+---
+
+<div class="flowwrap" data-flow={id}>
+  <div class="flowtoggles">
+    <div class="toggle">
+      <span class="eyebrow">Routes</span>
+      <label><input type="radio" name={`view-${id}`} value="data" checked /> <span>evidence</span></label>
+      <label><input type="radio" name={`view-${id}`} value="acct" /> <span>checked by</span></label>
+    </div>
+    <div class="toggle">
+      <span class="eyebrow">Marks</span>
+      <label><input type="radio" name={`badge-${id}`} value="live" checked /> <span>this run</span></label>
+      <label><input type="radio" name={`badge-${id}`} value="build" /> <span>coverage</span></label>
+      <label><input type="radio" name={`badge-${id}`} value="cost" /> <span>spend</span></label>
+    </div>
+  </div>
+
+  <div class="legend meta">
+    <span><svg width="26" height="6"><path d="M0 3 H26" stroke="#35D39A" stroke-width="1.6" /></svg> reported and checked</span>
+    <span><svg width="26" height="6"><path d="M0 3 H26" stroke="#A77BFF" stroke-width="1.6" /></svg> written by a reader</span>
+    <span><svg width="26" height="6"><path d="M0 3 H26" stroke="#FF4D5E" stroke-width="1" stroke-dasharray="3 3" /></svg> excluded, carries nothing</span>
+    <span><svg width="26" height="6"><path d="M0 3 H26" stroke="#4E5C6E" stroke-width="1" stroke-dasharray="3 3" /></svg> not answered</span>
+  </div>
+
+  <div class="scroll-x">
+    <svg class="flow" viewBox={`0 0 ${WIDTH} ${HEIGHT}`} width={WIDTH} height={HEIGHT} role="img"
+      aria-label="The route from filing to estimate">
+      {grouped.map((group) => (
+        <text x={group.x} y="20" class="collabel">{group.letter} · {group.name}</text>
+      ))}
+
+      {/* The gate every route passes through. */}
+      <rect
+        class="gate"
+        x={pos.get("U21").x - 14}
+        y={TOP - 12}
+        width={BOX_W + 28}
+        height={bodyH + 12}
+        fill="none"
+        stroke="#243040"
+        stroke-width="1"
+        stroke-dasharray="4 6"
+      />
+
+      <g class="edges edges-data">
+        {edges.map((edge, i) => {
+          const s = shape(edge);
+          const d = path(edge);
+          const end = pos.get(edge.to);
+          if (edge.dropped) {
+            return (
+              <g>
+                <path d={d} class="edge-dropped" fill="none" stroke="#FF4D5E" stroke-width="1" stroke-dasharray="3 3" />
+                <path
+                  d={`M${end.x - 9} ${end.cy - 4} L${end.x - 1} ${end.cy + 4} M${end.x - 1} ${end.cy - 4} L${end.x - 9} ${end.cy + 4}`}
+                  stroke="#FF4D5E"
+                  stroke-width="1"
+                  fill="none"
+                />
+              </g>
+            );
+          }
+          if (edge.off) {
+            return <path d={d} fill="none" stroke="#1A2230" stroke-width="1" opacity="0.3" />;
+          }
+          const tone = lensByNode.has(edge.from) || lensByNode.has(edge.to) ? "#A77BFF" : "#35D39A";
+          return (
+            <g>
+              <path d={d} fill="none" stroke="#1A2230" stroke-width={s.width} />
+              {animated.has(i) && (
+                <path
+                  d={d}
+                  class="flowline"
+                  fill="none"
+                  stroke={tone}
+                  stroke-width={s.width}
+                  stroke-dasharray="6 10"
+                  style={`--cycle:${s.seconds}s`}
+                />
+              )}
+            </g>
+          );
+        })}
+      </g>
+
+      {/* Which reading is checked by which. Same drawing, different routes. */}
+      <g class="edges edges-acct">
+        {[["U21", "U10"], ["U24", "U23"], ["U22", "U23"], ["U11", "U12"], ["U25", "U26"]].map(([a, b]) => {
+          const from = pos.get(a);
+          const to = pos.get(b);
+          if (!from || !to) return null;
+          return (
+            <path
+              d={`M${from.cx} ${from.y + BOX_H} C ${from.cx} ${from.y + BOX_H + 40}, ${to.cx} ${to.y + BOX_H + 40}, ${to.cx} ${to.y + BOX_H}`}
+              fill="none"
+              stroke="#E0A94A"
+              stroke-width="1"
+              stroke-dasharray="2 4"
+            />
+          );
+        })}
+      </g>
+
+      {/* The comparison rail. Fixed speed, its own conductor, touched by nothing. */}
+      <path
+        class="bus"
+        d={`M${pos.get(busTap)?.cx ?? 0} ${pos.get(busTap)?.y + BOX_H} V${railY} H${pos.get(RAIL_NODE).x}`}
+        fill="none"
+        stroke="#35D39A"
+        stroke-width="2"
+      />
+      <path
+        class="bus"
+        d={`M${pos.get(RAIL_NODE).x + BOX_W} ${railY} H${pos.get("U26").cx} V${pos.get("U26").y + BOX_H}`}
+        fill="none"
+        stroke="#35D39A"
+        stroke-width="2"
+      />
+      <text x={pos.get(RAIL_NODE).x} y={railY + 40} class="busnote">
+        Street consensus, taken once at {busTap} and carried to the position. Nothing in the reading can move it.
+      </text>
+
+      {allNodes.map((node) => {
+        const p = pos.get(node.id);
+        if (!p) return null;
+        const tone = toneOf(node);
+        const row = load.get(node.id) ?? {};
+        const dashed = !node.available || node.kind === "advisory";
+        return (
+          <g
+            class="node"
+            data-node={node.id}
+            tabindex="0"
+            role="button"
+            aria-label={`${node.label}. ${SAYS[node.id] ?? ""}`}
+          >
+            <text x={p.x} y={p.y - 4} class="nodeid">{node.id}</text>
+            <rect
+              x={p.x}
+              y={p.y}
+              width={BOX_W}
+              height={BOX_H}
+              rx="3"
+              fill="none"
+              stroke={dashed ? "#4E5C6E" : COLOUR[tone]}
+              stroke-width="1"
+              stroke-dasharray={dashed ? "3 3" : undefined}
+            />
+            <text x={p.x + 8} y={p.y + 15} class="nodename" fill={dashed ? "#4E5C6E" : COLOUR[tone]}>
+              {node.label}
+            </text>
+            <text x={p.x + 8} y={p.y + 27} class="nodesays">{SAYS[node.id] ?? ""}</text>
+            <text x={p.x + 8} y={p.y + 40} class="badge badge-live">
+              {row.tokens ? `${f.tokens(row.tokens)} tok` : node.available ? "ran" : "not answered"}
+              {row.seconds ? `  ${f.seconds(row.seconds)}` : ""}
+            </text>
+            <text x={p.x + 8} y={p.y + 40} class="badge badge-build">
+              {node.covered ? "covered by a check" : "no check"}
+            </text>
+            <text x={p.x + 8} y={p.y + 40} class="badge badge-cost">
+              {row.usd ? f.usd(row.usd, 3) : "no spend"}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  </div>
+
+  <div class="nodedetail panel" data-detail>
+    <div class="panel-head">
+      <span class="eyebrow" data-detail-name>Select a box</span>
+      <span class="plus">+</span>
+    </div>
+    <div class="panel-body">
+      <p class="small" data-detail-says>Every box on the drawing opens here, with what it reads, whether a check covers it, and what it did on this run.</p>
+      <div class="kv" data-detail-rows></div>
+    </div>
+  </div>
+
+  <script type="application/json" data-flow-detail set:html={JSON.stringify(detail)}></script>
+</div>
+
+<style>
+  .flowwrap { margin-top: 16px; }
+  .flowtoggles { display: flex; gap: 32px; flex-wrap: wrap; margin-bottom: 10px; }
+  .toggle { display: flex; align-items: center; gap: 10px; }
+  .toggle label { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--secondary); cursor: pointer; }
+  .toggle input { accent-color: #a77bff; width: 10px; height: 10px; }
+  .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 9.5px; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+
+  svg.flow { display: block; }
+  .collabel { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; fill: var(--faint); font-family: var(--mono); }
+  .nodeid { font-size: 8.5px; fill: var(--faint); font-family: var(--mono); }
+  .nodename { font-size: 11px; font-family: var(--mono); }
+  .nodesays { font-size: 9.5px; fill: var(--secondary); font-family: var(--mono); }
+  .badge { font-size: 8.5px; fill: var(--faint); font-family: var(--mono); }
+  .busnote { font-size: 9.5px; fill: var(--faint); font-family: var(--mono); }
+
+  .node { cursor: pointer; }
+  .node:hover rect { stroke-width: 1.5; }
+  .node:focus-visible rect { stroke: #35d39a; }
+
+  /* Arrival: the border takes its colour, an inner stroke fades in and out. */
+  .node rect { transition: stroke 240ms linear; }
+
+  .edges-acct { display: none; }
+  .flowwrap:has(input[value="acct"]:checked) .edges-acct { display: block; }
+  .flowwrap:has(input[value="acct"]:checked) .edges-data .flowline { display: none; }
+
+  .badge-build, .badge-cost { display: none; }
+  .flowwrap:has(input[value="build"]:checked) .badge-live { display: none; }
+  .flowwrap:has(input[value="build"]:checked) .badge-build { display: block; }
+  .flowwrap:has(input[value="cost"]:checked) .badge-live { display: none; }
+  .flowwrap:has(input[value="cost"]:checked) .badge-cost { display: block; }
+
+  /* Current. Only the dash offset moves. */
+  @keyframes current { to { stroke-dashoffset: -16; } }
+  .flowline { animation: current var(--cycle, 2s) linear infinite; }
+  .bus { animation: current 2.2s linear infinite; stroke-dasharray: 6 10; }
+  .gate { animation: gatecurrent 6s linear infinite; }
+  @keyframes gatecurrent { to { stroke-dashoffset: -20; } }
+
+  .nodedetail { margin-top: 16px; max-width: 720px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flowline, .bus, .gate { animation: none; }
+  }
+</style>
+
+<script>
+  // The only work here is opening a box and writing what the run recorded.
+  for (const wrap of document.querySelectorAll("[data-flow]")) {
+    const detail = JSON.parse(wrap.querySelector("[data-flow-detail]").textContent);
+    const name = wrap.querySelector("[data-detail-name]");
+    const says = wrap.querySelector("[data-detail-says]");
+    const rows = wrap.querySelector("[data-detail-rows]");
+    const open = (id) => {
+      const d = detail[id];
+      if (!d) return;
+      name.textContent = `${id} · ${d.label}`;
+      says.textContent = d.says || d.note;
+      const pairs = [
+        ["Reads", d.says || "—"],
+        ["Checked", d.covered ? "covered by a check" : "no check covers this"],
+        ["On this run", d.state === "dropped" ? "excluded" : d.state === "abstained" ? "no view offered" : d.available ? "ran" : "not answered"],
+      ];
+      if (d.calls) pairs.push(["Calls", String(d.calls)]);
+      if (d.tokens) pairs.push(["Tokens", d.tokens.toLocaleString("en-GB")]);
+      if (d.usd) pairs.push(["Spend", `$${d.usd.toFixed(3)}`]);
+      if (d.citations !== null && d.citations !== undefined) pairs.push(["Citations", String(d.citations)]);
+      rows.innerHTML = pairs
+        .map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v num">${v}</span></div>`)
+        .join("");
+    };
+    for (const node of wrap.querySelectorAll("[data-node]")) {
+      node.addEventListener("click", () => open(node.dataset.node));
+      node.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          open(node.dataset.node);
+        }
+      });
+    }
+  }
+</script>
