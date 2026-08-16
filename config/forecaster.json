@@ -59,6 +59,6 @@
   "models": {
     "cheap": "claude-haiku-4-5-20251001",
     "mid": "claude-sonnet-5",
-    "expensive": "claude-opus-5"
+    "deep": "claude-opus-5"
   }
 }

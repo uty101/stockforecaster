@@ -31,11 +31,14 @@ class CallRecord:
     duration_s: float
 
 
-# USD per million tokens. Cache writes bill at 1.25x input, cache reads at 0.1x.
+# USD per million tokens, list prices. Cache writes bill at 1.25x input, cache
+# reads at 0.1x. Sonnet 5 has an introductory $2/$10 running to 2026-08-31, which
+# covers this run; the list price is used here so the Cost sheet never reports a
+# number lower than what could actually be billed.
 PRICES: dict[str, dict[str, float]] = {
     "claude-haiku-4-5": {"input": 1.00, "output": 5.00},
     "claude-sonnet-5": {"input": 3.00, "output": 15.00},
-    "claude-opus-5": {"input": 15.00, "output": 75.00},
+    "claude-opus-5": {"input": 5.00, "output": 25.00},
 }
 
 
@@ -68,7 +71,7 @@ def call_cost_usd(
 class CostLedger:
     ceiling_usd: float
     calls: list[CallRecord] = field(default_factory=list)
-    expensive_calls: int = 0
+    deep_calls: int = 0
 
     @property
     def spent_usd(self) -> float:
@@ -83,8 +86,8 @@ class CostLedger:
 
     def record(self, call: CallRecord) -> CallRecord:
         self.calls.append(call)
-        if call.tier == "expensive" and not call.cached:
-            self.expensive_calls += 1
+        if call.tier == "deep" and not call.cached:
+            self.deep_calls += 1
         return call
 
     def per_stage(self) -> dict[str, dict[str, Any]]:

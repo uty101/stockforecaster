@@ -45,6 +45,7 @@ from ..forms import (
 from ..stages.a_sources import LoadedSources
 
 STAGE = "B"
+NODES = [node.id for node in __import__("forecaster.nodes", fromlist=["x"]).ACQUIRERS]
 
 
 @dataclass
@@ -157,7 +158,7 @@ ABSENT_REASONS = {
 
 def run(ctx: RunContext, sources: LoadedSources) -> Dossier:
     started = time.monotonic()
-    ctx.events.emit(STAGE, "stage_started", ticker=ctx.ticker)
+    ctx.events.emit(STAGE, "stage_started", nodes=NODES, ticker=ctx.ticker)
 
     budgets = ctx.config.section("acquire_budgets")
     chain = sources.chain
@@ -173,8 +174,8 @@ def run(ctx: RunContext, sources: LoadedSources) -> Dossier:
     transcripts: list[Document] = chain.fetch("transcripts", ctx.ticker, required=True)
     slides: list[Document] = chain.fetch("slides", ctx.ticker) or []
 
-    _acquire_filings(ctx, dossier, filings, budgets)
-    _acquire_calls(ctx, dossier, transcripts, budgets)
+    _acquire_filings(ctx, dossier, filings, budgets)  # U3
+    _acquire_calls(ctx, dossier, transcripts, budgets)  # U8 reads this sequence
 
     slide_budget = budgets.get("slides", 12)
     dossier.slides = slides[:slide_budget]

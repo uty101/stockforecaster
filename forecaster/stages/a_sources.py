@@ -22,6 +22,7 @@ from ..sources.loader import SourceChain, build_chain
 from ..sources.protocol import OPTIONAL_METHODS, REQUIRED_METHODS
 
 STAGE = "A"
+NODES = [node.id for node in __import__("forecaster.nodes", fromlist=["x"]).SOURCES]
 
 
 @dataclass
@@ -43,7 +44,7 @@ class LoadedSources:
 
 def run(ctx: RunContext) -> LoadedSources:
     started = time.monotonic()
-    ctx.events.emit(STAGE, "stage_started", ticker=ctx.ticker, as_of=ctx.as_of.isoformat())
+    ctx.events.emit(STAGE, "stage_started", nodes=NODES, ticker=ctx.ticker, as_of=ctx.as_of.isoformat())
 
     chain = build_chain(ctx.config, ctx.events)
     loaded = LoadedSources(chain=chain)
