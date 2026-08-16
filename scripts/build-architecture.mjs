@@ -1,4 +1,83 @@
-<!doctype html>
+// Generate architecture/index.html from the actual run.
+//
+// Generated rather than hand-written for one reason: a hand-written page drifts
+// from the system within an hour of editing either, and the judging asks whether
+// the diagram matches the code. Every count, cost and node on the page below is
+// read out of results.json and the node registry, so the page cannot claim a
+// system that did not run. Regenerate before locking.
+
+import fs from "node:fs";
+import path from "node:path";
+
+const root = path.resolve(import.meta.dirname, "..");
+const runsDir = path.join(root, "runs");
+const definitions = JSON.parse(fs.readFileSync(path.join(root, "challenge", "companies.json"), "utf8"));
+
+function newestResults(ticker) {
+  const prefix = `${ticker.replace(":", "_")}-`;
+  if (!fs.existsSync(runsDir)) return null;
+  const dirs = fs.readdirSync(runsDir)
+    .filter((n) => n.startsWith(prefix))
+    .map((n) => path.join(runsDir, n, "results.json"))
+    .filter((f) => fs.existsSync(f))
+    .map((f) => ({ f, m: fs.statSync(f).mtimeMs }))
+    .sort((a, b) => b.m - a.m);
+  return dirs.length ? JSON.parse(fs.readFileSync(dirs[0].f, "utf8")) : null;
+}
+
+const runs = definitions.companies
+  .map((c) => ({ company: c, results: newestResults(c.ticker) }))
+  .filter((r) => r.results);
+
+const prompts = fs.readdirSync(path.join(root, "llm", "prompts")).filter((f) => f.endsWith(".md"));
+const nodes = runs[0]?.results?.nodes ?? [];
+const testCount = fs
+  .readdirSync(path.join(root, "tests"))
+  .filter((f) => f.startsWith("test_"))
+  .reduce((n, f) => n + (fs.readFileSync(path.join(root, "tests", f), "utf8").match(/def test_/g) ?? []).length, 0);
+
+const totals = {
+  cost: runs.reduce((n, r) => n + (r.results.cost?.spent_usd ?? 0), 0),
+  claims: runs.reduce((n, r) => n + (r.results.evidence?.counts?.claims ?? 0), 0),
+  checked: runs.reduce((n, r) => n + (r.results.reconciliation?.citations_checked ?? 0), 0),
+  matched: runs.reduce((n, r) => n + (r.results.reconciliation?.citations_matched ?? 0), 0),
+  dropped: runs.reduce((n, r) => n + (r.results.reconciliation?.dropped ?? []).length, 0),
+  research: runs.reduce((n, r) => n + (r.results.dossier?.counts?.research ?? 0), 0),
+  docs: runs.reduce((n, r) => n + Object.keys(r.results.evidence?.documents ?? {}).length, 0),
+};
+
+const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+const fmt = (v) => (typeof v !== "number" ? "—" : Math.abs(v) >= 1000
+  ? v.toLocaleString("en-GB", { maximumFractionDigits: 0 })
+  : v.toLocaleString("en-GB", { maximumFractionDigits: 3 }));
+
+const STAGES = [
+  ["A", "sources"], ["B", "acquire"], ["C", "structure"], ["D", "model"], ["E", "analyse"],
+  ["V1", "reconcile"], ["F", "challenge"], ["G", "judge"], ["V2", "compare"], ["H", "position"], ["I", "output"],
+];
+
+// --- the diagram, inline SVG, self-contained -------------------------------
+const colW = 132, rowH = 30, top = 46;
+let svgNodes = "";
+STAGES.forEach(([stage], i) => {
+  const list = nodes.filter((n) => n.stage === stage);
+  svgNodes += `<text x="${i * colW + 8}" y="26" class="col">${stage}</text>`;
+  list.forEach((n, j) => {
+    const y = top + j * rowH;
+    const dark = n.available === false;
+    svgNodes += `<rect x="${i * colW + 4}" y="${y}" width="${colW - 12}" height="${rowH - 7}" rx="4" class="${dark ? "nd dark" : "nd"}"/>`;
+    svgNodes += `<text x="${i * colW + 11}" y="${y + 15}" class="nid">${esc(n.id)}</text>`;
+    svgNodes += `<text x="${i * colW + 40}" y="${y + 15}" class="nlbl">${esc(n.label.slice(0, 15))}</text>`;
+  });
+});
+const maxRows = Math.max(...STAGES.map(([s]) => nodes.filter((n) => n.stage === s).length));
+const svgH = top + maxRows * rowH + 46;
+const svgW = STAGES.length * colW;
+// The consensus bus runs along the bottom as its own conductor.
+svgNodes += `<line x1="4" y1="${svgH - 24}" x2="${svgW - 12}" y2="${svgH - 24}" class="bus"/>`;
+svgNodes += `<text x="8" y="${svgH - 30}" class="buslbl">consensus bus — tapped at U1, carried untouched, rendered for comparison only (positioning off)</text>`;
+
+const page = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -44,7 +123,7 @@
 <body><div class="wrap">
 
 <h1>Forecaster</h1>
-<p class="tag">Twelve numbers for four companies · lock date 2026-08-16 · generated from run <code>d381e6c8</code></p>
+<p class="tag">Twelve numbers for four companies · lock date ${esc(runs[0]?.results?.header?.as_of ?? "")} · generated from run <code>${esc(runs[0]?.results?.header?.run_id ?? "")}</code></p>
 
 <p class="lede">Nine lenses read one shared body of evidence, independently and blind to each other.
 Every claim they make must quote a document that exists, and a lens that cites something it cannot
@@ -53,29 +132,29 @@ it would move the number — never by how many lenses agreed. Python writes JSON
 and computes nothing.</p>
 
 <div class="grid">
-  <div class="stat"><b>4×3</b><span>companies × metrics</span></div>
-  <div class="stat"><b>654</b><span>claims, each with a source and a quote</span></div>
-  <div class="stat"><b>100%</b><span>citations verified against their document</span></div>
-  <div class="stat"><b>$4.37</b><span>total spend, $25 ceiling per run</span></div>
+  <div class="stat"><b>${runs.length}×3</b><span>companies × metrics</span></div>
+  <div class="stat"><b>${totals.claims}</b><span>claims, each with a source and a quote</span></div>
+  <div class="stat"><b>${totals.checked ? Math.round((totals.matched / totals.checked) * 100) : 0}%</b><span>citations verified against their document</span></div>
+  <div class="stat"><b>$${totals.cost.toFixed(2)}</b><span>total spend, $25 ceiling per run</span></div>
 </div>
 
 <h2>The signal flow</h2>
 <p>Every node carries a stable ID used in module names, event names and log lines, so a line in the
 event tape identifies a node without ambiguity. Dashed nodes have no source behind them in this
 build and are kept, labelled, rather than deleted — deleting them would hide the gap.</p>
-<svg viewBox="0 0 1452 362" role="img" aria-label="Pipeline node diagram"><text x="8" y="26" class="col">A</text><rect x="4" y="46" width="120" height="23" rx="4" class="nd"/><text x="11" y="61" class="nid">J1</text><text x="40" y="61" class="nlbl">Frozen filing c</text><rect x="4" y="76" width="120" height="23" rx="4" class="nd"/><text x="11" y="91" class="nid">J2</text><text x="40" y="91" class="nlbl">Market data</text><rect x="4" y="106" width="120" height="23" rx="4" class="nd"/><text x="11" y="121" class="nid">J3</text><text x="40" y="121" class="nlbl">News and web re</text><rect x="4" y="136" width="120" height="23" rx="4" class="nd dark"/><text x="11" y="151" class="nid">J4</text><text x="40" y="151" class="nlbl">Options chain</text><rect x="4" y="166" width="120" height="23" rx="4" class="nd"/><text x="11" y="181" class="nid">J5</text><text x="40" y="181" class="nlbl">Universe</text><rect x="4" y="196" width="120" height="23" rx="4" class="nd dark"/><text x="11" y="211" class="nid">J6</text><text x="40" y="211" class="nlbl">Macro</text><rect x="4" y="226" width="120" height="23" rx="4" class="nd"/><text x="11" y="241" class="nid">J7</text><text x="40" y="241" class="nlbl">Sponsor feed</text><text x="140" y="26" class="col">B</text><rect x="136" y="46" width="120" height="23" rx="4" class="nd"/><text x="143" y="61" class="nid">U1</text><text x="172" y="61" class="nlbl">B1 numbers</text><rect x="136" y="76" width="120" height="23" rx="4" class="nd"/><text x="143" y="91" class="nid">U2</text><text x="172" y="91" class="nlbl">B1B series</text><rect x="136" y="106" width="120" height="23" rx="4" class="nd"/><text x="143" y="121" class="nid">U3</text><text x="172" y="121" class="nlbl">B2 filings</text><rect x="136" y="136" width="120" height="23" rx="4" class="nd"/><text x="143" y="151" class="nid">U4</text><text x="172" y="151" class="nlbl">B5 extract</text><rect x="136" y="166" width="120" height="23" rx="4" class="nd"/><text x="143" y="181" class="nid">U5</text><text x="172" y="181" class="nlbl">B3 industry res</text><rect x="136" y="196" width="120" height="23" rx="4" class="nd dark"/><text x="143" y="211" class="nid">U6</text><text x="172" y="211" class="nlbl">B4 macro</text><rect x="136" y="226" width="120" height="23" rx="4" class="nd"/><text x="143" y="241" class="nid">U7</text><text x="172" y="241" class="nlbl">B6 bridge</text><rect x="136" y="256" width="120" height="23" rx="4" class="nd"/><text x="143" y="271" class="nid">U8</text><text x="172" y="271" class="nlbl">E7 calls</text><rect x="136" y="286" width="120" height="23" rx="4" class="nd"/><text x="143" y="301" class="nid">U9</text><text x="172" y="301" class="nlbl">E6 perception</text><text x="272" y="26" class="col">C</text><rect x="268" y="46" width="120" height="23" rx="4" class="nd"/><text x="275" y="61" class="nid">U10</text><text x="304" y="61" class="nlbl">Evidence store</text><text x="404" y="26" class="col">D</text><rect x="400" y="46" width="120" height="23" rx="4" class="nd"/><text x="407" y="61" class="nid">U11</text><text x="436" y="61" class="nlbl">Income model</text><text x="536" y="26" class="col">E</text><rect x="532" y="46" width="120" height="23" rx="4" class="nd"/><text x="539" y="61" class="nid">U12</text><text x="568" y="61" class="nlbl">Mechanical</text><rect x="532" y="76" width="120" height="23" rx="4" class="nd"/><text x="539" y="91" class="nid">U13</text><text x="568" y="91" class="nlbl">Guidance</text><rect x="532" y="106" width="120" height="23" rx="4" class="nd"/><text x="539" y="121" class="nid">U14</text><text x="568" y="121" class="nlbl">Drivers</text><rect x="532" y="136" width="120" height="23" rx="4" class="nd"/><text x="539" y="151" class="nid">U15</text><text x="568" y="151" class="nlbl">Demand</text><rect x="532" y="166" width="120" height="23" rx="4" class="nd"/><text x="539" y="181" class="nid">U16</text><text x="568" y="181" class="nlbl">Market</text><rect x="532" y="196" width="120" height="23" rx="4" class="nd"/><text x="539" y="211" class="nid">U17</text><text x="568" y="211" class="nlbl">Margins</text><rect x="532" y="226" width="120" height="23" rx="4" class="nd"/><text x="539" y="241" class="nid">U18</text><text x="568" y="241" class="nlbl">Forensics</text><rect x="532" y="256" width="120" height="23" rx="4" class="nd"/><text x="539" y="271" class="nid">U19</text><text x="568" y="271" class="nlbl">Peer read</text><rect x="532" y="286" width="120" height="23" rx="4" class="nd"/><text x="539" y="301" class="nid">U20</text><text x="568" y="301" class="nlbl">Macro</text><text x="668" y="26" class="col">V1</text><rect x="664" y="46" width="120" height="23" rx="4" class="nd"/><text x="671" y="61" class="nid">U21</text><text x="700" y="61" class="nlbl">Reconcile</text><text x="800" y="26" class="col">F</text><rect x="796" y="46" width="120" height="23" rx="4" class="nd"/><text x="803" y="61" class="nid">U22</text><text x="832" y="61" class="nlbl">Champion</text><text x="932" y="26" class="col">G</text><rect x="928" y="46" width="120" height="23" rx="4" class="nd"/><text x="935" y="61" class="nid">U23</text><text x="964" y="61" class="nlbl">Judge</text><text x="1064" y="26" class="col">V2</text><rect x="1060" y="46" width="120" height="23" rx="4" class="nd"/><text x="1067" y="61" class="nid">U24</text><text x="1096" y="61" class="nlbl">Comparability</text><text x="1196" y="26" class="col">H</text><rect x="1192" y="46" width="120" height="23" rx="4" class="nd"/><text x="1199" y="61" class="nid">U26</text><text x="1228" y="61" class="nlbl">Position</text><text x="1328" y="26" class="col">I</text><rect x="1324" y="46" width="120" height="23" rx="4" class="nd"/><text x="1331" y="61" class="nid">OUT</text><text x="1360" y="61" class="nlbl">Output</text><line x1="4" y1="338" x2="1440" y2="338" class="bus"/><text x="8" y="332" class="buslbl">consensus bus — tapped at U1, carried untouched, rendered for comparison only (positioning off)</text></svg>
+<svg viewBox="0 0 ${svgW} ${svgH}" role="img" aria-label="Pipeline node diagram">${svgNodes}</svg>
 
 <h2>How a number is made</h2>
 <table>
 <tr><th>stage</th><th>what happens</th><th>failure behaviour</th></tr>
 <tr><td><code>A</code> sources</td><td>Adapters by priority. Frozen 1,139-document corpus first; date-bounded web research behind it.</td><td>raise, naming the missing method</td></tr>
 <tr><td><code>B</code> acquire</td><td>Results releases picked by <b>form</b>, never by date. Eight earnings calls kept as an ordered sequence.</td><td>drop, listing what was skipped</td></tr>
-<tr><td><code>B3</code> research</td><td>An agent proposes searches, reads what returns, and asks for what is missing. 149 documents retrieved.</td><td>degrade, named</td></tr>
+<tr><td><code>B3</code> research</td><td>An agent proposes searches, reads what returns, and asks for what is missing. ${totals.research} documents retrieved.</td><td>degrade, named</td></tr>
 <tr><td><code>B5</code> extract</td><td>Prose becomes typed claims, each carrying a verbatim quote matched back to its document.</td><td>drop on a failed quote match</td></tr>
 <tr><td><code>C</code> structure</td><td>Evidence store with stable citation IDs. Verification splits three ways: prose, structured, derived.</td><td>raise</td></tr>
 <tr><td><code>D</code> model</td><td>Income model: history as filed, medians with scaled MAD, projection, and a reproduction check.</td><td>degrade on a failed reproduction</td></tr>
 <tr><td><code>E</code> analyse</td><td>Nine lenses, blind to each other. One has no model at all.</td><td>drop, handled at V1</td></tr>
-<tr><td><code>V1</code> reconcile</td><td>Deterministic. Every cited ID must exist; every quote must match. 0 lenses dropped on this run.</td><td>raise if every lens dies</td></tr>
+<tr><td><code>V1</code> reconcile</td><td>Deterministic. Every cited ID must exist; every quote must match. ${totals.dropped} lens${totals.dropped === 1 ? "" : "es"} dropped on this run.</td><td>raise if every lens dies</td></tr>
 <tr><td><code>F</code> challenge</td><td>Each surviving view argued at its strongest, then attacked. Surviving confidence replaces stated confidence.</td><td>degrade, named</td></tr>
 <tr><td><code>G</code> judge</td><td>Exactly one deep-tier call. Five named quantiles per metric, weighted by materiality.</td><td>degrade to a labelled fallback</td></tr>
 <tr><td><code>V2</code> compare</td><td>M&amp;A, accounting change, a 53rd week, withdrawn guidance.</td><td>degrade, named</td></tr>
@@ -86,91 +165,14 @@ build and are kept, labelled, rather than deleted — deleting them would hide t
 <h2>The forecasts</h2>
 <table>
 <tr><th>company</th><th>metric</th><th class="n">our number</th><th class="n">street</th><th class="n">baseline</th><th class="n">lenses kept</th></tr>
-<tr>
-<td><b>HD</b> FY2026Q2</td>
-<td>Net sales</td>
-<td class="n"><b>47,150</b></td>
-<td class="n">—</td>
-<td class="n">41,828</td>
-<td class="n">9/9</td>
-</tr><tr>
-<td></td>
-<td>Adjusted diluted EPS</td>
-<td class="n"><b>4.62</b></td>
-<td class="n">—</td>
-<td class="n">4.11</td>
-<td class="n"></td>
-</tr><tr>
-<td></td>
-<td>Comparable sales, total company</td>
-<td class="n"><b>0.9</b></td>
-<td class="n">—</td>
-<td class="n">0.38</td>
-<td class="n"></td>
-</tr><tr>
-<td><b>ADI</b> FY2026Q3</td>
-<td>Revenue</td>
-<td class="n"><b>3,945</b></td>
-<td class="n">—</td>
-<td class="n">3,160</td>
-<td class="n">9/9</td>
-</tr><tr>
-<td></td>
-<td>Adjusted diluted EPS</td>
-<td class="n"><b>3.38</b></td>
-<td class="n">—</td>
-<td class="n">3.213</td>
-<td class="n"></td>
-</tr><tr>
-<td></td>
-<td>Adjusted gross margin</td>
-<td class="n"><b>73.4</b></td>
-<td class="n">—</td>
-<td class="n">73.397</td>
-<td class="n"></td>
-</tr><tr>
-<td><b>LSE:HAS</b> FY2026</td>
-<td>Net fees</td>
-<td class="n"><b>897</b></td>
-<td class="n">—</td>
-<td class="n">-8.786</td>
-<td class="n">9/9</td>
-</tr><tr>
-<td></td>
-<td>Pre-exceptional basic EPS</td>
-<td class="n"><b>1.2</b></td>
-<td class="n">—</td>
-<td class="n">0.021</td>
-<td class="n"></td>
-</tr><tr>
-<td></td>
-<td>Pre-exceptional operating profit</td>
-<td class="n"><b>45.2</b></td>
-<td class="n">—</td>
-<td class="n">55.476</td>
-<td class="n"></td>
-</tr><tr>
-<td><b>DE</b> FY2026Q3</td>
-<td>Worldwide net sales and revenues</td>
-<td class="n"><b>12,350</b></td>
-<td class="n">10,732</td>
-<td class="n">10,732</td>
-<td class="n">9/9</td>
-</tr><tr>
-<td></td>
-<td>Diluted EPS (GAAP)</td>
-<td class="n"><b>4.9</b></td>
-<td class="n">4.696</td>
-<td class="n">4.696</td>
-<td class="n"></td>
-</tr><tr>
-<td></td>
-<td>Production &amp; Precision Ag operating profit</td>
-<td class="n"><b>535</b></td>
-<td class="n">—</td>
-<td class="n">—</td>
-<td class="n"></td>
-</tr>
+${runs.map((r) => r.results.forecast.metrics.map((m, i) => `<tr>
+<td>${i === 0 ? `<b>${esc(r.company.ticker)}</b> ${esc(r.company.period)}` : ""}</td>
+<td>${esc(m.metric_label)}</td>
+<td class="n"><b>${fmt(m.forecast)}</b></td>
+<td class="n">${fmt(m.consensus)}</td>
+<td class="n">${fmt(m.baseline)}</td>
+<td class="n">${i === 0 ? `${(r.results.reconciliation?.surviving ?? []).length}/9` : ""}</td>
+</tr>`).join("")).join("")}
 </table>
 
 <h2>Decisions worth defending</h2>
@@ -233,15 +235,21 @@ check them against.</div>
 <h2>Reproducing this</h2>
 <table>
 <tr><td><code>py -m forecaster.final_run</code></td><td>the final command: pipeline, workbooks, checks, one timestamped log under <code>logs/</code></td></tr>
-<tr><td><code>py -m unittest discover -s tests -t .</code></td><td>62 tests</td></tr>
+<tr><td><code>py -m unittest discover -s tests -t .</code></td><td>${testCount} tests</td></tr>
 <tr><td><code>cd site &amp;&amp; node prep.mjs &amp;&amp; npx astro dev</code></td><td>the nine sheets on port 4321</td></tr>
 <tr><td><code>node scripts/build-architecture.mjs</code></td><td>regenerates this page from the run</td></tr>
 </table>
-<p>19 prompt files under <code>llm/prompts/</code>, one per agent, each carrying its
+<p>${prompts.length} prompt files under <code>llm/prompts/</code>, one per agent, each carrying its
 version. The Agents sheet is generated from that directory rather than a hand-kept list, so a prompt
 without a roster entry shows as a mismatch instead of drifting silently.</p>
 
-<div class="foot">Generated 2026-08-16T13:33:55.485Z from 4 completed runs ·
-34 nodes · 19 agents · 62 tests · 445 evidence documents</div>
+<div class="foot">Generated ${new Date().toISOString()} from ${runs.length} completed run${runs.length === 1 ? "" : "s"} ·
+${nodes.length} nodes · ${prompts.length} agents · ${testCount} tests · ${totals.docs} evidence documents</div>
 
-</div></body></html>
+</div></body></html>`;
+
+fs.writeFileSync(path.join(root, "architecture", "index.html"), page, "utf8");
+console.log(
+  `architecture/index.html — ${(Buffer.byteLength(page) / 1024).toFixed(1)} KB, ` +
+    `${runs.length} runs, ${nodes.length} nodes, ${prompts.length} agents, ${testCount} tests`,
+);

@@ -8,6 +8,7 @@
   "corpus_frozen_at": "2026-08-14",
   "source_priority": [
     "corpus",
+    "market",
     "news",
     "research"
   ],
@@ -40,7 +41,7 @@
         "DE": "DE",
         "LSE:HAS": "HAS.L"
       },
-      "_disabled_reason": "Taken out of the priority chain on purpose. Every historical figure we need is in the filings in this repository, and reading them there keeps each number traceable to a document rather than to a vendor response. The only thing this source uniquely carried was forward analyst consensus, and positioning toward consensus is switched off, so it fed nothing the forecast depends on. Consensus figures quoted inside retrieved news articles still reach the lenses as ordinary, quotable evidence."
+      "_role": "Comparison only. Consensus is acquired, carried on its own bus and rendered beside every forecast as the Street number, so the sheets can show how far our estimate sits from the market. It does not feed the forecast: positioning is switched off. Historical figures still come from the filings in this repository, never from here."
     },
     "news": {
       "kind": "exa_search",
