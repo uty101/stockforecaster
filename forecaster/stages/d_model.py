@@ -176,6 +176,10 @@ def _build_metric(ctx: RunContext, metric: Metric, evidence: EvidenceStore) -> M
     for claim in matched:
         if claim.value is None:
             continue
+        rejection = _wrong_kind(claim, metric)
+        if rejection:
+            built.notes.append(rejection)
+            continue
         built.observations.append(
             Observation(
                 period_label=claim.period_label,
@@ -267,6 +271,42 @@ def _growth_series(observations: list[Observation]) -> list[float]:
             continue
         growths.append((current.value - previous.value) / abs(previous.value))
     return growths
+
+
+def _wrong_kind(claim: Any, metric: Metric) -> str | None:
+    """Reject a value that is not the same kind of thing as the metric.
+
+    A results release says "net fees declined 15%" in the same breath as it gives
+    net fees in millions. Both mention net fees, so both match on label -- but one
+    is a level and the other is a rate of change, and a series mixing them
+    produces a median of nothing and a baseline that can come out negative.
+
+    Hays showed this in full: fourteen of sixteen "net fees" observations were
+    percentage declines sitting in a series measured in pounds.
+    """
+    units = (claim.units or "").lower()
+    basis = (claim.basis or "").lower()
+
+    if metric.kind in ("money", "per_share") and "percent" in units:
+        return (
+            f"discarded a percentage value ({claim.value}%) offered for {metric.label}, which is "
+            f"measured in {metric.units}: a rate of change is not a level, and mixing the two "
+            f"makes every statistic downstream meaningless"
+        )
+    if metric.is_percent and units and "percent" not in units and "%" not in units:
+        return (
+            f"discarded a value reported in {claim.units!r} offered for {metric.label}, which is "
+            "a percentage"
+        )
+    # Pre-exceptional and post-exceptional are different numbers for the same
+    # line, and Hays reports both.
+    wants_adjusted = any(word in metric.label.lower() for word in ("adjusted", "pre-exceptional"))
+    if wants_adjusted and ("post-exception" in basis or "statutory" in basis):
+        return (
+            f"discarded a {claim.basis} value offered for {metric.label}, which is reported "
+            "pre-exceptional; the two are different numbers for the same line"
+        )
+    return None
 
 
 def _harmonise_magnitude(ctx: RunContext, built: MetricModel, metric: Metric) -> None:

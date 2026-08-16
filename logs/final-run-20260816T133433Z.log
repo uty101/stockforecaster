@@ -422,3 +422,112 @@
 2026-08-16T13:38:25.360Z log | [DE] B5  agent extract_metrics served from cache, $0.00
 2026-08-16T13:38:25.364Z log | [DE] B5  agent extract_metrics served from cache, $0.00
 2026-08-16T13:38:25.366Z log | [DE] B5  agent extract_metrics served from cache, $0.00
+2026-08-16T13:38:25.832Z log | [DE] B5  agent extract_guidance served from cache, $0.00
+2026-08-16T13:38:25.876Z log | [DE] B5  -- stage B5 finished in 0.592s {"metric_documents": 12, "metric_values": 189, "guidance_items": 1, "dropped": 100} [100 value(s) dropped on quote mismatch; each one is in events.jsonl]
+2026-08-16T13:38:25.880Z log | [DE] A   source: corpus did not answer consensus(DE, FY2026Q3) -- returned nothing
+2026-08-16T13:38:26.021Z log | [DE] A   source: consensus(DE, FY2026Q3) answered by market (after corpus declined)
+2026-08-16T13:38:26.025Z log | [DE] C   -- stage C started
+2026-08-16T13:38:26.030Z log | [DE] C   -- stage C finished in 0.005s {"cost_usd": 0.0, "claims": 187, "guidance": 1, "documents": 111, "dropped": 104, "verification_split": {"prose": 186, "structured": 2, "derived": 0}}
+2026-08-16T13:38:26.035Z log | [DE] D   -- stage D started
+2026-08-16T13:38:26.051Z log | [DE] D   -- stage D finished in 0.016s {"cost_usd": 0.0, "projected": 3, "degraded": false}
+2026-08-16T13:38:26.055Z log | [DE] E   -- stage E started
+2026-08-16T13:38:26.059Z log | [DE] E   agent lens_mechanical [none/none] 0.0s $0.0 in=0 out=0 cache_w=0 cache_r=0
+2026-08-16T13:38:26.067Z log | [DE] E   agent lens_guidance served from cache, $0.00
+2026-08-16T13:38:26.080Z log | [DE] E   agent lens_demand served from cache, $0.00
+2026-08-16T13:38:26.082Z log | [DE] E   agent lens_drivers served from cache, $0.00
+2026-08-16T13:38:26.085Z log | [DE] E   agent lens_market served from cache, $0.00
+2026-08-16T13:38:26.087Z log | [DE] E   agent lens_forensics served from cache, $0.00
+2026-08-16T13:38:26.090Z log | [DE] E   agent lens_margins served from cache, $0.00
+2026-08-16T13:38:26.092Z log | [DE] E   agent lens_peer_read served from cache, $0.00
+2026-08-16T13:38:26.094Z log | [DE] E   agent lens_macro served from cache, $0.00
+2026-08-16T13:38:26.102Z log | [DE] E   -- stage E finished in 0.046s {"ran": 9, "failed": 0}
+2026-08-16T13:38:26.106Z log | [DE] V1  -- stage V1 started
+2026-08-16T13:38:26.110Z log | [DE] V1  -- stage V1 finished in 0.004s {"cost_usd": 0.0, "surviving": 9, "dropped": 0, "verification_rate": 1.0}
+2026-08-16T13:38:26.114Z log | [DE] F   -- stage F started
+2026-08-16T13:38:45.091Z log | [DE] F   agent champion [mid/claude-sonnet-5] 18.96s $0.0236 in=1427 out=1287 cache_w=0 cache_r=0
+2026-08-16T13:38:58.852Z log | [DE] F   agent champion [mid/claude-sonnet-5] 13.73s $0.0201 in=1815 out=977 cache_w=0 cache_r=0
+2026-08-16T13:39:05.009Z log | [DE] F   agent champion [mid/claude-sonnet-5] 19.9s $0.0308 in=2214 out=1609 cache_w=0 cache_r=0
+2026-08-16T13:39:08.391Z log | [DE] F   agent champion [mid/claude-sonnet-5] 23.27s $0.0352 in=2574 out=1831 cache_w=0 cache_r=0
+2026-08-16T13:39:12.164Z log | [DE] F   agent champion [mid/claude-sonnet-5] 27.05s $0.0419 in=2625 out=2267 cache_w=0 cache_r=0
+2026-08-16T13:39:13.355Z log | [DE] F   agent champion [mid/claude-sonnet-5] 28.23s $0.0445 in=2369 out=2496 cache_w=0 cache_r=0
+2026-08-16T13:39:14.983Z log | [DE] F   agent champion [mid/claude-sonnet-5] 29.86s $0.0438 in=2422 out=2438 cache_w=0 cache_r=0
+2026-08-16T13:39:15.038Z log | [DE] F   agent champion [mid/claude-sonnet-5] 16.18s $0.0225 in=1774 out=1148 cache_w=0 cache_r=0
+2026-08-16T13:39:24.195Z log | [DE] F   agent champion [mid/claude-sonnet-5] 19.17s $0.0295 in=2600 out=1449 cache_w=0 cache_r=0
+2026-08-16T13:39:24.204Z log | [DE] F   -- stage F finished in 58.09s {"challenged": 9, "failed": 0}
+2026-08-16T13:39:24.208Z log | [DE] G   -- stage G started
+2026-08-16T13:41:04.703Z log | [DE] G   agent judge [deep/claude-opus-5] 100.48s $0.2323 in=9370 out=7416 cache_w=0 cache_r=0
+2026-08-16T13:41:04.708Z log | [DE] G   -- stage G finished in 100.5s {"degraded": false, "metrics": 3}
+2026-08-16T13:41:04.712Z log | [DE] V2  -- stage V2 started
+2026-08-16T13:41:04.729Z log | [DE] V2  agent comparability served from cache, $0.00
+2026-08-16T13:41:04.734Z log | [DE] V2  degrade: comparability broke on acquisition_or_disposal, accounting_change; the historical priors this system runs on do not apply cleanly to this period and the forecast should be read with that in mind
+2026-08-16T13:41:04.738Z log | [DE] V2  -- stage V2 finished in 0.026s {"any_fired": true, "fired": ["acquisition_or_disposal", "accounting_change"]}
+2026-08-16T13:41:04.742Z log | [DE] H   -- stage H started
+2026-08-16T13:41:04.746Z log | [DE] H   position: Worldwide net sales and revenues lambda=1.0 (preset shrink) own=12350.0 consensus=10731.54221 forecast=12350.0 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T13:41:04.750Z log | [DE] H   position: Diluted EPS (GAAP) lambda=1.0 (preset shrink) own=4.8 consensus=4.69639 forecast=4.8 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T13:41:04.754Z log | [DE] H   position: Production & Precision Ag operating profit lambda=1.0 (preset shrink) own=545.0 consensus=None forecast=545.0 | conditions: comparability_flag on input True x0.25 -> measured; positioning_disabled on input own_estimate_only xNone -> lambda forced to 1.0; the conditions above were measured but not applied. Had positioning been on, lambda would have been 0.050
+2026-08-16T13:41:04.758Z log | [DE] H   -- stage H finished in 0.016s {"cost_usd": 0.0, "positioned": 3, "consensus_available": true, "positioning": "own_estimate_only"}
+2026-08-16T13:41:04.762Z log | [DE] I   -- stage I started
+2026-08-16T13:41:04.785Z log | [DE] I   -- stage I finished in 0.023s {"cost_usd": 0.0, "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-69b2de74\\results.json", "bytes": 600450}
+2026-08-16T13:41:04.790Z log | [DE] RUN pipeline finished in 162.37s, cost $1.4661, results C:\Hackathon_Utkarsh_Malhotra\runs\DE-2026-08-16-69b2de74\results.json
+2026-08-16T13:41:04.793Z log | 
+2026-08-16T13:41:04.795Z log | == pipeline summary ========================================================
+2026-08-16T13:41:04.797Z log |   run id                 69b2de74
+2026-08-16T13:41:04.799Z log |   HD                     OK
+2026-08-16T13:41:04.801Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\HD-2026-08-16-69b2de74\results.json
+2026-08-16T13:41:04.816Z log |     cost      $1.0942
+2026-08-16T13:41:04.821Z log |     stage     I
+2026-08-16T13:41:04.823Z log |   ADI                    OK
+2026-08-16T13:41:04.826Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\ADI-2026-08-16-69b2de74\results.json
+2026-08-16T13:41:04.840Z log |     cost      $0.9215
+2026-08-16T13:41:04.845Z log |     stage     I
+2026-08-16T13:41:04.847Z log |   LSE:HAS                OK
+2026-08-16T13:41:04.849Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\LSE_HAS-2026-08-16-69b2de74\results.json
+2026-08-16T13:41:04.862Z log |     cost      $1.2342
+2026-08-16T13:41:04.868Z log |     stage     I
+2026-08-16T13:41:04.870Z log |   DE                     OK
+2026-08-16T13:41:04.872Z log |     results   C:\Hackathon_Utkarsh_Malhotra\runs\DE-2026-08-16-69b2de74\results.json
+2026-08-16T13:41:04.887Z log |     cost      $1.4661
+2026-08-16T13:41:04.892Z log |     stage     I
+2026-08-16T13:41:04.894Z log | 
+2026-08-16T13:41:04.896Z log | == workbooks ===============================================================
+2026-08-16T13:41:04.899Z log | $ node src\forecast-to-workbooks.mjs
+2026-08-16T13:41:04.969Z out |   HD       HD-FY2026Q2.xlsx     47320  4.63  0.9
+2026-08-16T13:41:04.976Z out |   ADI      ADI-FY2026Q3.xlsx    3935  3.34  72.9
+2026-08-16T13:41:04.982Z out |   LSE:HAS  HAS-FY2026.xlsx      897  1.2  45.2
+2026-08-16T13:41:04.988Z out |   DE       DE-FY2026Q3.xlsx     12350  4.8  545
+2026-08-16T13:41:04.990Z out | 
+2026-08-16T13:41:04.992Z out | Wrote 4 workbooks.
+2026-08-16T13:41:04.996Z log |   exit code 0
+2026-08-16T13:41:04.998Z log | 
+2026-08-16T13:41:05.000Z log | == verification ============================================================
+2026-08-16T13:41:05.003Z log | $ node scripts\check-forecasts.mjs submission
+2026-08-16T13:41:05.181Z out | PASS HD-FY2026Q2.xlsx
+2026-08-16T13:41:05.186Z out | PASS ADI-FY2026Q3.xlsx
+2026-08-16T13:41:05.190Z out | PASS HAS-FY2026.xlsx
+2026-08-16T13:41:05.194Z out | PASS DE-FY2026Q3.xlsx
+2026-08-16T13:41:05.196Z out | 
+2026-08-16T13:41:05.198Z out | All four forecast workbooks are ready for manual upload.
+2026-08-16T13:41:05.204Z log |   exit code 0
+2026-08-16T13:41:05.207Z log | 
+2026-08-16T13:41:05.209Z log | == workbooks written =======================================================
+2026-08-16T13:41:05.212Z log |   HD                     PASS
+2026-08-16T13:41:05.214Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\HD-FY2026Q2.xlsx
+2026-08-16T13:41:05.216Z log |     on disk   yes, 5535 bytes
+2026-08-16T13:41:05.218Z log |   ADI                    PASS
+2026-08-16T13:41:05.220Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\ADI-FY2026Q3.xlsx
+2026-08-16T13:41:05.222Z log |     on disk   yes, 5537 bytes
+2026-08-16T13:41:05.225Z log |   LSE:HAS                PASS
+2026-08-16T13:41:05.227Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\HAS-FY2026.xlsx
+2026-08-16T13:41:05.229Z log |     on disk   yes, 5482 bytes
+2026-08-16T13:41:05.231Z log |   DE                     PASS
+2026-08-16T13:41:05.233Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\DE-FY2026Q3.xlsx
+2026-08-16T13:41:05.235Z log |     on disk   yes, 5567 bytes
+2026-08-16T13:41:05.237Z log | 
+2026-08-16T13:41:05.240Z log | == outcome =================================================================
+2026-08-16T13:41:05.242Z log |   companies forecast     4/4
+2026-08-16T13:41:05.244Z log |   companies retried      none
+2026-08-16T13:41:05.246Z log |   companies failed       none
+2026-08-16T13:41:05.248Z log |   workbooks verified     all four PASS
+2026-08-16T13:41:05.250Z log |   exit code              0 -- four workbooks written, verified, and every number forecast in this run
+2026-08-16T13:41:05.252Z log |   uploads                manual by rule; the agent does not post to OpenStocks
+2026-08-16T13:41:05.254Z log | log closed: C:\Hackathon_Utkarsh_Malhotra\logs\final-run-20260816T133433Z.log

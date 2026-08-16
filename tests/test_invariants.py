@@ -263,3 +263,40 @@ class NarrativeCannotInventAFigure(unittest.TestCase):
         from forecaster.stages.i_narrative import _invented
 
         self.assertEqual(_invented("came in at 4.720", {"4.72"}), [])
+
+
+class MetricKindGuard(unittest.TestCase):
+    """A rate of change is not a level.
+
+    Hays' results releases give net fees in pounds and net fee growth as a
+    percentage in the same document. Both match on label; only one is the metric.
+    Fourteen of sixteen observations were percentages before this guard existed,
+    and the baseline came out negative as a result.
+    """
+
+    def _claim(self, value, units, basis="as-reported", label="Net fees"):
+        return c_structure.Claim(
+            citation_id="X-001", kind=c_structure.PROSE, label=label, value=value,
+            units=units, basis=basis, period_label="Q4 26", period_end=None,
+            quote="q", doc_id="d", source="corpus",
+        )
+
+    def test_a_percentage_is_rejected_for_a_money_metric(self) -> None:
+        from forecaster.config import Metric
+        from forecaster.stages.d_model import _wrong_kind
+
+        money = Metric(label="Net fees", units="GBPm", kind="money")
+        self.assertIsNotNone(_wrong_kind(self._claim(-15, "percent"), money))
+        self.assertIsNone(_wrong_kind(self._claim(897, "millions"), money))
+
+    def test_post_exceptional_is_rejected_for_a_pre_exceptional_metric(self) -> None:
+        from forecaster.config import Metric
+        from forecaster.stages.d_model import _wrong_kind
+
+        eps = Metric(label="Pre-exceptional basic EPS", units="GBp", kind="per_share")
+        self.assertIsNotNone(
+            _wrong_kind(self._claim(-0.49, "per share", "post-exceptional", "Basic EPS"), eps)
+        )
+        self.assertIsNone(
+            _wrong_kind(self._claim(1.31, "per share", "pre-exceptional", "Basic EPS"), eps)
+        )
