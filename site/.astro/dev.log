@@ -28,3 +28,134 @@
 {"message":"[200] /cost 2ms","label":null,"level":"info"}
 {"message":"[200] /integrity 4ms","label":null,"level":"info"}
 {"message":"[200] / 3ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 11ms","label":null,"level":"info"}
+{"message":"[200] / 4ms","label":null,"level":"info"}
+{"message":"[200] /forecast 10ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 9ms","label":null,"level":"info"}
+{"message":"[200] /model 23ms","label":null,"level":"info"}
+{"message":"[200] /risk 6ms","label":null,"level":"info"}
+{"message":"[200] /method 4ms","label":null,"level":"info"}
+{"message":"[200] /agents 5ms","label":null,"level":"info"}
+{"message":"[200] /cost 5ms","label":null,"level":"info"}
+{"message":"[200] /integrity 5ms","label":null,"level":"info"}
+{"message":"/src/components/Distribution.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 10ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 25ms","label":null,"level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 13ms","label":null,"level":"info"}
+{"message":"/src/pages/reasoning.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 12ms","label":null,"level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 23ms","label":null,"level":"info"}
+{"message":"[200] / 16ms","label":null,"level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 12ms","label":null,"level":"info"}
+{"message":"[200] / 9ms","label":null,"level":"info"}
+{"message":"[200] / 9ms","label":null,"level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 19ms","label":null,"level":"info"}
+{"message":"/src/pages/integrity.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 20ms","label":null,"level":"info"}
+{"message":"[200] / 43ms","label":null,"level":"info"}
+{"message":"[200] /method 13ms","label":null,"level":"info"}
+{"message":"[200] /risk 6ms","label":null,"level":"info"}
+{"message":"[200] /agents 7ms","label":null,"level":"info"}
+{"message":"[200] / 6ms","label":null,"level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 15ms","label":null,"level":"info"}
+{"message":"[200] / 22ms","label":null,"level":"info"}
+{"message":"/src/pages/method.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 43ms","label":null,"level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 38ms","label":null,"level":"info"}
+{"message":"[200] / 22ms","label":null,"level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 27ms","label":null,"level":"info"}
+{"message":"[200] / 32ms","label":null,"level":"info"}
+{"message":"[200] /model 16ms","label":null,"level":"info"}
+{"message":"[200] /model 22ms","label":null,"level":"info"}
+{"message":"[200] /model 17ms","label":null,"level":"info"}
+{"message":"/src/components/Distribution.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] /model 17ms","label":null,"level":"info"}
+{"message":"[200] /model 15ms","label":null,"level":"info"}
+{"message":"[200] /model 17ms","label":null,"level":"info"}
+{"message":"[200] /model 19ms","label":null,"level":"info"}
+{"message":"[200] /model 19ms","label":null,"level":"info"}
+{"message":"[200] / 12ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 16ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 15ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 20ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 22ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 58ms","label":null,"level":"info"}
+{"message":"/src/pages/reasoning.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 65ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 27ms","label":null,"level":"info"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:400:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:369:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 17ms","label":null,"level":"info"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:440:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:409:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[200] / 8ms","label":null,"level":"info"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:440:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:409:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 21ms","label":null,"level":"info"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:440:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:409:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[200] / 4ms","label":null,"level":"info"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:440:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:409:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 27ms","label":null,"level":"info"}
+{"message":"[200] / 18ms","label":null,"level":"info"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:399:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:399:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 35ms","label":null,"level":"info"}
+{"message":"[200] / 33ms","label":null,"level":"info"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:395:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:395:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 17ms","label":null,"level":"info"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:396:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[200] / 5ms","label":null,"level":"info"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:396:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 15ms","label":null,"level":"info"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:394:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"[200] / 9ms","label":null,"level":"info"}
+{"message":"Cannot read properties of undefined (reading 'x')\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:394:12)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 57ms","label":null,"level":"info"}
+{"message":"[200] / 52ms","label":null,"level":"info"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:443:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:412:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"f is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:443:29)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\components\\SignalFlow.astro:412:8)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 36ms","label":null,"level":"info"}
+{"message":"[200] / 20ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 26ms","label":null,"level":"info"}
+{"message":"/src/components/SignalFlow.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/components/SignalFlow.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 26ms","label":null,"level":"info"}
+{"message":"[200] / 39ms","label":null,"level":"info"}
+{"message":"[200] /integrity 8ms","label":null,"level":"info"}
+{"message":"[200] /cost 11ms","label":null,"level":"info"}
+{"message":"[200] /agents 8ms","label":null,"level":"info"}
+{"message":"[200] /method 8ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] /method 22ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] /method 24ms","label":null,"level":"info"}
+{"message":"[200] /method 30ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] /method 14ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] /method 30ms","label":null,"level":"info"}

@@ -4,225 +4,255 @@ import Panel from "../components/Panel.astro";
 import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import Concepts from "../components/Concepts.astro";
-import { companies, primary, header, lensRows } from "../lib/read.mjs";
+import { companies, header, lensRows } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
 
-const h = header(primary);
-const rows = lensRows(primary);
-const metric = primary.results.forecast?.metrics?.[0] ?? null;
-const judge = primary.results.judge ?? {};
-const disagreement = metric ? judge.disagreement?.[metric.metric_label] : null;
-
-// Each workstream's own figure for the lead metric, on a shared scale.
-const estimateOf = (row) =>
-  (row.estimates ?? []).find((e) => e.metric_label === metric?.metric_label)?.estimate ?? null;
-const values = rows.map(estimateOf).filter((v) => typeof v === "number");
-const lo = Math.min(...values, metric?.forecast ?? Infinity);
-const hi = Math.max(...values, metric?.forecast ?? -Infinity);
-const span = hi - lo || 1;
-const tickX = (v) => ((v - lo) / span) * 54 + 3;
-
-const contributing = rows.filter((r) => r.state === "pass").length;
-const abstained = rows.filter((r) => r.state === "abstained").length;
-const dropped = rows.filter((r) => r.state === "dropped").length;
-
-// Hub and spoke geometry.
 const W = 640;
 const H = 460;
 const cx = W / 2;
 const cy = H / 2;
 const R = 170;
-const points = rows.map((row, i) => {
-  const angle = (i / rows.length) * Math.PI * 2 - Math.PI / 2;
-  return { row, x: cx + Math.cos(angle) * R, y: cy + Math.sin(angle) * R, angle };
-});
 const TONE = { pass: "#A77BFF", abstained: "#4E5C6E", dropped: "#FF4D5E" };
 const shortName = (lens) => lens.replace(/^lens_/, "").replace(/_/g, " ");
+
+// Each name gets the same drawing built from its own run.
+const view = companies.map((company) => {
+  const rows = lensRows(company);
+  const metric = company.results.forecast?.metrics?.[0] ?? null;
+  const judge = company.results.judge ?? {};
+  const estimateOf = (row) =>
+    (row.estimates ?? []).find((e) => e.metric_label === metric?.metric_label)?.estimate ?? null;
+  const values = rows.map(estimateOf).filter((v) => typeof v === "number");
+  const lo = Math.min(...values, metric?.forecast ?? Infinity);
+  const hi = Math.max(...values, metric?.forecast ?? -Infinity);
+  const span = hi - lo || 1;
+
+  return {
+    company,
+    h: header(company),
+    rows,
+    metric,
+    judge,
+    estimateOf,
+    tickX: (v) => ((v - lo) / span) * 54 + 3,
+    disagreement: metric ? judge.disagreement?.[metric.metric_label] : null,
+    contributing: rows.filter((r) => r.state === "pass").length,
+    abstained: rows.filter((r) => r.state === "abstained").length,
+    dropped: rows.filter((r) => r.state === "dropped").length,
+    points: rows.map((row, i) => {
+      const angle = (i / rows.length) * Math.PI * 2 - Math.PI / 2;
+      return { row, x: cx + Math.cos(angle) * R, y: cy + Math.sin(angle) * R };
+    }),
+  };
+});
 ---
 
 <Sheet title="Reasoning" subsystem="Workstreams" index="03">
-  <div class="lede-row">
-    <div class="lede">
-      <span class="bar"></span>
-      <p>
-        Nine workstreams reach their own estimate from the filings before any of them are compared.
-        Each argues to the centre and to nothing else.
-      </p>
-    </div>
-    <StatusCard
-      name="Participation"
-      word={`${contributing}/${rows.length}`}
-      summary="Workstreams offered a figure"
-      tone={dropped ? "amber" : "teal"}
-      fill={contributing / Math.max(1, rows.length)}
-      rows={[
-        ["Offered a view", String(contributing)],
-        ["Abstained", String(abstained)],
-        ["Excluded", String(dropped)],
-        ["Dispersion", disagreement ? f.pct(disagreement.coefficient * 100) : "—"],
-      ]}
-    />
-  </div>
-
-  <section class="sheet-section">
-    <Concepts
-      items={[
-        { title: "Read", line: "Each workstream reads the filings for its own question." },
-        { title: "Estimate", line: "Each states a figure and what would change it." },
-        { title: "Check", line: "Every quote is matched back to the filing it cites." },
-        { title: "Weigh", line: "Surviving views are weighed once into a single range." },
-      ]}
-    />
-  </section>
-
-  <section class="sheet-section">
-    <h2 class="section-heading">{h.company} · where the estimate came from</h2>
-    <div class="grid2" style="margin-top:16px; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr)">
-      <div class="panel">
-        <div class="panel-head">
-          <span class="eyebrow">Nine workstreams, one centre</span>
-          <span class="plus">+</span>
+  {view.map((v) => (
+    <div data-company={v.company.ticker} hidden>
+      <div class="lede-row">
+        <div class="lede">
+          <span class="bar"></span>
+          <p>
+            Nine workstreams reach their own estimate for {v.h.company} from the filings before any
+            of them are compared. Each argues to the centre and to nothing else.
+          </p>
         </div>
-        <div class="panel-body">
-          <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Each workstream argues to the centre">
-            {points.map((p) => {
-              const tone = TONE[p.row.state];
-              if (p.row.state === "dropped") {
-                return (
-                  <g>
-                    <line x1={p.x} y1={p.y} x2={cx} y2={cy} stroke={tone} stroke-width="1" stroke-dasharray="3 3" />
-                    <path
-                      d={`M${(p.x + cx) / 2 - 4} ${(p.y + cy) / 2 - 4} L${(p.x + cx) / 2 + 4} ${(p.y + cy) / 2 + 4} M${(p.x + cx) / 2 + 4} ${(p.y + cy) / 2 - 4} L${(p.x + cx) / 2 - 4} ${(p.y + cy) / 2 + 4}`}
+        <StatusCard
+          name="Participation"
+          word={`${v.contributing}/${v.rows.length}`}
+          summary="Workstreams offered a figure"
+          tone={v.dropped ? "amber" : "teal"}
+          fill={v.contributing / Math.max(1, v.rows.length)}
+          rows={[
+            ["Offered a view", String(v.contributing)],
+            ["Abstained", String(v.abstained)],
+            ["Excluded", String(v.dropped)],
+            ["Dispersion", v.disagreement ? f.pct(v.disagreement.coefficient * 100) : "—"],
+          ]}
+        />
+      </div>
+
+      <section class="sheet-section">
+        <Concepts
+          items={[
+            { title: "Read", line: "Each workstream reads the filings for its own question." },
+            { title: "Estimate", line: "Each states a figure and what would change it." },
+            { title: "Check", line: "Every quote is matched back to the filing it cites." },
+            { title: "Weigh", line: "Surviving views are weighed once into a single range." },
+          ]}
+        />
+      </section>
+
+      <section class="sheet-section">
+        <h2 class="section-heading">Where the estimate came from</h2>
+        <div class="grid2" style="margin-top:16px; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr)">
+          <div class="panel">
+            <div class="panel-head">
+              <span class="eyebrow">Nine workstreams, one centre</span>
+              <span class="plus">+</span>
+            </div>
+            <div class="panel-body">
+              <svg viewBox={`0 0 ${W} ${H}`} width="100%" role="img" aria-label="Each workstream argues to the centre">
+                {v.points.map((p) => {
+                  const tone = TONE[p.row.state];
+                  if (p.row.state === "dropped") {
+                    return (
+                      <g>
+                        <line x1={p.x} y1={p.y} x2={cx} y2={cy} stroke={tone} stroke-width="1" stroke-dasharray="3 3" />
+                        <path
+                          d={`M${(p.x + cx) / 2 - 4} ${(p.y + cy) / 2 - 4} L${(p.x + cx) / 2 + 4} ${(p.y + cy) / 2 + 4} M${(p.x + cx) / 2 + 4} ${(p.y + cy) / 2 - 4} L${(p.x + cx) / 2 - 4} ${(p.y + cy) / 2 + 4}`}
+                          stroke={tone}
+                          stroke-width="1"
+                        />
+                      </g>
+                    );
+                  }
+                  return (
+                    <line
+                      x1={p.x}
+                      y1={p.y}
+                      x2={cx}
+                      y2={cy}
                       stroke={tone}
                       stroke-width="1"
+                      opacity={p.row.state === "abstained" ? "0.4" : "1"}
                     />
-                  </g>
-                );
-              }
-              return <line x1={p.x} y1={p.y} x2={cx} y2={cy} stroke={tone} stroke-width="1" opacity={p.row.state === "abstained" ? "0.4" : "1"} />;
-            })}
-
-            {/* Where a reader expects workstream to workstream links, a cross. */}
-            {points.map((p, i) => {
-              const next = points[(i + 1) % points.length];
-              const mx = (p.x + next.x) / 2;
-              const my = (p.y + next.y) / 2;
-              return (
-                <path
-                  d={`M${mx - 3} ${my - 3} L${mx + 3} ${my + 3} M${mx + 3} ${my - 3} L${mx - 3} ${my + 3}`}
-                  stroke="#243040"
-                  stroke-width="1"
-                />
-              );
-            })}
-
-            <circle cx={cx} cy={cy} r="34" fill="#0A0E15" stroke="#FF4D5E" stroke-width="1" />
-            <text x={cx} y={cy - 2} text-anchor="middle" class="hubname">weighing</text>
-            <text x={cx} y={cy + 12} text-anchor="middle" class="hubfig">
-              {metric ? f.metricValue(metric.forecast, metric.units) : "—"}
-            </text>
-
-            {points.map((p) => {
-              const value = estimateOf(p.row);
-              const tone = TONE[p.row.state];
-              const left = p.x < cx;
-              return (
-                <g>
-                  <circle cx={p.x} cy={p.y} r="26" fill="#0A0E15" stroke={tone} stroke-width="1"
-                    stroke-dasharray={p.row.state === "dropped" ? "3 3" : undefined}
-                    opacity={p.row.state === "abstained" ? "0.5" : "1"} />
-                  <text x={p.x} y={p.y - 2} text-anchor="middle" class="spokename" fill={tone}>
-                    {shortName(p.row.lens).slice(0, 9)}
-                  </text>
-                  <text x={p.x} y={p.y + 10} text-anchor="middle" class="spokefig">
-                    {typeof value === "number" ? f.metricValue(value, metric?.units) : p.row.state === "dropped" ? "dropped" : "abstained"}
-                  </text>
-                  {typeof value === "number" && (
-                    <g transform={`translate(${p.x - 30}, ${p.y + 30})`}>
-                      <line x1="3" y1="4" x2="57" y2="4" stroke="#1A2230" stroke-width="1" />
-                      <line x1={tickX(value)} y1="0" x2={tickX(value)} y2="8" stroke={tone} stroke-width="1.5" />
-                    </g>
-                  )}
-                </g>
-              );
-            })}
-          </svg>
-          <p class="small t-secondary" style="margin:8px 0 0">
-            The crosses mark where a link between two workstreams would sit. None is drawn because none
-            exists. Ticks show each figure on a shared scale for {metric?.metric_label}.
-          </p>
-        </div>
-      </div>
-
-      <div class="stack-16">
-        <Panel n="01" name="No mesh" figure={String(rows.length)} unit="independent reads">
-          <p>
-            Each workstream sees the filings and its own question. None sees another's figure, so
-            agreement between two of them is evidence rather than an echo.
-          </p>
-        </Panel>
-        <Panel
-          n="02"
-          name="What agreement is worth"
-          figure={disagreement ? f.pct(disagreement.coefficient * 100) : "—"}
-          unit="dispersion"
-        >
-          <p>
-            {disagreement
-              ? `${disagreement.contributors} figures around a median of ${f.metricValue(disagreement.median, metric?.units)}, with ${disagreement.abstentions} abstaining.`
-              : "No dispersion recorded for this line."}
-          </p>
-        </Panel>
-        <Panel n="03" name="What the centre did" figure={null}>
-          <p class="small">{judge.metrics?.[0]?.weighting ?? "No weighting recorded."}</p>
-        </Panel>
-      </div>
-    </div>
-  </section>
-
-  <section class="sheet-section">
-    <h2 class="section-heading">Every workstream, every name</h2>
-    <div class="panel scroll-x" style="margin-top:16px">
-      <div class="panel-body">
-        <table class="ledger">
-          <thead>
-            <tr>
-              <th>Workstream</th>
-              {companies.map((c) => <th class="n">{c.ticker}</th>)}
-              <th>What would change it</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr>
-                <td>{shortName(row.lens)}</td>
-                {companies.map((c) => {
-                  const view = lensRows(c).find((v) => v.lens === row.lens);
-                  return (
-                    <td class="n">
-                      {view ? <span class={`state ${view.state}`}>{view.state}</span> : "—"}
-                    </td>
                   );
                 })}
-                <td class="t-secondary">{row.what_would_change_my_mind ?? "—"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
 
-  <section class="sheet-section">
-    <Strip
-      items={[
-        { label: "Workstreams", value: String(rows.length), context: "Each reaching its own figure." },
-        { label: "Offered a view", value: String(contributing), context: "Reached the weighting with a figure.", tone: "teal" },
-        { label: "Abstained", value: String(abstained), context: "Said so rather than reasoning without evidence." },
-        { label: "Excluded", value: String(dropped), context: "A quote did not match its filing.", tone: dropped ? "red" : "teal" },
-      ]}
-    />
-  </section>
+                {v.points.map((p, i) => {
+                  const next = v.points[(i + 1) % v.points.length];
+                  const mx = (p.x + next.x) / 2;
+                  const my = (p.y + next.y) / 2;
+                  return (
+                    <path
+                      d={`M${mx - 3} ${my - 3} L${mx + 3} ${my + 3} M${mx + 3} ${my - 3} L${mx - 3} ${my + 3}`}
+                      stroke="#243040"
+                      stroke-width="1"
+                    />
+                  );
+                })}
+
+                <circle cx={cx} cy={cy} r="34" fill="#0A0E15" stroke="#FF4D5E" stroke-width="1" />
+                <text x={cx} y={cy - 2} text-anchor="middle" class="hubname">weighing</text>
+                <text x={cx} y={cy + 12} text-anchor="middle" class="hubfig">
+                  {v.metric ? f.metricValue(v.metric.forecast, v.metric.units) : "—"}
+                </text>
+
+                {v.points.map((p) => {
+                  const value = v.estimateOf(p.row);
+                  const tone = TONE[p.row.state];
+                  return (
+                    <g>
+                      <circle
+                        cx={p.x}
+                        cy={p.y}
+                        r="26"
+                        fill="#0A0E15"
+                        stroke={tone}
+                        stroke-width="1"
+                        stroke-dasharray={p.row.state === "dropped" ? "3 3" : undefined}
+                        opacity={p.row.state === "abstained" ? "0.5" : "1"}
+                      />
+                      <text x={p.x} y={p.y - 2} text-anchor="middle" class="spokename" fill={tone}>
+                        {shortName(p.row.lens).slice(0, 9)}
+                      </text>
+                      <text x={p.x} y={p.y + 10} text-anchor="middle" class="spokefig">
+                        {typeof value === "number"
+                          ? f.metricValue(value, v.metric?.units)
+                          : p.row.state === "dropped"
+                            ? "dropped"
+                            : "abstained"}
+                      </text>
+                      {typeof value === "number" && (
+                        <g transform={`translate(${p.x - 30}, ${p.y + 30})`}>
+                          <line x1="3" y1="4" x2="57" y2="4" stroke="#1A2230" stroke-width="1" />
+                          <line x1={v.tickX(value)} y1="0" x2={v.tickX(value)} y2="8" stroke={tone} stroke-width="1.5" />
+                        </g>
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+              <p class="small t-secondary" style="margin:8px 0 0">
+                The crosses mark where a link between two workstreams would sit. None is drawn because
+                none exists. Ticks show each figure on a shared scale for {v.metric?.metric_label}.
+              </p>
+            </div>
+          </div>
+
+          <div class="stack-16">
+            <Panel n="01" name="No mesh" figure={String(v.rows.length)} unit="independent reads">
+              <p>
+                Each workstream sees the filings and its own question. None sees another's figure, so
+                agreement between two of them is evidence rather than an echo.
+              </p>
+            </Panel>
+            <Panel
+              n="02"
+              name="What agreement is worth"
+              figure={v.disagreement ? f.pct(v.disagreement.coefficient * 100) : "—"}
+              unit="dispersion"
+            >
+              <p>
+                {v.disagreement
+                  ? `${v.disagreement.contributors} figures around a median of ${f.metricValue(v.disagreement.median, v.metric?.units)}, with ${v.disagreement.abstentions} abstaining.`
+                  : "No dispersion recorded for this line."}
+              </p>
+            </Panel>
+            <Panel n="03" name="What the centre did" figure={null}>
+              <p class="small">{v.judge.metrics?.[0]?.weighting ?? "No weighting recorded."}</p>
+            </Panel>
+          </div>
+        </div>
+      </section>
+
+      <section class="sheet-section">
+        <h2 class="section-heading">Every workstream</h2>
+        <div class="panel scroll-x" style="margin-top:16px">
+          <div class="panel-body">
+            <table class="ledger">
+              <thead>
+                <tr>
+                  <th>Workstream</th>
+                  <th>State</th>
+                  <th class="n">Citations</th>
+                  <th>What would change it</th>
+                </tr>
+              </thead>
+              <tbody>
+                {v.rows.map((row) => (
+                  <tr>
+                    <td>{shortName(row.lens)}</td>
+                    <td><span class={`state ${row.state}`}>{row.state}</span></td>
+                    <td class="n">{f.count(row.citations)}</td>
+                    <td class="t-secondary">{row.what_would_change_my_mind ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="sheet-section">
+        <Strip
+          items={[
+            { label: "Workstreams", value: String(v.rows.length), context: "Each reaching its own figure." },
+            { label: "Offered a view", value: String(v.contributing), context: "Reached the weighting with a figure.", tone: "teal" },
+            { label: "Abstained", value: String(v.abstained), context: "Said so rather than reasoning without evidence." },
+            {
+              label: "Excluded",
+              value: String(v.dropped),
+              context: "A quote did not match its filing.",
+              tone: v.dropped ? "red" : "teal",
+            },
+          ]}
+        />
+      </section>
+    </div>
+  ))}
 </Sheet>
 
 <style>

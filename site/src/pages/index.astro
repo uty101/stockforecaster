@@ -5,134 +5,114 @@ import Gates from "../components/Gates.astro";
 import Tape from "../components/Tape.astro";
 import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
-import { companies, primary, header, nodes, sum, callsOf } from "../lib/read.mjs";
+import { companies, header, nodes, callsOf } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
 
-const runs = companies.map((c) => ({
-  ticker: c.ticker,
-  company: header(c).company,
-  period: header(c).period,
-  claims: (c.results.evidence?.claims ?? []).length,
-  checked: c.results.reconciliation?.citations_checked ?? 0,
-  matched: c.results.reconciliation?.citations_matched ?? 0,
-  usd: c.results.cost?.spent_usd ?? 0,
-  events: (c.tape ?? []).length,
-  stage: header(c).last_completed_stage,
-}));
-
-const totalClaims = sum(runs, (r) => r.claims);
-const totalChecked = sum(runs, (r) => r.checked);
-const totalMatched = sum(runs, (r) => r.matched);
-const totalUsd = sum(runs, (r) => r.usd);
-const totalEvents = sum(runs, (r) => r.events);
-const tokens = sum(companies, (c) =>
-  callsOf(c).reduce(
-    (n, call) =>
-      n + (call.input_tokens ?? 0) + (call.output_tokens ?? 0) + (call.cache_read_tokens ?? 0) + (call.cache_write_tokens ?? 0),
-    0,
-  ),
-);
-const elapsed = companies.map((c) => {
-  const tape = c.tape ?? [];
-  if (tape.length < 2) return 0;
-  return tape[tape.length - 1].ts - tape[0].ts;
+const view = companies.map((company) => {
+  const h = header(company);
+  const tape = company.tape ?? [];
+  const calls = callsOf(company);
+  return {
+    company,
+    h,
+    claims: (company.results.evidence?.claims ?? []).length,
+    checked: company.results.reconciliation?.citations_checked ?? 0,
+    matched: company.results.reconciliation?.citations_matched ?? 0,
+    documents: Object.keys(company.results.evidence?.documents ?? {}).length,
+    usd: company.results.cost?.spent_usd ?? 0,
+    events: tape.length,
+    elapsed: tape.length > 1 ? tape[tape.length - 1].ts - tape[0].ts : 0,
+    tokens: calls.reduce(
+      (n, call) =>
+        n + (call.input_tokens ?? 0) + (call.output_tokens ?? 0) + (call.cache_read_tokens ?? 0) + (call.cache_write_tokens ?? 0),
+      0,
+    ),
+    complete: h.last_completed_stage === "I",
+  };
 });
-const totalElapsed = elapsed.reduce((a, b) => a + b, 0);
-const complete = runs.filter((r) => r.stage === "I").length;
 ---
 
 <Sheet title="At the root" subsystem="Coverage" index="01">
-  <div class="lede-row">
-    <div class="lede">
-      <span class="bar"></span>
-      <p>
-        Four names, twelve estimates. Each one traces from a figure on this page back to the filing
-        it was read from, through the workstreams that argued it and the checks that kept it.
-      </p>
-    </div>
-    <StatusCard
-      name="Coverage"
-      word={complete === runs.length ? "Complete" : "Partial"}
-      summary={`${complete} of ${runs.length} names carried to the estimate`}
-      tone={complete === runs.length ? "teal" : "amber"}
-      fill={complete / Math.max(1, runs.length)}
-      rows={[
-        ["Names", String(runs.length)],
-        ["Estimates", String(runs.length * 3)],
-        ["Claims read", f.count(totalClaims)],
-        ["Quotes matched", `${f.count(totalMatched)}/${f.count(totalChecked)}`],
-        ["Spend", f.usd(totalUsd)],
-      ]}
-    />
-  </div>
-
-  <section class="sheet-section">
-    <h2 class="section-heading">From filing to estimate</h2>
-    <p class="prose small t-secondary" style="margin:8px 0 0">
-      Drawn from the {header(primary).ticker} run. Line weight and speed carry the number of checked
-      claims each route moved. Select any box for what it read and what it did.
-    </p>
-    <SignalFlow company={primary} />
-    <Gates company={primary} />
-  </section>
-
-  <section class="sheet-section">
-    <h2 class="section-heading">The run</h2>
-    <div class="grid2" style="margin-top:16px; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr)">
-      <Tape company={primary} />
-      <div class="panel">
-        <div class="panel-head">
-          <span class="n">SUM</span>
-          <span class="eyebrow">Every name</span>
-          <span class="plus">+</span>
+  {view.map((v) => (
+    <div data-company={v.company.ticker} hidden>
+      <div class="lede-row">
+        <div class="lede">
+          <span class="bar"></span>
+          <p>
+            Three estimates for {v.h.company}, each tracing from a figure on this page back to the
+            filing it was read from, through the workstreams that argued it and the checks that kept it.
+          </p>
         </div>
-        <div class="panel-body">
-          <table class="ledger">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Period</th>
-                <th class="n">Claims</th>
-                <th class="n">Matched</th>
-                <th class="n">Spend</th>
-              </tr>
-            </thead>
-            <tbody>
-              {runs.map((r) => (
-                <tr>
-                  <td>{r.ticker}</td>
-                  <td>{r.period}</td>
-                  <td class="n">{f.count(r.claims)}</td>
-                  <td class="n">{r.matched}/{r.checked}</td>
-                  <td class="n">{f.usd(r.usd)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <div class="kv" style="margin-top:16px">
-            <div class="row"><span class="k">Tokens</span><span class="v num">{f.tokens(tokens)}</span></div>
-            <div class="row"><span class="k">Elapsed</span><span class="v num">{f.seconds(totalElapsed)}</span></div>
-            <div class="row"><span class="k">Events recorded</span><span class="v num">{f.count(totalEvents)}</span></div>
+        <StatusCard
+          name="Coverage"
+          word={v.complete ? "Complete" : "Partial"}
+          summary={v.complete ? "Carried to the estimate" : `Stopped at ${v.h.last_completed_stage}`}
+          tone={v.complete ? "teal" : "amber"}
+          fill={v.complete ? 1 : 0.5}
+          rows={[
+            ["Period", v.h.period],
+            ["Estimates", "3"],
+            ["Claims read", f.count(v.claims)],
+            ["Quotes matched", `${f.count(v.matched)}/${f.count(v.checked)}`],
+            ["Spend", f.usd(v.usd)],
+          ]}
+        />
+      </div>
+
+      <section class="sheet-section">
+        <h2 class="section-heading">From filing to estimate</h2>
+        <p class="prose small t-secondary" style="margin:8px 0 0">
+          Line weight and speed carry the number of checked claims each route moved on the
+          {" "}{v.h.ticker} run. Select any box for what it read and what it did.
+        </p>
+        <SignalFlow company={v.company} />
+        <Gates company={v.company} />
+      </section>
+
+      <section class="sheet-section">
+        <h2 class="section-heading">The run</h2>
+        <div class="grid2" style="margin-top:16px; grid-template-columns: minmax(0,1.4fr) minmax(0,1fr)">
+          <Tape company={v.company} />
+          <div class="panel">
+            <div class="panel-head">
+              <span class="n">SUM</span>
+              <span class="eyebrow">{v.h.ticker} · {v.h.period}</span>
+              <span class="plus">+</span>
+            </div>
+            <div class="panel-body">
+              <div class="kv">
+                <div class="row"><span class="k">Tokens</span><span class="v num">{f.tokens(v.tokens)}</span></div>
+                <div class="row"><span class="k">Spend</span><span class="v num">{f.usd(v.usd)}</span></div>
+                <div class="row"><span class="k">Elapsed</span><span class="v num">{f.seconds(v.elapsed)}</span></div>
+                <div class="row"><span class="k">Claims</span><span class="v num">{f.count(v.claims)}</span></div>
+                <div class="row"><span class="k">Documents</span><span class="v num">{f.count(v.documents)}</span></div>
+                <div class="row"><span class="k">Events recorded</span><span class="v num">{f.count(v.events)}</span></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
+      </section>
 
-  <section class="sheet-section">
-    <Strip
-      items={[
-        { label: "Estimates", value: String(runs.length * 3), context: "Three metrics for each of four names." },
-        { label: "Claims read", value: f.count(totalClaims), context: "Each carrying the quote it came from." },
-        {
-          label: "Quotes matched",
-          value: `${f.count(totalMatched)}/${f.count(totalChecked)}`,
-          context: "Checked back against the filing text.",
-          tone: totalMatched === totalChecked ? "teal" : "amber",
-        },
-        { label: "Spend", value: f.usd(totalUsd), context: "Measured across the four runs." },
-        { label: "Parts running", value: String(nodes.length), context: `${nodes.filter((n) => n.covered).length} covered by a check.` },
-      ]}
-    />
-  </section>
+      <section class="sheet-section">
+        <Strip
+          items={[
+            { label: "Estimates", value: "3", context: `Three lines for ${v.h.period}.` },
+            { label: "Claims read", value: f.count(v.claims), context: "Each carrying the quote it came from." },
+            {
+              label: "Quotes matched",
+              value: `${f.count(v.matched)}/${f.count(v.checked)}`,
+              context: "Checked back against the filing text.",
+              tone: v.matched === v.checked ? "teal" : "amber",
+            },
+            { label: "Spend", value: f.usd(v.usd), context: "Measured across this run." },
+            {
+              label: "Parts running",
+              value: String(nodes.length),
+              context: `${nodes.filter((n) => n.covered).length} covered by a check.`,
+            },
+          ]}
+        />
+      </section>
+    </div>
+  ))}
 </Sheet>

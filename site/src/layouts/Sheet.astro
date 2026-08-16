@@ -2,9 +2,17 @@
 // The frame every sheet sits in: masthead, sheet navigation, meta bar, corner
 // marks and the state banners. Built once and used nine times.
 import "../styles/tokens.css";
-import { anyFixture, incomplete, lockDate, runLabel, header, generatedAt } from "../lib/read.mjs";
+import { anyFixture, incomplete, lockDate, runLabel, header, generatedAt, companies } from "../lib/read.mjs";
 
-const { title, subsystem, index, project = "Forecaster", version = "v1" } = Astro.props;
+const { title, subsystem, index, project = "ALPHA", version = "v1" } = Astro.props;
+
+// One name is on the book at a time. The box below the title takes a ticker and
+// every sheet follows it.
+const known = companies.map((c) => ({
+  ticker: c.ticker,
+  name: header(c).company,
+  period: header(c).period,
+}));
 
 const SHEETS = [
   ["01", "System", "/"],
@@ -44,20 +52,37 @@ const stopped = incomplete
           <span class="name">{project}</span>
         </a>
         <nav class="sheets">
-          {SHEETS.map(([n, name, href]) => (
+          {SHEETS.map(([, name, href]) => (
             <a href={href} aria-current={href === path ? "page" : undefined}>
-              <i>{n}</i><span>{name}</span>
+              <span>{name}</span>
             </a>
           ))}
-          <span class="of">/9</span>
         </nav>
       </header>
+
+      <form class="tickerbar" data-ticker-form autocomplete="off">
+        <label class="eyebrow" for="ticker">Name</label>
+        <input
+          id="ticker"
+          name="ticker"
+          class="tickerbox"
+          type="text"
+          spellcheck="false"
+          placeholder="ticker"
+          aria-describedby="ticker-state"
+        />
+        <span class="meta" data-ticker-state id="ticker-state"></span>
+      </form>
 
       <div class="metabar">
         <div class="pairs">
           <div class="pair">
-            <span class="eyebrow">Book</span>
-            <span class="v">{project}</span>
+            <span class="eyebrow">Name</span>
+            <span class="v" data-company-name>{known[0]?.name ?? "—"}</span>
+          </div>
+          <div class="pair">
+            <span class="eyebrow">Period</span>
+            <span class="v" data-company-period>{known[0]?.period ?? "—"}</span>
           </div>
           <div class="pair">
             <span class="eyebrow">Sheet</span>
@@ -68,12 +93,7 @@ const stopped = incomplete
             <span class="v">{version}</span>
           </div>
         </div>
-        <div class="right">
-          <div class="meta">run {runLabel}</div>
-          <div class="meta">as of {lockDate}</div>
-        </div>
       </div>
-      <div class="sheetpos meta">{index} / 09</div>
 
       {anyFixture && (
         <div class="notice">
@@ -137,5 +157,101 @@ const stopped = incomplete
         </div>
       </div>
     </div>
+
+    <script type="application/json" data-known set:html={JSON.stringify(known)}></script>
+    <script>
+      // One name at a time. The box sets it, every sheet follows it, and the
+      // choice is kept so moving between sheets does not lose the name.
+      (() => {
+        const known = JSON.parse(document.querySelector("[data-known]").textContent);
+        const tickers = known.map((k) => k.ticker);
+        const KEY = "alpha.name";
+
+        const read = () => {
+          try {
+            return window.localStorage.getItem(KEY);
+          } catch {
+            return null;
+          }
+        };
+        const write = (value) => {
+          try {
+            window.localStorage.setItem(KEY, value);
+          } catch {
+            /* a page opened from a file keeps the name for the session only */
+          }
+        };
+
+        // A ticker can be written with or without its exchange.
+        const resolve = (raw) => {
+          const text = String(raw ?? "").trim().toUpperCase();
+          if (!text) return null;
+          const exact = tickers.find((t) => t.toUpperCase() === text);
+          if (exact) return exact;
+          const bare = tickers.find((t) => t.toUpperCase().split(":").pop() === text);
+          if (bare) return bare;
+          const named = known.find((k) => (k.name ?? "").toUpperCase().startsWith(text));
+          return named ? named.ticker : null;
+        };
+
+        const state = document.querySelector("[data-ticker-state]");
+        const box = document.querySelector("[data-ticker-form] input");
+        const form = document.querySelector("[data-ticker-form]");
+
+        const show = (ticker) => {
+          const entry = known.find((k) => k.ticker === ticker);
+          if (!entry) return;
+          for (const section of document.querySelectorAll("[data-company]")) {
+            section.hidden = section.dataset.company !== ticker;
+          }
+          for (const el of document.querySelectorAll("[data-company-name]")) el.textContent = entry.name;
+          for (const el of document.querySelectorAll("[data-company-period]")) el.textContent = entry.period;
+          if (box) box.value = ticker;
+          if (state) state.textContent = "";
+          write(ticker);
+        };
+
+        const selected = resolve(read()) ?? tickers[0];
+        if (selected) show(selected);
+
+        form?.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const wanted = box.value;
+          const match = resolve(wanted);
+          if (match) {
+            show(match);
+            return;
+          }
+          // Nothing is hidden and nothing is guessed. The box says what is missing.
+          if (state) {
+            state.textContent = `No run for ${String(wanted).trim().toUpperCase()}. A run against its filings would produce one.`;
+          }
+        });
+      })();
+    </script>
   </body>
 </html>
+
+<style>
+  .tickerbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+  .tickerbox {
+    background: var(--raised);
+    border: 1px solid var(--line-strong);
+    color: var(--white);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    width: 132px;
+  }
+  .tickerbox::placeholder { color: var(--faint); letter-spacing: 0.14em; text-transform: none; }
+  .tickerbox:focus-visible { outline: 1px solid var(--teal); outline-offset: 1px; }
+  [data-company][hidden] { display: none; }
+</style>

@@ -5,7 +5,6 @@
 // appears here without anyone drawing it. Edge weight and speed come from the
 // number of verified claims each route carried on this run.
 import { nodes as allNodes, nodeLoad, lensRows, tickerId } from "../lib/read.mjs";
-import * as f from "../lib/fmt.mjs";
 
 const { company } = Astro.props;
 const results = company.results;
@@ -14,6 +13,46 @@ const load = nodeLoad(company);
 const lenses = lensRows(company);
 const lensByNode = new Map(lenses.map((l) => [l.node_id, l]));
 
+// What the box says. A name, never more than two words, so the drawing reads as
+// a circuit at a glance. The registry label, the line of description and the
+// run figures all live behind a click. Anything absent falls back to the
+// registry label.
+const TITLES = {
+  J1: "Corpus",
+  J2: "Consensus",
+  J3: "News",
+  J5: "Universe",
+  J6: "Macro feed",
+  J7: "Sponsor feed",
+  U1: "Numbers",
+  U2: "Series",
+  U3: "Filings",
+  U4: "Ranges",
+  U5: "Industry",
+  U6: "Macro series",
+  U7: "Bridge",
+  U8: "Calls",
+  U9: "Perception",
+  U10: "Evidence",
+  U11: "Income model",
+  U12: "Mechanical",
+  U13: "Guidance",
+  U14: "Drivers",
+  U15: "Demand",
+  U16: "Market",
+  U17: "Margins",
+  U18: "Forensics",
+  U19: "Peer read",
+  U20: "Macro",
+  U21: "Reconcile",
+  U22: "Champion",
+  U23: "Judge",
+  U24: "Comparability",
+  U25: "Calibration",
+  U26: "Position",
+  OUT: "Estimate",
+};
+
 // One line under each name, in the language of the desk rather than the build.
 const SAYS = {
   J1: "Filings, transcripts and slides",
@@ -21,14 +60,14 @@ const SAYS = {
   J3: "Trade press, date bounded",
   J4: "No options feed for this listing",
   J5: "The four names in scope",
-  J6: "No macro series answered",
-  J7: "Company issued material",
+  J6: "Macro series, vintage pinned",
+  J7: "The metric, unit and period we owe",
   U1: "Reported figures, each with its quote",
   U2: "The reported series by period",
   U3: "Filings pulled for the period",
   U4: "Guided ranges as issued",
   U5: "Industry reading around the quarter",
-  U6: "Not answered on this run",
+  U6: "The series this company turns on",
   U7: "Statutory to adjusted bridge",
   U8: "What management said on the call",
   U9: "How the quarter is being read",
@@ -84,9 +123,9 @@ const RAIL_NODE = "U25";
 const columnOf = (node) => (node.id === RAIL_NODE ? null : node.stage === "V3" ? "H" : node.stage);
 
 const BOX_W = 128;
-const BOX_H = 46;
+const BOX_H = 34;
 const COL_GAP = 40;
-const ROW_GAP = 12;
+const ROW_GAP = 16;
 const TOP = 56;
 
 const grouped = COLUMNS.map(([letter, name]) => ({
@@ -118,14 +157,20 @@ grouped.forEach((group, ci) => {
   group.x = x;
 });
 
-// The rail node sits in series on the comparison conductor.
-pos.set(RAIL_NODE, {
-  x: WIDTH / 2 - BOX_W / 2,
-  y: railY - BOX_H / 2,
-  cx: WIDTH / 2,
-  cy: railY,
-  col: -1,
-});
+// The rail node sits in series on the comparison conductor, when the registry
+// carries it. With no such node the rail runs unbroken rather than showing a
+// gap where a box used to be.
+const railNodePresent = allNodes.some((n) => n.id === RAIL_NODE);
+const railX = WIDTH / 2 - BOX_W / 2;
+if (railNodePresent) {
+  pos.set(RAIL_NODE, {
+    x: railX,
+    y: railY - BOX_H / 2,
+    cx: WIDTH / 2,
+    cy: railY,
+    col: -1,
+  });
+}
 
 const toneOf = (node) => {
   if (node.id === CONSEQUENCE) return "red";
@@ -147,10 +192,6 @@ function volumeOf(sourceId) {
   if (row?.calls) return row.calls;
   return 1;
 }
-
-const RAIL = [
-  ["U1", "B", "acquire"],
-];
 
 // Every route on the drawing. Volume decides width and speed; a dropped source
 // is drawn open rather than absent.
@@ -225,6 +266,7 @@ const detail = Object.fromEntries(
     return [
       n.id,
       {
+        title: TITLES[n.id] ?? n.label,
         label: n.label,
         says: SAYS[n.id] ?? "",
         note: n.note ?? "",
@@ -255,10 +297,8 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
       <label><input type="radio" name={`view-${id}`} value="acct" /> <span>checked by</span></label>
     </div>
     <div class="toggle">
-      <span class="eyebrow">Marks</span>
-      <label><input type="radio" name={`badge-${id}`} value="live" checked /> <span>this run</span></label>
-      <label><input type="radio" name={`badge-${id}`} value="build" /> <span>coverage</span></label>
-      <label><input type="radio" name={`badge-${id}`} value="cost" /> <span>spend</span></label>
+      <span class="eyebrow">Boxes</span>
+      <span class="hint">Select one for what it read, what checks it, and what it did on this run</span>
     </div>
   </div>
 
@@ -351,19 +391,21 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
       {/* The comparison rail. Fixed speed, its own conductor, touched by nothing. */}
       <path
         class="bus"
-        d={`M${pos.get(busTap)?.cx ?? 0} ${pos.get(busTap)?.y + BOX_H} V${railY} H${pos.get(RAIL_NODE).x}`}
+        d={`M${pos.get(busTap)?.cx ?? 0} ${pos.get(busTap)?.y + BOX_H} V${railY} H${railNodePresent ? railX : pos.get("U26").cx}${railNodePresent ? "" : ` V${pos.get("U26").y + BOX_H}`}`}
         fill="none"
         stroke="#35D39A"
         stroke-width="2"
       />
-      <path
-        class="bus"
-        d={`M${pos.get(RAIL_NODE).x + BOX_W} ${railY} H${pos.get("U26").cx} V${pos.get("U26").y + BOX_H}`}
-        fill="none"
-        stroke="#35D39A"
-        stroke-width="2"
-      />
-      <text x={pos.get(RAIL_NODE).x} y={railY + 40} class="busnote">
+      {railNodePresent && (
+        <path
+          class="bus"
+          d={`M${railX + BOX_W} ${railY} H${pos.get("U26").cx} V${pos.get("U26").y + BOX_H}`}
+          fill="none"
+          stroke="#35D39A"
+          stroke-width="2"
+        />
+      )}
+      <text x={railX} y={railY + 40} class="busnote">
         Street consensus, taken once at {busTap} and carried to the position. Nothing in the reading can move it.
       </text>
 
@@ -371,41 +413,37 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
         const p = pos.get(node.id);
         if (!p) return null;
         const tone = toneOf(node);
-        const row = load.get(node.id) ?? {};
         const dashed = !node.available || node.kind === "advisory";
+        const title = TITLES[node.id] ?? node.label;
         return (
           <g
             class="node"
             data-node={node.id}
             tabindex="0"
             role="button"
-            aria-label={`${node.label}. ${SAYS[node.id] ?? ""}`}
+            aria-label={`${title}. ${SAYS[node.id] ?? ""}`}
           >
-            <text x={p.x} y={p.y - 4} class="nodeid">{node.id}</text>
+            <text x={p.x} y={p.y - 5} class="nodeid">{node.id}</text>
+            {/* Solid fill: a route runs behind a box, never through it. */}
             <rect
               x={p.x}
               y={p.y}
               width={BOX_W}
               height={BOX_H}
               rx="3"
-              fill="none"
+              class="nodebox"
               stroke={dashed ? "#4E5C6E" : COLOUR[tone]}
               stroke-width="1"
               stroke-dasharray={dashed ? "3 3" : undefined}
             />
-            <text x={p.x + 8} y={p.y + 15} class="nodename" fill={dashed ? "#4E5C6E" : COLOUR[tone]}>
-              {node.label}
-            </text>
-            <text x={p.x + 8} y={p.y + 27} class="nodesays">{SAYS[node.id] ?? ""}</text>
-            <text x={p.x + 8} y={p.y + 40} class="badge badge-live">
-              {row.tokens ? `${f.tokens(row.tokens)} tok` : node.available ? "ran" : "not answered"}
-              {row.seconds ? `  ${f.seconds(row.seconds)}` : ""}
-            </text>
-            <text x={p.x + 8} y={p.y + 40} class="badge badge-build">
-              {node.covered ? "covered by a check" : "no check"}
-            </text>
-            <text x={p.x + 8} y={p.y + 40} class="badge badge-cost">
-              {row.usd ? f.usd(row.usd, 3) : "no spend"}
+            <text
+              x={p.cx}
+              y={p.y + BOX_H / 2 + 4}
+              class="nodename"
+              text-anchor="middle"
+              fill={dashed ? "#4E5C6E" : COLOUR[tone]}
+            >
+              {title}
             </text>
           </g>
         );
@@ -420,6 +458,7 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     </div>
     <div class="panel-body">
       <p class="small" data-detail-says>Every box on the drawing opens here, with what it reads, whether a check covers it, and what it did on this run.</p>
+      <p class="small t-secondary" data-detail-note hidden></p>
       <div class="kv" data-detail-rows></div>
     </div>
   </div>
@@ -433,33 +472,27 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
   .toggle { display: flex; align-items: center; gap: 10px; }
   .toggle label { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; color: var(--secondary); cursor: pointer; }
   .toggle input { accent-color: #a77bff; width: 10px; height: 10px; }
+  .toggle .hint { font-size: 11px; color: var(--secondary); }
   .legend { display: flex; gap: 22px; flex-wrap: wrap; font-size: 9.5px; letter-spacing: 0.08em; margin-bottom: 12px; }
   .legend span { display: inline-flex; align-items: center; gap: 7px; }
 
   svg.flow { display: block; }
   .collabel { font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase; fill: var(--faint); font-family: var(--mono); }
   .nodeid { font-size: 8.5px; fill: var(--faint); font-family: var(--mono); }
-  .nodename { font-size: 11px; font-family: var(--mono); }
-  .nodesays { font-size: 9.5px; fill: var(--secondary); font-family: var(--mono); }
-  .badge { font-size: 8.5px; fill: var(--faint); font-family: var(--mono); }
+  .nodename { font-size: 11.5px; font-family: var(--mono); }
   .busnote { font-size: 9.5px; fill: var(--faint); font-family: var(--mono); }
 
-  .node { cursor: pointer; }
-  .node:hover rect { stroke-width: 1.5; }
-  .node:focus-visible rect { stroke: #35d39a; }
+  /* A box is a solid object on the board: routes pass behind it, not through. */
+  .nodebox { fill: var(--raised); transition: fill 160ms linear, stroke 240ms linear; }
 
-  /* Arrival: the border takes its colour, an inner stroke fades in and out. */
-  .node rect { transition: stroke 240ms linear; }
+  .node { cursor: pointer; }
+  .node:hover .nodebox { fill: #131c27; stroke-width: 1.5; }
+  .node:focus-visible .nodebox { stroke: #35d39a; }
+  .node.is-open .nodebox { fill: #16202c; stroke-width: 2; stroke-dasharray: none; }
 
   .edges-acct { display: none; }
   .flowwrap:has(input[value="acct"]:checked) .edges-acct { display: block; }
   .flowwrap:has(input[value="acct"]:checked) .edges-data .flowline { display: none; }
-
-  .badge-build, .badge-cost { display: none; }
-  .flowwrap:has(input[value="build"]:checked) .badge-live { display: none; }
-  .flowwrap:has(input[value="build"]:checked) .badge-build { display: block; }
-  .flowwrap:has(input[value="cost"]:checked) .badge-live { display: none; }
-  .flowwrap:has(input[value="cost"]:checked) .badge-cost { display: block; }
 
   /* Current. Only the dash offset moves. */
   @keyframes current { to { stroke-dashoffset: -16; } }
@@ -481,26 +514,36 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     const detail = JSON.parse(wrap.querySelector("[data-flow-detail]").textContent);
     const name = wrap.querySelector("[data-detail-name]");
     const says = wrap.querySelector("[data-detail-says]");
+    const note = wrap.querySelector("[data-detail-note]");
     const rows = wrap.querySelector("[data-detail-rows]");
+    const boxes = [...wrap.querySelectorAll("[data-node]")];
+    const escape = (value) =>
+      String(value).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
     const open = (id) => {
       const d = detail[id];
       if (!d) return;
-      name.textContent = `${id} · ${d.label}`;
-      says.textContent = d.says || d.note;
+      for (const box of boxes) box.classList.toggle("is-open", box.dataset.node === id);
+      name.textContent = `${id} · ${d.title}`;
+      says.textContent = d.says || d.note || d.label;
+      note.textContent = d.note && d.note !== says.textContent ? d.note : "";
+      note.hidden = !note.textContent;
       const pairs = [
-        ["Reads", d.says || "—"],
+        ["Full name", d.label],
+        ["Part", d.agent ? `${d.kind}${d.tier && d.tier !== "none" ? ` · ${d.tier}` : ""}` : d.kind],
         ["Checked", d.covered ? "covered by a check" : "no check covers this"],
         ["On this run", d.state === "dropped" ? "excluded" : d.state === "abstained" ? "no view offered" : d.available ? "ran" : "not answered"],
       ];
+      if (d.agent) pairs.push(["Runs as", d.agent]);
       if (d.calls) pairs.push(["Calls", String(d.calls)]);
       if (d.tokens) pairs.push(["Tokens", d.tokens.toLocaleString("en-GB")]);
+      if (d.seconds) pairs.push(["Time", `${d.seconds.toFixed(1)}s`]);
       if (d.usd) pairs.push(["Spend", `$${d.usd.toFixed(3)}`]);
       if (d.citations !== null && d.citations !== undefined) pairs.push(["Citations", String(d.citations)]);
       rows.innerHTML = pairs
-        .map(([k, v]) => `<div class="row"><span class="k">${k}</span><span class="v num">${v}</span></div>`)
+        .map(([k, v]) => `<div class="row"><span class="k">${escape(k)}</span><span class="v num">${escape(v)}</span></div>`)
         .join("");
     };
-    for (const node of wrap.querySelectorAll("[data-node]")) {
+    for (const node of boxes) {
       node.addEventListener("click", () => open(node.dataset.node));
       node.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
