@@ -34,10 +34,9 @@ async function writeManualState(state) {
 
 // Sunday 16 August 2026, London (BST, +01:00).
 const DAY = "2026-08-16";
+// Only the deadlines that cost something if missed. The countdown targets the
+// next `hard` one; soft milestones (briefing, lunch) are deliberately absent.
 const timeline = [
-  { at: "10:30", label: "Briefing", detail: "Welcome, rules, tools and questions." },
-  { at: "11:15", label: "Building starts", detail: "Nothing competition-specific may exist before this.", hard: true },
-  { at: "13:00", label: "Lunch", detail: "Teams can keep working." },
   { at: "16:00", label: "Judging pass opens", detail: "Five minutes with one judge pair — the heaviest part of architecture judging." },
   { at: "17:00", label: "Social competition closes", detail: "X and LinkedIn posts must be up.", hard: true },
   { at: "17:15", label: "Architecture HTML locks", detail: "45-minute final-run window opens.", hard: true },

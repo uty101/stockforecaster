@@ -192,7 +192,7 @@ function renderTimeline() {
 function renderClock() {
   if (!state) return;
   const now = Date.now();
-  const next = state.timeline.find((slot) => new Date(slot.iso).getTime() > now);
+  const next = state.timeline.find((slot) => slot.hard && new Date(slot.iso).getTime() > now);
   const countdownNode = document.getElementById("countdown");
   if (next) {
     const remaining = new Date(next.iso).getTime() - now;
