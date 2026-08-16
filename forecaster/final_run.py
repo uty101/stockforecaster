@@ -24,6 +24,7 @@ Exit codes, which are in the log footer as well as here:
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import threading
@@ -32,6 +33,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import REPO_ROOT, load_config, load_targets
+from .env import EnvReport, load_env
 from .run import forecast_all
 from .runlog import RunLog
 
@@ -43,11 +45,19 @@ WORKBOOK_CHECKER = Path("scripts") / "check-forecasts.mjs"
 # -- the steps -----------------------------------------------------------
 
 
-def _header(log: RunLog, argv: list[str]) -> None:
+def _header(log: RunLog, argv: list[str], env: EnvReport) -> None:
     log.rule("final run")
     log.field("log file", log.path)
     log.field("started (UTC)", log.started_at.isoformat())
     log.field("repo root", REPO_ROOT)
+    # Names only. The values are secrets, and the log records which credentials
+    # the run had rather than what they were.
+    log.field("env file", env.describe())
+    if env.loaded:
+        log.field("  loaded from file", ", ".join(sorted(env.loaded)))
+    if env.already_set:
+        log.field("  already in shell", ", ".join(sorted(env.already_set)))
+    log.field("ANTHROPIC_API_KEY", "present" if os.environ.get("ANTHROPIC_API_KEY") else "MISSING")
 
     commit, dirty = _git_state()
     log.field("git commit", commit)
@@ -220,8 +230,8 @@ def _verify(log: RunLog) -> tuple[bool, dict[str, str]]:
 # -- entry point ---------------------------------------------------------
 
 
-def _run(log: RunLog, argv: list[str]) -> int:
-    _header(log, argv)
+def _run(log: RunLog, argv: list[str], env: EnvReport) -> int:
+    _header(log, argv, env)
     written = _pipeline(log)
     _workbooks(log)
     passed, _ = _verify(log)
@@ -255,13 +265,17 @@ def _run(log: RunLog, argv: list[str]) -> int:
 
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
+    # Before the log exists, and that order is load-bearing: RunLog builds its
+    # Redactor from os.environ at construction, so a key loaded after this point
+    # would be a key the redactor cannot scrub.
+    env = load_env()
     log = RunLog(REPO_ROOT / "logs", started_at=datetime.now(timezone.utc))
     # Printed before the swap so it reaches the terminal even if the tee itself
     # is what goes wrong.
     print(f"logging to {log.path}")
     try:
         with log.tee():
-            return _run(log, argv)
+            return _run(log, argv, env)
     except BaseException as error:  # noqa: BLE001 - a crash must still leave a footer
         # The tee has already written the traceback into the file on its way out.
         # This exists so the terminal says where to look rather than scrolling a
