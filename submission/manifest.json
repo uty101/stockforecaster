@@ -1,17 +1,22 @@
 {
-  "generatedAt": "2026-08-16T14:24:50.531Z",
+  "generatedAt": "2026-08-16T16:30:45.772Z",
   "companies": {
     "HD": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-93226a58\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\HD-2026-08-16-3083d3e5\\results.json",
       "runHealth": {
         "healthy": true,
         "reasons": [],
-        "surviving": 9,
+        "surviving": 4,
         "ran": 9,
         "stage": "I"
       },
       "usedDegradedRun": false,
       "runsConsidered": [
+        {
+          "run": "HD-2026-08-16-3083d3e5",
+          "healthy": true,
+          "reasons": []
+        },
         {
           "run": "HD-2026-08-16-93226a58",
           "healthy": true,
@@ -57,7 +62,7 @@
         }
       ],
       "lastCompletedStage": "I",
-      "costUsd": 1.2111,
+      "costUsd": 1.3152,
       "provenance": [
         {
           "metric": "Net sales",
@@ -66,12 +71,12 @@
         },
         {
           "metric": "Adjusted diluted EPS",
-          "value": 4.65,
+          "value": 4.7,
           "source": "this run"
         },
         {
           "metric": "Comparable sales, total company",
-          "value": 0.9,
+          "value": 0.8,
           "source": "this run"
         }
       ],
@@ -84,26 +89,31 @@
         {
           "label": "Adjusted diluted EPS",
           "cell": "C8",
-          "value": 4.65
+          "value": 4.7
         },
         {
           "label": "Comparable sales, total company",
           "cell": "C9",
-          "value": 0.9
+          "value": 0.8
         }
       ]
     },
     "ADI": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-93226a58\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\ADI-2026-08-16-3083d3e5\\results.json",
       "runHealth": {
         "healthy": true,
         "reasons": [],
-        "surviving": 9,
+        "surviving": 6,
         "ran": 9,
         "stage": "I"
       },
       "usedDegradedRun": false,
       "runsConsidered": [
+        {
+          "run": "ADI-2026-08-16-3083d3e5",
+          "healthy": true,
+          "reasons": []
+        },
         {
           "run": "ADI-2026-08-16-93226a58",
           "healthy": true,
@@ -141,16 +151,16 @@
         }
       ],
       "lastCompletedStage": "I",
-      "costUsd": 1.1111,
+      "costUsd": 1.3203,
       "provenance": [
         {
           "metric": "Revenue",
-          "value": 3930,
+          "value": 3958,
           "source": "this run"
         },
         {
           "metric": "Adjusted diluted EPS",
-          "value": 3.35,
+          "value": 3.4,
           "source": "this run"
         },
         {
@@ -163,12 +173,12 @@
         {
           "label": "Revenue",
           "cell": "C7",
-          "value": 3930
+          "value": 3958
         },
         {
           "label": "Adjusted diluted EPS",
           "cell": "C8",
-          "value": 3.35
+          "value": 3.4
         },
         {
           "label": "Adjusted gross margin",
@@ -178,16 +188,21 @@
       ]
     },
     "LSE:HAS": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-93226a58\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\LSE_HAS-2026-08-16-3083d3e5\\results.json",
       "runHealth": {
         "healthy": true,
         "reasons": [],
-        "surviving": 7,
+        "surviving": 6,
         "ran": 9,
         "stage": "I"
       },
       "usedDegradedRun": false,
       "runsConsidered": [
+        {
+          "run": "LSE_HAS-2026-08-16-3083d3e5",
+          "healthy": true,
+          "reasons": []
+        },
         {
           "run": "LSE_HAS-2026-08-16-93226a58",
           "healthy": true,
@@ -234,16 +249,16 @@
         }
       ],
       "lastCompletedStage": "I",
-      "costUsd": 1.2297,
+      "costUsd": 1.5488,
       "provenance": [
         {
           "metric": "Net fees",
-          "value": 896,
+          "value": 897.5,
           "source": "this run"
         },
         {
           "metric": "Pre-exceptional basic EPS",
-          "value": 1.25,
+          "value": 1.3,
           "source": "this run"
         },
         {
@@ -256,12 +271,12 @@
         {
           "label": "Net fees",
           "cell": "C7",
-          "value": 896
+          "value": 897.5
         },
         {
           "label": "Pre-exceptional basic EPS",
           "cell": "C8",
-          "value": 1.25
+          "value": 1.3
         },
         {
           "label": "Pre-exceptional operating profit",
@@ -271,16 +286,21 @@
       ]
     },
     "DE": {
-      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-93226a58\\results.json",
+      "results": "C:\\Hackathon_Utkarsh_Malhotra\\runs\\DE-2026-08-16-3083d3e5\\results.json",
       "runHealth": {
         "healthy": true,
         "reasons": [],
-        "surviving": 9,
+        "surviving": 4,
         "ran": 9,
         "stage": "I"
       },
       "usedDegradedRun": false,
       "runsConsidered": [
+        {
+          "run": "DE-2026-08-16-3083d3e5",
+          "healthy": true,
+          "reasons": []
+        },
         {
           "run": "DE-2026-08-16-93226a58",
           "healthy": true,
@@ -328,21 +348,21 @@
         }
       ],
       "lastCompletedStage": "I",
-      "costUsd": 1.6489,
+      "costUsd": 1.824,
       "provenance": [
         {
           "metric": "Worldwide net sales and revenues",
-          "value": 12470,
+          "value": 11850,
           "source": "this run"
         },
         {
           "metric": "Diluted EPS (GAAP)",
-          "value": 4.92,
+          "value": 4.8,
           "source": "this run"
         },
         {
           "metric": "Production & Precision Ag operating profit",
-          "value": 560,
+          "value": 570,
           "source": "this run"
         }
       ],
@@ -350,17 +370,17 @@
         {
           "label": "Worldwide net sales and revenues",
           "cell": "C7",
-          "value": 12470
+          "value": 11850
         },
         {
           "label": "Diluted EPS (GAAP)",
           "cell": "C8",
-          "value": 4.92
+          "value": 4.8
         },
         {
           "label": "Production & Precision Ag operating profit",
           "cell": "C9",
-          "value": 560
+          "value": 570
         }
       ]
     }

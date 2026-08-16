@@ -1,0 +1,221 @@
+2026-08-16T16:13:31.883Z log | 
+2026-08-16T16:13:31.887Z log | == final run ===============================================================
+2026-08-16T16:13:31.892Z log |   log file               C:\Hackathon_Utkarsh_Malhotra\logs\final-run-20260816T161331Z.log
+2026-08-16T16:13:31.896Z log |   started (UTC)          2026-08-16T16:13:31.882834+00:00
+2026-08-16T16:13:31.900Z log |   repo root              C:\Hackathon_Utkarsh_Malhotra
+2026-08-16T16:13:31.968Z log |   git commit             5eb4a3ff62287a3bac478fe01a0d6e2f63e74ecf
+2026-08-16T16:13:31.972Z log |   working tree           DIRTY -- 3 file(s) modified
+2026-08-16T16:13:31.974Z log |     M site/.astro/dev.log
+2026-08-16T16:13:31.984Z log |     ?? Uploads/
+2026-08-16T16:13:31.986Z log |     ?? logs/final-run-20260816T161331Z.log
+2026-08-16T16:13:31.989Z log |   command                C:\Python314\python.exe -m forecaster.final_run
+2026-08-16T16:13:31.991Z log |   argv                   ["C:\\Hackathon_Utkarsh_Malhotra\\forecaster\\final_run.py"]
+2026-08-16T16:13:31.998Z log |   python                 3.14.4 at C:\Python314\python.exe
+2026-08-16T16:13:32.001Z log |   as_of                  2026-08-16
+2026-08-16T16:13:32.003Z log |   corpus frozen          2026-08-14
+2026-08-16T16:13:32.005Z log |   cost ceiling           $25.0
+2026-08-16T16:13:32.007Z log | 
+2026-08-16T16:13:32.009Z log |   4 companies queued:
+2026-08-16T16:13:32.011Z log |     1. HD       Home Depot           FY2026Q2   -> HD-FY2026Q2.xlsx
+2026-08-16T16:13:32.013Z log |        metrics: Net sales (USDm), Adjusted diluted EPS (USD / share), Comparable sales, total company (%)
+2026-08-16T16:13:32.015Z log |     2. ADI      Analog Devices       FY2026Q3   -> ADI-FY2026Q3.xlsx
+2026-08-16T16:13:32.017Z log |        metrics: Revenue (USDm), Adjusted diluted EPS (USD / share), Adjusted gross margin (%)
+2026-08-16T16:13:32.019Z log |     3. LSE:HAS  Hays plc             FY2026     -> HAS-FY2026.xlsx
+2026-08-16T16:13:32.021Z log |        metrics: Net fees (GBPm), Pre-exceptional basic EPS (GBp), Pre-exceptional operating profit (GBPm)
+2026-08-16T16:13:32.023Z log |     4. DE       Deere & Company      FY2026Q3   -> DE-FY2026Q3.xlsx
+2026-08-16T16:13:32.025Z log |        metrics: Worldwide net sales and revenues (USDm), Diluted EPS (GAAP) (USD / share), Production & Precision Ag operating profit (USDm)
+2026-08-16T16:13:32.027Z log | 
+2026-08-16T16:13:32.029Z log |   Per-company detail below is the event tape as it is emitted. The complete
+2026-08-16T16:13:32.031Z log |   tape, including every dropped extraction, is in each run's events.jsonl.
+2026-08-16T16:13:32.034Z log | 
+2026-08-16T16:13:32.036Z log | == pipeline ================================================================
+2026-08-16T16:13:32.039Z err | FAILURE company HD: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.043Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.045Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.047Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.049Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.051Z err |         client = Client(
+2026-08-16T16:13:32.053Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.055Z err |         ...<2 lines>...
+2026-08-16T16:13:32.057Z err |             events=ctx.events,
+2026-08-16T16:13:32.059Z err |         )
+2026-08-16T16:13:32.061Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.063Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.065Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.067Z err |         ...<2 lines>...
+2026-08-16T16:13:32.070Z err |         )
+2026-08-16T16:13:32.072Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.073Z err |   retry: yes, another attempt follows
+2026-08-16T16:13:32.076Z err | FAILURE company HD: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.079Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.081Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.083Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.085Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.087Z err |         client = Client(
+2026-08-16T16:13:32.089Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.091Z err |         ...<2 lines>...
+2026-08-16T16:13:32.093Z err |             events=ctx.events,
+2026-08-16T16:13:32.095Z err |         )
+2026-08-16T16:13:32.097Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.099Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.101Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.103Z err |         ...<2 lines>...
+2026-08-16T16:13:32.105Z err |         )
+2026-08-16T16:13:32.107Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.110Z err |   retry: no, not retried
+2026-08-16T16:13:32.113Z err | FAILURE company ADI: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.116Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.118Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.120Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.122Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.124Z err |         client = Client(
+2026-08-16T16:13:32.126Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.129Z err |         ...<2 lines>...
+2026-08-16T16:13:32.131Z err |             events=ctx.events,
+2026-08-16T16:13:32.133Z err |         )
+2026-08-16T16:13:32.135Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.137Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.139Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.141Z err |         ...<2 lines>...
+2026-08-16T16:13:32.144Z err |         )
+2026-08-16T16:13:32.146Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.149Z err |   retry: yes, another attempt follows
+2026-08-16T16:13:32.152Z err | FAILURE company ADI: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.155Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.157Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.159Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.161Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.163Z err |         client = Client(
+2026-08-16T16:13:32.165Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.167Z err |         ...<2 lines>...
+2026-08-16T16:13:32.169Z err |             events=ctx.events,
+2026-08-16T16:13:32.171Z err |         )
+2026-08-16T16:13:32.173Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.175Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.177Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.179Z err |         ...<2 lines>...
+2026-08-16T16:13:32.182Z err |         )
+2026-08-16T16:13:32.184Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.186Z err |   retry: no, not retried
+2026-08-16T16:13:32.189Z err | FAILURE company LSE:HAS: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.192Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.194Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.196Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.199Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.201Z err |         client = Client(
+2026-08-16T16:13:32.203Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.205Z err |         ...<2 lines>...
+2026-08-16T16:13:32.207Z err |             events=ctx.events,
+2026-08-16T16:13:32.209Z err |         )
+2026-08-16T16:13:32.211Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.213Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.215Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.217Z err |         ...<2 lines>...
+2026-08-16T16:13:32.219Z err |         )
+2026-08-16T16:13:32.221Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.223Z err |   retry: yes, another attempt follows
+2026-08-16T16:13:32.227Z err | FAILURE company LSE:HAS: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.230Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.232Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.234Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.236Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.238Z err |         client = Client(
+2026-08-16T16:13:32.240Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.242Z err |         ...<2 lines>...
+2026-08-16T16:13:32.244Z err |             events=ctx.events,
+2026-08-16T16:13:32.246Z err |         )
+2026-08-16T16:13:32.249Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.251Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.253Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.255Z err |         ...<2 lines>...
+2026-08-16T16:13:32.257Z err |         )
+2026-08-16T16:13:32.259Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.261Z err |   retry: no, not retried
+2026-08-16T16:13:32.264Z err | FAILURE company DE: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.267Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.269Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.271Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.273Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.275Z err |         client = Client(
+2026-08-16T16:13:32.278Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.280Z err |         ...<2 lines>...
+2026-08-16T16:13:32.282Z err |             events=ctx.events,
+2026-08-16T16:13:32.284Z err |         )
+2026-08-16T16:13:32.286Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.288Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.290Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.292Z err |         ...<2 lines>...
+2026-08-16T16:13:32.294Z err |         )
+2026-08-16T16:13:32.296Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.298Z err |   retry: yes, another attempt follows
+2026-08-16T16:13:32.301Z err | FAILURE company DE: ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.304Z err |     Traceback (most recent call last):
+2026-08-16T16:13:32.306Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 185, in forecast_all
+2026-08-16T16:13:32.308Z err |         path = forecast(target, config, runs_root, run_id, observer)
+2026-08-16T16:13:32.310Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\run.py", line 72, in forecast
+2026-08-16T16:13:32.312Z err |         client = Client(
+2026-08-16T16:13:32.314Z err |             router=TierRouter(config.section("models")),
+2026-08-16T16:13:32.317Z err |         ...<2 lines>...
+2026-08-16T16:13:32.319Z err |             events=ctx.events,
+2026-08-16T16:13:32.321Z err |         )
+2026-08-16T16:13:32.323Z err |       File "<string>", line 11, in __init__
+2026-08-16T16:13:32.324Z err |       File "C:\Hackathon_Utkarsh_Malhotra\forecaster\agents\client.py", line 80, in __post_init__
+2026-08-16T16:13:32.326Z err |         raise ModelCallFailed(
+2026-08-16T16:13:32.328Z err |         ...<2 lines>...
+2026-08-16T16:13:32.330Z err |         )
+2026-08-16T16:13:32.333Z err |     forecaster.agents.client.ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.335Z err |   retry: no, not retried
+2026-08-16T16:13:32.337Z log | 
+2026-08-16T16:13:32.339Z log | == pipeline summary ========================================================
+2026-08-16T16:13:32.341Z log |   run id                 1ddeaf48
+2026-08-16T16:13:32.344Z log |   HD                     FAILED after 2 attempts -- ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.346Z log |     results   none written; the workbook step will carry forward if it can
+2026-08-16T16:13:32.348Z log |   ADI                    FAILED after 2 attempts -- ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.351Z log |     results   none written; the workbook step will carry forward if it can
+2026-08-16T16:13:32.353Z log |   LSE:HAS                FAILED after 2 attempts -- ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.355Z log |     results   none written; the workbook step will carry forward if it can
+2026-08-16T16:13:32.357Z log |   DE                     FAILED after 2 attempts -- ModelCallFailed: ANTHROPIC_API_KEY is not set. Run with the fixture generator if you want a no-network run; a missing key must not silently become a degraded forecast.
+2026-08-16T16:13:32.359Z log |     results   none written; the workbook step will carry forward if it can
+2026-08-16T16:13:32.361Z log | 
+2026-08-16T16:13:32.363Z log | == workbooks ===============================================================
+2026-08-16T16:13:32.365Z log | $ node src\forecast-to-workbooks.mjs
+2026-08-16T16:13:32.465Z out |   HD       HD-FY2026Q2.xlsx     47320  4.65  0.9
+2026-08-16T16:13:32.495Z out |   ADI      ADI-FY2026Q3.xlsx    3930  3.35  73.1
+2026-08-16T16:13:32.533Z out |   LSE:HAS  HAS-FY2026.xlsx      896  1.25  45.2
+2026-08-16T16:13:32.562Z out |   DE       DE-FY2026Q3.xlsx     12470  4.92  560
+2026-08-16T16:13:32.564Z out | 
+2026-08-16T16:13:32.566Z out | Wrote 4 workbooks.
+2026-08-16T16:13:32.574Z log |   exit code 0
+2026-08-16T16:13:32.577Z log | 
+2026-08-16T16:13:32.580Z log | == verification ============================================================
+2026-08-16T16:13:32.582Z log | $ node scripts\check-forecasts.mjs submission
+2026-08-16T16:13:32.784Z out | PASS HD-FY2026Q2.xlsx
+2026-08-16T16:13:32.790Z out | PASS ADI-FY2026Q3.xlsx
+2026-08-16T16:13:32.796Z out | PASS HAS-FY2026.xlsx
+2026-08-16T16:13:32.800Z out | PASS DE-FY2026Q3.xlsx
+2026-08-16T16:13:32.802Z out | 
+2026-08-16T16:13:32.804Z out | All four forecast workbooks are ready for manual upload.
+2026-08-16T16:13:32.811Z log |   exit code 0
+2026-08-16T16:13:32.814Z log | 
+2026-08-16T16:13:32.816Z log | == workbooks written =======================================================
+2026-08-16T16:13:32.820Z log |   HD                     PASS
+2026-08-16T16:13:32.822Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\HD-FY2026Q2.xlsx
+2026-08-16T16:13:32.824Z log |     on disk   yes, 5534 bytes
+2026-08-16T16:13:32.826Z log |   ADI                    PASS
+2026-08-16T16:13:32.828Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\ADI-FY2026Q3.xlsx
+2026-08-16T16:13:32.831Z log |     on disk   yes, 5538 bytes
+2026-08-16T16:13:32.833Z log |   LSE:HAS                PASS
+2026-08-16T16:13:32.835Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\HAS-FY2026.xlsx
+2026-08-16T16:13:32.837Z log |     on disk   yes, 5484 bytes
+2026-08-16T16:13:32.840Z log |   DE                     PASS
+2026-08-16T16:13:32.842Z log |     path      C:\Hackathon_Utkarsh_Malhotra\submission\DE-FY2026Q3.xlsx
+2026-08-16T16:13:32.844Z log |     on disk   yes, 5567 bytes
+2026-08-16T16:13:32.846Z log | 
+2026-08-16T16:13:32.848Z log | == outcome =================================================================
+2026-08-16T16:13:32.850Z log |   companies forecast     0/4
+2026-08-16T16:13:32.852Z log |   companies retried      HD, ADI, LSE:HAS, DE
+2026-08-16T16:13:32.854Z log |   companies failed       HD, ADI, LSE:HAS, DE
+2026-08-16T16:13:32.856Z log |   workbooks verified     all four PASS
+2026-08-16T16:13:32.858Z log |   exit code              2 -- workbooks verified, but HD, ADI, LSE:HAS, DE failed and carried forward previous numbers rather than forecasting today
+2026-08-16T16:13:32.861Z log |   uploads                manual by rule; the agent does not post to OpenStocks
+2026-08-16T16:13:32.863Z log | log closed: C:\Hackathon_Utkarsh_Malhotra\logs\final-run-20260816T161331Z.log
