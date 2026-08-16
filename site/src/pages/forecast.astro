@@ -1,0 +1,104 @@
+---
+import Sheet from "../layouts/Sheet.astro";
+import Distribution from "../components/Distribution.astro";
+import bundle from "../data/bundle.json";
+
+const live = bundle.companies.filter((c) => !c.missing);
+const all = live.flatMap((c) => c.results.forecast.metrics);
+const judged = all.filter((m) => m.quantiles && Object.keys(m.quantiles).length === 5);
+const pill = {
+  text: `uncalibrated · ${judged.length}/${all.length} metrics carry a judged band`,
+  tone: judged.length === all.length ? "warn" : "open",
+};
+
+const fmt = (v) =>
+  typeof v !== "number"
+    ? "—"
+    : Math.abs(v) >= 1000
+      ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
+      : v.toLocaleString(undefined, { maximumFractionDigits: 3 });
+---
+
+<Sheet title="Forecast" system="02 · the twelve numbers and how far they sit from the street" sheet="02" pill={pill}>
+  <div class="panel">
+    <h2>Positioning is switched off</h2>
+    <p class="sub">and that is a decision, not an omission</p>
+    <p class="secondary" style="margin:0;max-width:88ch">
+      Accuracy at this event is scored as our miss divided by the Street's miss. A forecast shrunk
+      onto consensus inherits the Street's error and scores a ratio of about 1.0 by construction —
+      safe, and unable to place. So the estimate below is submitted unadjusted. Consensus and the
+      baseline are still measured and still drawn beside every number; they are comparisons, and
+      neither is an input. Every regime condition that <em>would</em> have moved lambda is still
+      recorded, and the Risk sheet shows exactly what was declined.
+    </p>
+  </div>
+
+  {live.map((company) => (
+    <div class="panel">
+      <h2>{company.results.header.company} <span class="muted">· {company.results.header.ticker} · {company.results.header.period}</span></h2>
+      <p class="sub">
+        {company.results.forecast.consensus_bus.available
+          ? "consensus bus live — tapped once, rendered for comparison, never fed forward"
+          : "no analyst consensus exists for this company in any source available to this build"}
+      </p>
+
+      <div class="grid two">
+        {company.results.forecast.metrics.map((m) => (
+          <div class="metric">
+            <div class="label">{m.metric_label}</div>
+            <div class="hero">{fmt(m.forecast)} <span class="units">{m.units}</span></div>
+            <Distribution
+              quantiles={m.quantiles}
+              forecast={m.forecast}
+              baseline={m.baseline}
+              consensus={m.consensus}
+              units={m.units}
+            />
+            <p class="rationale">{m.rationale}</p>
+            {m.conditions?.length > 0 && (
+              <details>
+                <summary>every condition measured, with its input</summary>
+                <table>
+                  <tr><th>condition</th><th>input</th><th class="num">multiplier</th><th>effect</th></tr>
+                  {m.conditions.map((c) => (
+                    <tr>
+                      <td class="mono">{c.name}</td>
+                      <td class="muted">{c.input === null ? "—" : String(c.input)}</td>
+                      <td class="num">{c.multiplier ?? "—"}</td>
+                      <td class="muted">{c.effect}</td>
+                    </tr>
+                  ))}
+                </table>
+              </details>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  ))}
+
+  <div class="panel">
+    <h2>Calibration</h2>
+    <p class="sub">read this before reading the bands</p>
+    <p class="secondary" style="margin:0;max-width:88ch">
+      There are <b>zero</b> stored backtest residuals, so the intervals above are
+      <b> the judge's own and uncalibrated</b>. They have not been checked against how often
+      reality actually lands inside them, and they must not be read as a coverage claim: a p10–p90
+      band here does not mean eighty per cent of outcomes fall inside it. Calibrating them would
+      need the Street's bar as it stood at past quarters, and no source available to this build
+      publishes consensus history — so this is unobtainable rather than merely unmeasured, and it
+      is stated here rather than left for a reader to assume otherwise.
+    </p>
+  </div>
+</Sheet>
+
+<style>
+  .metric { background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 15px 16px; }
+  .label { color: var(--text-secondary); font-size: 12.5px; font-weight: 600; }
+  .hero { font-size: 30px; font-weight: 700; letter-spacing: -.025em; margin: 3px 0 2px; font-variant-numeric: tabular-nums; }
+  .hero .units { font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0; }
+  .rationale { font-size: 12.5px; color: var(--text-secondary); margin: 10px 0 0; line-height: 1.55; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; font-size: 12px; color: var(--text-muted); }
+  details table { margin-top: 8px; }
+</style>

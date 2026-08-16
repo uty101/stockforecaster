@@ -1,0 +1,93 @@
+---
+import Sheet from "../layouts/Sheet.astro";
+import bundle from "../data/bundle.json";
+
+const live = bundle.companies.filter((c) => !c.missing);
+const measured = live.flatMap((c) => c.results.model.metrics).filter((m) => m.reproduction_error !== null);
+const total = live.flatMap((c) => c.results.model.metrics).length;
+const pill = { text: `${measured.length}/${total} metrics state a measured error`, tone: measured.length === total ? "good" : "warn" };
+const pct = (v) => (typeof v === "number" ? `${v > 0 ? "+" : ""}${v.toFixed(2)}%` : "unmeasured");
+const fmt = (v) => (typeof v !== "number" ? "—" : Math.abs(v) >= 1000 ? v.toLocaleString(undefined, { maximumFractionDigits: 0 }) : v.toLocaleString(undefined, { maximumFractionDigits: 3 }));
+---
+
+<Sheet title="Model" system="04 · the model states its own measured error first" sheet="04" pill={pill}>
+  <div class="panel">
+    <h2>An income model, not three statements</h2>
+    <p class="sub">a deliberate cut, with the reason</p>
+    <p class="secondary" style="margin:0;max-width:92ch">
+      None of the twelve metrics we owe touches a balance-sheet or cash-flow line. There is no
+      working capital, no debt, no cash and no interest expense anywhere in them. A linked balance
+      sheet with a circular interest solve would have been real engineering that reaches nothing we
+      are scored on, so what is built is the half that reaches all of it: history as filed, a ratio
+      base of medians with the scaled MAD beside each, a projection, and the reproduction check.
+      Two tests from the brief — the balance sheet tying to the cent, and no DCF assumption moving
+      the forecast — are therefore not applicable, and are declared rather than quietly dropped.
+    </p>
+  </div>
+
+  <div class="panel">
+    <h2>Reproduction check</h2>
+    <p class="sub">each recent period re-projected using only what was known before it — this leads the sheet because a model states its measured error before it is trusted with a projection</p>
+    <table>
+      <tr><th>company</th><th>metric</th><th class="num">observations</th><th class="num">median error</th><th class="num">projection</th><th>method</th></tr>
+      {live.flatMap((c) => c.results.model.metrics.map((m) => (
+        <tr>
+          <td class="muted">{c.ticker}</td>
+          <td><b>{m.metric}</b></td>
+          <td class="num">{m.observations.length}</td>
+          <td class="num" style={Math.abs(m.reproduction_error ?? 0) > 10 ? "color:var(--serious)" : ""}>{pct(m.reproduction_error)}</td>
+          <td class="num">{fmt(m.projection)}</td>
+          <td class="muted" style="font-size:12px">{m.projection_method}</td>
+        </tr>
+      )))}
+    </table>
+  </div>
+
+  {live.map((c) => (
+    <div class="panel">
+      <h2>{c.results.header.company} <span class="muted">· income history as filed</span></h2>
+      <p class="sub">never substituting a restated figure into a period whose original filing predates it</p>
+      {c.results.model.metrics.map((m) => (
+        <details>
+          <summary><b>{m.metric}</b> — {m.observations.length} reported periods, {m.reproduction.length} re-projected</summary>
+          {m.notes.length > 0 && <ul class="notes">{m.notes.map((n) => <li>{n}</li>)}</ul>}
+          <div class="scroll">
+            <table>
+              <tr><th>period</th><th class="num">reported</th><th>basis</th><th>citation</th></tr>
+              {m.observations.map((o) => (
+                <tr><td>{o.period_label}</td><td class="num">{fmt(o.value)}</td><td class="muted">{o.basis}</td><td class="mono muted">{o.citation_id}</td></tr>
+              ))}
+            </table>
+          </div>
+          {m.reproduction.length > 0 && (
+            <div class="scroll" style="margin-top:12px">
+              <table>
+                <tr><th>re-projected period</th><th class="num">predicted</th><th class="num">actual</th><th class="num">error</th></tr>
+                {m.reproduction.map((r) => (
+                  <tr><td>{r.period_label}</td><td class="num">{fmt(r.predicted)}</td><td class="num">{fmt(r.actual)}</td><td class="num">{r.error_pct}%</td></tr>
+                ))}
+              </table>
+            </div>
+          )}
+        </details>
+      ))}
+    </div>
+  ))}
+
+  <div class="panel">
+    <h2>Balance sheet · cash flow · DCF</h2>
+    <p class="sub">absent, and here is why rather than a blank tab</p>
+    <p class="secondary" style="margin:0;max-width:92ch">
+      These three sub-sheets are not rendered because the components behind them were not built.
+      The decision is above. If a future run owes a metric that touches working capital, debt or
+      terminal value, they become necessary and this note becomes wrong — which is the point of
+      writing it down here rather than leaving three empty tabs implying they are coming.
+    </p>
+  </div>
+</Sheet>
+
+<style>
+  details { border-top: 1px solid var(--line); padding: 10px 0; }
+  summary { cursor: pointer; font-size: 13px; }
+  .notes { font-size: 12px; color: var(--serious); margin: 8px 0; padding-left: 18px; }
+</style>

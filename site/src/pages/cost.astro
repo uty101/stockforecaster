@@ -1,0 +1,100 @@
+---
+import Sheet from "../layouts/Sheet.astro";
+import bundle from "../data/bundle.json";
+
+const live = bundle.companies.filter((c) => !c.missing);
+const calls = live.flatMap((c) => c.results.cost?.calls ?? []);
+const spent = live.reduce((n, c) => n + (c.results.cost?.spent_usd ?? 0), 0);
+const ceiling = live[0]?.results?.cost?.ceiling_usd ?? 25;
+const headroom = ((1 - spent / (ceiling * live.length)) * 100).toFixed(1);
+const pill = { text: `$${spent.toFixed(2)} of $${(ceiling * live.length).toFixed(0)} · ${headroom}% headroom`, tone: "good" };
+
+const tok = {
+  input: calls.reduce((n, c) => n + c.input_tokens, 0),
+  output: calls.reduce((n, c) => n + c.output_tokens, 0),
+  cacheWrite: calls.reduce((n, c) => n + c.cache_write_tokens, 0),
+  cacheRead: calls.reduce((n, c) => n + c.cache_read_tokens, 0),
+};
+const maxTok = Math.max(tok.input, tok.output, tok.cacheWrite, tok.cacheRead, 1);
+
+const byStage = {};
+for (const c of calls) {
+  const s = (byStage[c.stage] ??= { calls: 0, usd: 0, in: 0, out: 0, cw: 0, cr: 0 });
+  s.calls += 1; s.usd += c.usd; s.in += c.input_tokens; s.out += c.output_tokens;
+  s.cw += c.cache_write_tokens; s.cr += c.cache_read_tokens;
+}
+const maxStage = Math.max(...Object.values(byStage).map((s) => s.usd), 0.0001);
+---
+
+<Sheet title="Cost" system="08 · where the tokens went, and whether the cached prefix worked" sheet="08" pill={pill}>
+  <div class="grid four">
+    <div class="stat"><div class="k">${spent.toFixed(2)}</div><div class="v">measured across {live.length} runs</div></div>
+    <div class="stat"><div class="k">{calls.length}</div><div class="v">model calls</div></div>
+    <div class="stat"><div class="k">{(tok.input / 1000).toFixed(0)}k</div><div class="v">input tokens</div></div>
+    <div class="stat"><div class="k">{tok.cacheRead > 0 ? `${(tok.cacheRead / 1000).toFixed(0)}k` : "0"}</div><div class="v">cache reads</div></div>
+  </div>
+
+  <div class="panel">
+    <h2>Token split</h2>
+    <p class="sub">write and read are shown together on purpose — a large write with a read of zero is indistinguishable, from the read alone, from caching never having been switched on</p>
+    <div class="bars">
+      {[["input", tok.input, "var(--series-1)"], ["output", tok.output, "var(--series-2)"], ["cache write", tok.cacheWrite, "var(--series-3)"], ["cache read", tok.cacheRead, "var(--series-3)"]].map(([label, value, colour]) => (
+        <div class="barrow">
+          <span class="barlabel">{label}</span>
+          <span class="bartrack"><span class="barfill" style={`width:${(value / maxTok) * 100}%;background:${colour}`}></span></span>
+          <b class="barval">{value.toLocaleString()}</b>
+        </div>
+      ))}
+    </div>
+    {tok.cacheRead === 0 && tok.cacheWrite === 0 && (
+      <p class="muted" style="font-size:12.5px;margin-top:12px">
+        Neither figure is non-zero on this run. The shared corpus sits below the cheap tier's
+        4,096-token minimum cacheable prefix for the extraction agents, and the lens corpus is
+        written once per company rather than reused across them — so there was nothing for a second
+        reader to hit. This is reported rather than hidden, because a zero here looks identical to
+        a broken cache.
+      </p>
+    )}
+  </div>
+
+  <div class="panel">
+    <h2>Per stage</h2>
+    <p class="sub">spend by pipeline stage across all four companies</p>
+    <table>
+      <tr><th>stage</th><th class="num">calls</th><th class="num">spend</th><th style="width:34%">share</th><th class="num">input</th><th class="num">output</th></tr>
+      {Object.entries(byStage).sort((a, b) => b[1].usd - a[1].usd).map(([stage, s]) => (
+        <tr>
+          <td class="mono"><b>{stage}</b></td>
+          <td class="num">{s.calls}</td>
+          <td class="num">${s.usd.toFixed(3)}</td>
+          <td><span class="bartrack"><span class="barfill" style={`width:${(s.usd / maxStage) * 100}%;background:var(--series-1)`}></span></span></td>
+          <td class="num muted">{s.in.toLocaleString()}</td>
+          <td class="num muted">{s.out.toLocaleString()}</td>
+        </tr>
+      ))}
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>The kill switch</h2>
+    <p class="sub">a ceiling that refuses, not one that apologises</p>
+    <p class="secondary" style="margin:0;max-width:92ch">
+      The client estimates each call before making it and raises if it would take the run past
+      ${ceiling.toFixed(2)}. The check happens <em>before</em> the request is sent, and the test
+      asserts on call count rather than on the ledger total — a ledger inspected after the fact is
+      not a ceiling. The same mechanism caps deep-tier calls at exactly one per run.
+    </p>
+  </div>
+</Sheet>
+
+<style>
+  .stat { background: var(--surface-1); border: 1px solid var(--line); border-radius: var(--radius); padding: 15px 17px; }
+  .stat .k { font-size: 26px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .stat .v { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
+  .bars { display: flex; flex-direction: column; gap: 9px; }
+  .barrow { display: grid; grid-template-columns: 96px 1fr 90px; align-items: center; gap: 12px; font-size: 12.5px; }
+  .barlabel { color: var(--text-secondary); }
+  .bartrack { display: block; background: var(--surface-2); border-radius: 4px; height: 10px; overflow: hidden; }
+  .barfill { display: block; height: 100%; border-radius: 4px; }
+  .barval { text-align: right; font-variant-numeric: tabular-nums; }
+</style>

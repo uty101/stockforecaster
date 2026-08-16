@@ -323,6 +323,25 @@ def run(
             )
         )
 
+    # One event per metric, carrying the conditions with the inputs that fired
+    # them. These already reach results.json inside the Position, but that file
+    # is written at stage I and a run that dies at H would take the whole record
+    # of how lambda was decided with it.
+    for item in result.items:
+        ctx.events.emit(
+            STAGE,
+            "position",
+            metric=item.metric_label,
+            units=item.units,
+            preset=preset_name,
+            **{"lambda": item.lam},
+            own_estimate=item.own_estimate,
+            consensus=item.consensus,
+            baseline=item.baseline,
+            forecast=item.forecast,
+            conditions=item.conditions,
+        )
+
     ctx.events.emit(
         STAGE,
         "stage_finished",

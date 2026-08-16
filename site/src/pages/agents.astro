@@ -1,0 +1,96 @@
+---
+import Sheet from "../layouts/Sheet.astro";
+import bundle from "../data/bundle.json";
+
+const prompts = bundle.prompts ?? [];
+const live = bundle.companies.filter((c) => !c.missing);
+const nodes = bundle.nodes ?? [];
+const agentNodes = nodes.filter((n) => n.agent);
+
+// The roster is generated from the prompt directory. A prompt file without a
+// node, or a node without a prompt file, is a mismatch and is shown as one --
+// a hand-kept roster drifts and then confidently describes a system that is not
+// running.
+const promptNames = new Set(prompts.map((p) => p.name));
+const nodeAgents = new Set(agentNodes.map((n) => n.agent));
+const orphanPrompts = [...promptNames].filter((n) => !nodeAgents.has(n));
+const orphanNodes = [...nodeAgents].filter((n) => !promptNames.has(n));
+const inSync = orphanPrompts.length === 0 && orphanNodes.length === 0;
+const pill = { text: inSync ? `roster in sync · ${prompts.length} prompts` : `${orphanPrompts.length + orphanNodes.length} mismatched`, tone: inSync ? "good" : "bad" };
+
+const byLayer = {};
+for (const p of prompts) (byLayer[p.layer ?? "unfiled"] ??= []).push(p);
+
+const calls = live.flatMap((c) => c.results.cost?.calls ?? []);
+const usage = {};
+for (const call of calls) {
+  const u = (usage[call.agent] ??= { calls: 0, usd: 0, tokens: 0 });
+  u.calls += 1; u.usd += call.usd; u.tokens += call.input_tokens + call.output_tokens;
+}
+---
+
+<Sheet title="Agents" system="07 · the roster, generated from the prompt directory" sheet="07" pill={pill}>
+  <div class="grid two">
+    <div class="panel">
+      <h2>Why one agent has no model</h2>
+      <p class="sub">Mechanical, U12</p>
+      <p class="secondary" style="margin:0">
+        The Mechanical lens is arithmetic: share count, currency translation, calendar effects. It
+        costs nothing, it cannot hallucinate, and it is the one lens still standing when the API is
+        unavailable — which is not hypothetical, because the API went down during this build and
+        Mechanical was the only view that would still have produced a number. It also has an
+        explicit insufficient-inputs path: a deterministic lens always answers, and under materiality
+        weighting a lens that cannot decline would read as the most confident view in every run
+        purely because it is the only one that cannot.
+      </p>
+    </div>
+    <div class="panel">
+      <h2>Why exactly one call runs on the deep tier</h2>
+      <p class="sub">the judge, U23</p>
+      <p class="secondary" style="margin:0">
+        The judge is the only agent that sees the full picture — every surviving view, what survived
+        being argued against, the model's measured error, and an explicit list of which lenses are
+        missing and why. That is the highest-leverage decision in the system and the only one worth
+        the most capable model. The client raises before a second deep call rather than billing for
+        it, and a test asserts the count.
+      </p>
+    </div>
+  </div>
+
+  {!inSync && (
+    <div class="panel" style="border-color:var(--critical)">
+      <h2>Roster mismatch</h2>
+      <p class="sub">the build should fail on this</p>
+      {orphanPrompts.length > 0 && <p>Prompt files with no node: <b class="mono">{orphanPrompts.join(", ")}</b></p>}
+      {orphanNodes.length > 0 && <p>Nodes with no prompt file: <b class="mono">{orphanNodes.join(", ")}</b></p>}
+    </div>
+  )}
+
+  {Object.entries(byLayer).sort().map(([layer, items]) => (
+    <div class="panel">
+      <h2>{layer}</h2>
+      <p class="sub">{items.length} agent{items.length === 1 ? "" : "s"}</p>
+      <div class="scroll">
+        <table>
+          <tr><th>agent</th><th>node</th><th>tier</th><th>model</th><th class="num">version</th><th class="num">calls</th><th class="num">spend</th><th>what makes it different</th></tr>
+          {items.map((p) => {
+            const u = usage[p.name];
+            const model = p.tier === "none" ? "—" : p.tier === "deep" ? "claude-opus-5" : p.tier === "mid" ? "claude-sonnet-5" : "claude-haiku-4-5";
+            return (
+              <tr>
+                <td><b class="mono">{p.name}</b></td>
+                <td class="mono muted">{p.node}</td>
+                <td>{p.tier === "none" ? <span class="muted">no model</span> : p.tier}</td>
+                <td class="muted mono" style="font-size:11.5px">{model}</td>
+                <td class="num">{p.version}</td>
+                <td class="num">{u?.calls ?? 0}</td>
+                <td class="num">{u ? `$${u.usd.toFixed(3)}` : "$0.000"}</td>
+                <td class="muted" style="font-size:12px">{p.summary}</td>
+              </tr>
+            );
+          })}
+        </table>
+      </div>
+    </div>
+  ))}
+</Sheet>

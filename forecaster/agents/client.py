@@ -147,7 +147,7 @@ class Client:
         )
 
         started = time.monotonic()
-        payload = self._post(body)
+        payload = self._post(body, stage=stage, node=node, agent=agent)
         duration = time.monotonic() - started
 
         usage = payload.get("usage", {})
@@ -234,7 +234,16 @@ class Client:
         input_tokens = int(characters / CHARS_PER_TOKEN)
         return call_cost_usd(tier.model, input_tokens, max_tokens)
 
-    def _post(self, body: dict[str, Any]) -> dict[str, Any]:
+    def _post(
+        self, body: dict[str, Any], *, stage: str = "?", node: str = "?", agent: str = "?"
+    ) -> dict[str, Any]:
+        """POST with retries, emitting one event per attempt that failed.
+
+        The retries were always here; what was missing is that they were silent.
+        A run that took four minutes on a lens because it was backing off through
+        two 529s looked, from the outside, exactly like a lens that is slow --
+        and the log has to be able to tell those apart.
+        """
         data = json.dumps(body).encode("utf-8")
         request = urllib.request.Request(
             API_URL,
@@ -257,14 +266,43 @@ class Client:
                 if error.code not in RETRYABLE_STATUS:
                     # A 400 is a malformed request. Retrying reproduces it and
                     # bills twice.
+                    self.events.emit(
+                        stage,
+                        "agent_failed",
+                        node=node,
+                        agent=agent,
+                        attempts=attempt + 1,
+                        retryable=False,
+                        error=f"HTTP {error.code}: {detail}",
+                    )
                     raise ModelCallFailed(f"HTTP {error.code}: {detail}") from error
                 last_error = ModelCallFailed(f"HTTP {error.code}: {detail}")
             except (urllib.error.URLError, TimeoutError) as error:
                 last_error = ModelCallFailed(f"transport failure: {error}")
 
             if attempt < MAX_ATTEMPTS - 1:
-                time.sleep(BACKOFF_SECONDS[attempt])
+                backoff = BACKOFF_SECONDS[attempt]
+                self.events.emit(
+                    stage,
+                    "agent_retry",
+                    node=node,
+                    agent=agent,
+                    attempt=attempt + 1,
+                    of=MAX_ATTEMPTS,
+                    backoff_s=backoff,
+                    error=str(last_error),
+                )
+                time.sleep(backoff)
 
+        self.events.emit(
+            stage,
+            "agent_failed",
+            node=node,
+            agent=agent,
+            attempts=MAX_ATTEMPTS,
+            retryable=True,
+            error=str(last_error),
+        )
         raise ModelCallFailed(f"gave up after {MAX_ATTEMPTS} attempts: {last_error}")
 
     def _extract(self, payload: dict[str, Any], agent: str, stage: str) -> dict[str, Any]:

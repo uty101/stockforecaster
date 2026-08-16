@@ -98,6 +98,7 @@ def run(
     model: Model,
     client: Client,
     prompts: PromptStore,
+    challenges: Any = None,
 ) -> Judgement:
     started = time.monotonic()
     ctx.events.emit(STAGE, "stage_started", nodes=["U23"], ticker=ctx.ticker)
@@ -125,7 +126,7 @@ def run(
                     )
                 )
             ],
-            user_text=_brief(ctx, reconciliation, views, model),
+            user_text=_brief(ctx, reconciliation, views, model, challenges),
             response_schema=JUDGEMENT,
             max_tokens=16000,
             effort="high",
@@ -152,11 +153,24 @@ def run(
     return judgement
 
 
-def _brief(ctx: RunContext, reconciliation: Reconciliation, views: LensViews, model: Model) -> str:
+def _brief(
+    ctx: RunContext,
+    reconciliation: Reconciliation,
+    views: LensViews,
+    model: Model,
+    challenges: Any = None,
+) -> str:
     lines: list[str] = []
     lines.append(f"## Surviving lens views ({len(reconciliation.surviving)})\n")
     for view in reconciliation.surviving:
-        lines.append(f"### {view.lens}{' (deterministic, no model)' if view.deterministic else ''}")
+        header = f"### {view.lens}{' (deterministic, no model)' if view.deterministic else ''}"
+        if challenges is not None:
+            surviving = challenges.weight_for(view.lens)
+            header += (
+                f"  — confidence after being argued against: {surviving:.2f}. Use this to discount "
+                "the weight this view earns, never as a vote."
+            )
+        lines.append(header)
         for estimate in view.payload.get("estimates", []):
             value = estimate.get("estimate")
             lines.append(

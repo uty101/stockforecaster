@@ -1,0 +1,86 @@
+---
+import Sheet from "../layouts/Sheet.astro";
+import bundle from "../data/bundle.json";
+
+const live = bundle.companies.filter((c) => !c.missing);
+const betaMeasured = live.some((c) => c.results.method?.beta_measured);
+const pill = { text: betaMeasured ? "beta fitted" : "beta ASSERTED, not fitted", tone: betaMeasured ? "good" : "open" };
+---
+
+<Sheet title="Method" system="06 · the gate — what is measured and what is merely built" sheet="06" pill={pill}>
+  <div class="panel" style="border-color:var(--serious)">
+    <h2>The headline, stated plainly</h2>
+    <p class="sub">this is the most important sentence on the site</p>
+    <p style="margin:0;max-width:92ch;font-size:15px">
+      <b>No skill number on this site has been measured.</b> There is no backtest, the lambda beta
+      is asserted rather than fitted, and the forecast intervals are uncalibrated. This is not an
+      oversight to be filled in later — for two of the three it is <em>unobtainable</em> with the
+      data available, and saying so is more useful than a number nobody should trust.
+    </p>
+  </div>
+
+  <div class="grid two">
+    <div class="panel">
+      <h2>Why the backtest cannot run</h2>
+      <p class="sub">the honest version</p>
+      <p class="secondary" style="margin:0">
+        Scoring our own estimate against past actuals is possible — the filings carry them. Scoring
+        it against <em>the Street's bar as it stood at those quarters</em> is not: no source
+        available to this build publishes consensus history. Without that, skill against consensus,
+        the lambda regression and the per-regime beta table are all unobtainable rather than merely
+        unmeasured. The market adapter that could serve current consensus was written, tested, and
+        then deliberately refused to answer a historical as-of date, because returning today's
+        estimates for a past quarter is lookahead that shows up as skill.
+      </p>
+    </div>
+    <div class="panel">
+      <h2>Why the intervals are uncalibrated</h2>
+      <p class="sub">and what that means for reading them</p>
+      <p class="secondary" style="margin:0">
+        Calibration answers one question: of the times we said p10 to p90, how often did reality
+        land inside? Answering it needs stored residuals from previous runs, and there are none —
+        this is the first. So the bands on the Forecast sheet are the judge's own opinion of its
+        uncertainty, and have never been checked against an outcome. Without that check a
+        distribution is decorative, which is exactly why it is labelled instead of charted against a
+        diagonal that would imply it had been tested.
+      </p>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>The ablation that would decide which lenses earn their tokens</h2>
+    <p class="sub">not run — and this is the only acceptable basis for dropping a lens</p>
+    <p class="secondary" style="margin:0 0 12px;max-width:92ch">
+      Leave one lens out, re-run the judge against cached lens outputs, and record the change in
+      error. A lens whose removal does not degrade the score is droppable on evidence. It costs one
+      deep call per lens and needs an error to measure against — which loops back to the backtest.
+      Until it runs, the nine-lens roster is a design claim rather than a measured one, and the two
+      lenses that abstained most often on this run are the obvious first candidates.
+    </p>
+    <table>
+      <tr><th>company</th><th class="num">lenses run</th><th class="num">survived V1</th><th class="num">dropped</th><th class="num">verification rate</th></tr>
+      {live.map((c) => (
+        <tr>
+          <td><b>{c.ticker}</b></td>
+          <td class="num">{c.results.lenses?.counts?.ran ?? 0}</td>
+          <td class="num">{(c.results.reconciliation?.surviving ?? []).length}</td>
+          <td class="num">{(c.results.reconciliation?.dropped ?? []).length}</td>
+          <td class="num">{((c.results.reconciliation?.verification_rate ?? 0) * 100).toFixed(0)}%</td>
+        </tr>
+      ))}
+    </table>
+  </div>
+
+  <div class="panel">
+    <h2>Prompt versions used on this run</h2>
+    <p class="sub">recorded so a future number can be traced to the text that produced it</p>
+    <div class="scroll">
+      <table>
+        <tr><th>agent</th><th class="num">version</th></tr>
+        {Object.entries(live[0]?.results?.method?.prompt_versions ?? {}).map(([k, v]) => (
+          <tr><td class="mono">{k}</td><td class="num">{v}</td></tr>
+        ))}
+      </table>
+    </div>
+  </div>
+</Sheet>

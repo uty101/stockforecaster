@@ -1,0 +1,81 @@
+---
+// Quantile band for one metric: p10–p90 as the outer range, p25–p75 as the
+// inner, p50 as our forecast, and the baseline marked on the same axis.
+//
+// One axis, always. The baseline is drawn in a second categorical hue and
+// direct-labelled, so identity never rests on colour alone. Nothing is smoothed
+// and no curve is interpolated between the five points -- the judge gave five
+// numbers and five numbers is what is drawn.
+const { quantiles, forecast, baseline, consensus, units } = Astro.props;
+
+const q = quantiles ?? {};
+const points = ["p10", "p25", "p50", "p75", "p90"]
+  .map((k) => q[k])
+  .filter((v) => typeof v === "number");
+
+const marks = [forecast, baseline, consensus, ...points].filter((v) => typeof v === "number");
+const lo = Math.min(...marks);
+const hi = Math.max(...marks);
+const pad = (hi - lo) * 0.18 || Math.abs(hi || 1) * 0.06 || 1;
+const min = lo - pad;
+const max = hi + pad;
+const x = (v) => ((v - min) / (max - min)) * 100;
+
+const fmt = (v) =>
+  typeof v !== "number"
+    ? "—"
+    : Math.abs(v) >= 1000
+      ? v.toLocaleString(undefined, { maximumFractionDigits: 0 })
+      : v.toLocaleString(undefined, { maximumFractionDigits: 3 });
+
+const hasBand = points.length === 5;
+---
+
+<div class="dist">
+  {hasBand ? (
+    <svg viewBox="0 0 100 26" preserveAspectRatio="none" class="plot" role="img"
+         aria-label={`Forecast ${fmt(forecast)} ${units}, 10th to 90th percentile ${fmt(q.p10)} to ${fmt(q.p90)}`}>
+      <rect x={x(q.p10)} y="9.5" width={Math.max(x(q.p90) - x(q.p10), 0.6)} height="7"
+            rx="1.6" fill="var(--series-1)" opacity="0.22" />
+      <rect x={x(q.p25)} y="9.5" width={Math.max(x(q.p75) - x(q.p25), 0.6)} height="7"
+            rx="1.6" fill="var(--series-1)" opacity="0.45" />
+      <rect x={x(q.p50) - 0.35} y="6.5" width="0.7" height="13" fill="var(--series-1)" />
+      {typeof baseline === "number" && (
+        <rect x={x(baseline) - 0.3} y="6.5" width="0.6" height="13" fill="var(--series-2)" />
+      )}
+    </svg>
+  ) : (
+    <p class="muted" style="font-size:12.5px;margin:0">
+      No quantile band: the judge produced no distribution for this metric, so none is drawn
+      rather than one being invented around the point estimate.
+    </p>
+  )}
+
+  <div class="legend">
+    <span><i style="background:var(--series-1)"></i>our forecast <b>{fmt(forecast)}</b></span>
+    {typeof baseline === "number" && (
+      <span><i style="background:var(--series-2)"></i>baseline <b>{fmt(baseline)}</b></span>
+    )}
+    {typeof consensus === "number" && (
+      <span class="muted">street <b>{fmt(consensus)}</b></span>
+    )}
+  </div>
+
+  {hasBand && (
+    <table class="qtable">
+      <tr><th>p10</th><th>p25</th><th>p50</th><th>p75</th><th>p90</th></tr>
+      <tr><td>{fmt(q.p10)}</td><td>{fmt(q.p25)}</td><td>{fmt(q.p50)}</td><td>{fmt(q.p75)}</td><td>{fmt(q.p90)}</td></tr>
+    </table>
+  )}
+</div>
+
+<style>
+  .dist { margin: 10px 0 4px; }
+  .plot { width: 100%; height: 34px; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 7px; font-size: 12px; color: var(--text-secondary); }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: baseline; }
+  .legend b { color: var(--text-primary); font-variant-numeric: tabular-nums; font-weight: 650; }
+  .qtable { margin-top: 9px; font-size: 11.5px; width: auto; }
+  .qtable th { padding: 2px 14px 2px 0; border: 0; }
+  .qtable td { padding: 2px 14px 2px 0; border: 0; font-variant-numeric: tabular-nums; color: var(--text-secondary); }
+</style>

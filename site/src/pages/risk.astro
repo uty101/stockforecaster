@@ -1,0 +1,66 @@
+---
+import Sheet from "../layouts/Sheet.astro";
+import bundle from "../data/bundle.json";
+
+const live = bundle.companies.filter((c) => !c.missing);
+const fired = live.filter((c) => c.results.comparability?.any_fired);
+const pill = { text: fired.length ? `comparability broke on ${fired.length}` : "no comparability flag fired", tone: fired.length ? "open" : "good" };
+---
+
+<Sheet title="Risk" system="05 · deviation from consensus as a budget, and what was declined" sheet="05" pill={pill}>
+  <div class="panel">
+    <h2>The budget that was not spent</h2>
+    <p class="sub">positioning is off, so the whole ceiling was declined — but every condition was still measured</p>
+    <p class="secondary" style="margin:0;max-width:92ch">
+      This sheet exists to show deviation from consensus as a budget: a ceiling, an amount taken,
+      and what each condition did to it. On this run the amount taken is the full deviation, because
+      positioning toward consensus is switched off by configuration. That makes the conditions below
+      a record of what the system <em>would</em> have done — measured on real inputs, reported in
+      full, and not applied. Reporting the positioning we declined is more useful than reporting
+      none at all.
+    </p>
+  </div>
+
+  {live.map((c) => (
+    <div class="panel">
+      <h2>{c.results.header.company} <span class="muted">· {c.ticker}</span></h2>
+      <p class="sub">{c.results.forecast.consensus_bus.available ? "consensus available for comparison" : "no consensus exists — there was never a budget to spend"}</p>
+      <table>
+        <tr><th>metric</th><th class="num">our number</th><th class="num">street</th><th class="num">baseline</th><th class="num">lambda</th><th>conditions measured</th></tr>
+        {c.results.forecast.metrics.map((m) => (
+          <tr>
+            <td><b>{m.metric_label}</b></td>
+            <td class="num">{m.forecast === null ? "—" : m.forecast.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
+            <td class="num muted">{m.consensus === null ? "—" : m.consensus.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
+            <td class="num muted">{m.baseline === null ? "—" : m.baseline.toLocaleString(undefined, { maximumFractionDigits: 3 })}</td>
+            <td class="num">{m.lambda}</td>
+            <td class="muted" style="font-size:12px">{(m.conditions ?? []).map((x) => x.name).join(", ")}</td>
+          </tr>
+        ))}
+      </table>
+
+      <div class="cmp">
+        <b>Comparability.</b>{" "}
+        {c.results.comparability?.degraded
+          ? <span style="color:var(--serious)">{c.results.comparability.degrade_reason}</span>
+          : c.results.comparability?.any_fired
+            ? <span style="color:var(--serious)">Fired on {c.results.comparability.fired.join(", ")} — the historical priors this system runs on do not apply cleanly to this period.</span>
+            : <span>Nothing fired. This period is comparable with the company's own history on all four checks.</span>}
+        <table style="margin-top:10px">
+          <tr><th>check</th><th>fired</th><th>evidence</th></tr>
+          {(c.results.comparability?.flags ?? []).map((f) => (
+            <tr>
+              <td class="mono">{f.check}</td>
+              <td>{f.fired ? <span style="color:var(--serious)">yes</span> : <span class="muted">no</span>}</td>
+              <td class="muted" style="font-size:12px">{f.evidence}</td>
+            </tr>
+          ))}
+        </table>
+      </div>
+    </div>
+  ))}
+</Sheet>
+
+<style>
+  .cmp { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--line); font-size: 13px; }
+</style>
