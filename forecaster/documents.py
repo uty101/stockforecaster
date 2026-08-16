@@ -13,6 +13,9 @@ from pathlib import Path
 FILING = "FILING"
 CALL_TRANSCRIPT = "CALL_TRANSCRIPT"
 SLIDE = "SLIDE"
+# Retrieved from the open web and written to disk so a quote against it can be
+# string-matched exactly like a quote against a filing.
+RESEARCH = "RESEARCH"
 
 
 @dataclass(frozen=True)

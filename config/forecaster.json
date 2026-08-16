@@ -9,7 +9,8 @@
   "source_priority": [
     "corpus",
     "market",
-    "news"
+    "news",
+    "research"
   ],
   "sources": {
     "corpus": {
@@ -50,6 +51,54 @@
         "ADI": "Analog Devices fiscal third quarter 2026 earnings preview revenue guidance semiconductor",
         "DE": "Deere third quarter fiscal 2026 earnings preview agriculture equipment outlook",
         "LSE:HAS": "Hays plc full year 2026 results net fees recruitment market outlook"
+      }
+    },
+    "research": {
+      "kind": "exa_research",
+      "lookback_days": 180,
+      "max_results": 4,
+      "max_characters": 12000,
+      "queries": {
+        "HD": [
+          {
+            "angle": "demand",
+            "query": "US home improvement demand 2026 repair remodel spending housing turnover existing home sales"
+          },
+          {
+            "angle": "cost",
+            "query": "2026 lumber building materials prices freight costs home improvement retail margins tariffs"
+          }
+        ],
+        "ADI": [
+          {
+            "angle": "demand",
+            "query": "analog semiconductor demand 2026 industrial automotive bookings inventory correction recovery"
+          },
+          {
+            "angle": "cost",
+            "query": "semiconductor foundry wafer pricing utilisation gross margin analog 2026"
+          }
+        ],
+        "DE": [
+          {
+            "angle": "demand",
+            "query": "2026 US farm income crop prices agricultural equipment demand large tractor combine sales outlook"
+          },
+          {
+            "angle": "cost",
+            "query": "agricultural equipment manufacturing costs steel prices used equipment inventory dealer 2026"
+          }
+        ],
+        "LSE:HAS": [
+          {
+            "angle": "demand",
+            "query": "UK Europe recruitment market 2026 permanent hiring temporary staffing net fees demand"
+          },
+          {
+            "angle": "cost",
+            "query": "staffing industry consultant headcount wage inflation cost reduction recruitment 2026"
+          }
+        ]
       }
     }
   },

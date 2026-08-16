@@ -37,6 +37,7 @@ def _builders() -> dict:
     # run should not pay for that or fail on it.
     from .market import YahooMarketSource
     from .news import NewsSource
+    from .research import WebResearchSource
     from .sec import SecSource
 
     return {
@@ -44,6 +45,7 @@ def _builders() -> dict:
         "sec": SecSource,
         "market": YahooMarketSource,
         "news": NewsSource,
+        "research": WebResearchSource,
     }
 
 

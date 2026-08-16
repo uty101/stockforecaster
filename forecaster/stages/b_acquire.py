@@ -31,7 +31,7 @@ from pathlib import Path
 from typing import Any
 
 from ..context import RunContext
-from ..documents import Document
+from ..documents import RESEARCH, Document
 from ..forms import (
     EARNINGS_CALL,
     EIGHT_K,
@@ -87,6 +87,7 @@ class Dossier:
     call_sequence: list[EarningsCall] = field(default_factory=list)
     other_calls: list[Document] = field(default_factory=list)
     slides: list[Document] = field(default_factory=list)
+    research: list[Document] = field(default_factory=list)
 
     absent: dict[str, str] = field(default_factory=dict)
     skipped: list[dict[str, Any]] = field(default_factory=list)
@@ -105,6 +106,7 @@ class Dossier:
             [doc for call in self.call_sequence for doc in call.documents],
             self.other_calls,
             self.slides,
+            self.research,
         ):
             for document in group:
                 seen.setdefault(document.doc_id, document)
@@ -122,6 +124,7 @@ class Dossier:
                 "other_filings": len(self.other_filings),
                 "earnings_calls": len(self.call_sequence),
                 "slides": len(self.slides),
+                "research": len(self.research),
             },
             "earnings_releases": [doc.summary() for doc in self.earnings_releases],
             "periodic_reports": [doc.summary() for doc in self.periodic_reports],
@@ -138,6 +141,7 @@ class Dossier:
                 for index, call in enumerate(self.call_sequence)
             ],
             "slides": [doc.summary() for doc in self.slides],
+            "research": [doc.summary() for doc in self.research],
             "absent": self.absent,
             "skipped": self.skipped,
             "paths": {doc.doc_id: str(doc.path) for doc in self.all_documents},
@@ -176,6 +180,8 @@ def run(ctx: RunContext, sources: LoadedSources) -> Dossier:
 
     _acquire_filings(ctx, dossier, filings, budgets)  # U3
     _acquire_calls(ctx, dossier, transcripts, budgets)  # U8 reads this sequence
+
+    _acquire_research(ctx, dossier, chain)  # U5
 
     slide_budget = budgets.get("slides", 12)
     dossier.slides = slides[:slide_budget]
@@ -283,6 +289,75 @@ def _acquire_calls(ctx: RunContext, dossier: Dossier, transcripts: list[Document
             available=len(dossier.call_sequence),
             requested=wanted,
         )
+
+
+
+def _acquire_research(ctx: RunContext, dossier: Dossier, chain) -> None:
+    """U5. Industry research, written to disk so a quote can be matched against it.
+
+    Retrieved text becomes a document like any other. That is what lets a lens
+    cite it and V1 verify the citation, instead of the lens paraphrasing
+    something nobody can check.
+    """
+    try:
+        items = chain.fetch("industry", ctx.ticker)
+    except Exception as error:  # noqa: BLE001
+        ctx.note(
+            STAGE,
+            "degrade",
+            f"industry research was unreachable ({error}); the Demand, Market and Macro lenses "
+            "have no external evidence and must say so rather than reason from memory",
+        )
+        return
+
+    if not items:
+        ctx.note(
+            STAGE,
+            "degrade",
+            "no industry research was retrieved; the Demand, Market and Macro lenses run on "
+            "company disclosure alone",
+        )
+        return
+
+    folder = ctx.run_dir / "research"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    for item in items:
+        path = folder / f"{item['slug']}.md"
+        path.write_text(
+            "---\n"
+            f'company: "{dossier.company}"\n'
+            f'ticker: "{ctx.ticker}"\n'
+            f'published_at: "{item["published_at"]}"\n'
+            f'document_type: "{RESEARCH}"\n'
+            f'period: "{item["angle"]}"\n'
+            f'source_url: "{item["url"]}"\n'
+            "---\n\n"
+            f"# {item['title']}\n\n{item['text']}\n",
+            encoding="utf-8",
+        )
+        dossier.research.append(
+            Document(
+                doc_id=item["slug"],
+                company=dossier.company,
+                ticker=ctx.ticker,
+                published_at=date.fromisoformat(item["published_at"]),
+                doc_type=RESEARCH,
+                period=item["angle"],
+                title=item["title"],
+                source_url=item["url"],
+                path=path,
+                source_name=item["source"],
+            )
+        )
+
+    ctx.events.emit(
+        STAGE,
+        "research_acquired",
+        node="U5",
+        documents=len(dossier.research),
+        angles=sorted({doc.period for doc in dossier.research if doc.period}),
+    )
 
 
 def _record_skips(ctx: RunContext, dossier: Dossier, acquirer: str, skipped: list[Document]) -> None:
