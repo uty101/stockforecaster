@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mission control — Agents vs Wall Street</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0e14;
+    --panel: #131720;
+    --panel-2: #1a1f2b;
+    --line: #262c3a;
+    --ink: #e8ecf4;
+    --muted: #8b95a8;
+    --accent: #4c8dff;
+    --good: #35c48b;
+    --warn: #f0b429;
+    --bad: #f0616d;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.55 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+  .wrap { width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 80px; }
+
+  /* ---------------------------------------------------------------- header */
+  header.top { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 22px; }
+  .eyebrow { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; margin: 0 0 4px; }
+  h1 { margin: 0; font-size: 30px; letter-spacing: -.02em; }
+  .sub { color: var(--muted); font-size: 13px; margin: 4px 0 0; }
+  .clock { text-align: right; }
+  .clock .count { font-size: 34px; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+  .clock .count.urgent { color: var(--bad); }
+  .clock .to { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .1em; }
+
+  /* ------------------------------------------------------------- overall bar */
+  .overall { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; margin-bottom: 20px; }
+  .overall .row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+  .overall h2 { margin: 0; font-size: 15px; font-weight: 600; }
+  .overall .pct { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .bar { height: 9px; border-radius: 999px; background: var(--panel-2); overflow: hidden; }
+  .bar > i { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--good)); transition: width .45s ease; }
+  .bar.small { height: 5px; }
+
+  /* -------------------------------------------------------------- timeline */
+  .timeline { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 26px; }
+  .slot { background: var(--panel); border: 1px solid var(--line); border-left: 3px solid var(--line); border-radius: 10px; padding: 10px 12px; }
+  .slot.past { opacity: .45; }
+  .slot.next { border-left-color: var(--accent); background: var(--panel-2); }
+  .slot.hard { border-left-color: var(--warn); }
+  .slot.next.hard { border-left-color: var(--bad); }
+  .slot .t { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .slot .l { font-size: 12px; font-weight: 600; }
+  .slot .d { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+  /* --------------------------------------------------------------- columns */
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 18px; align-items: start; }
+  section.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px 20px; }
+  section.card > header { margin-bottom: 14px; }
+  section.card h2 { margin: 0; font-size: 16px; letter-spacing: -.01em; }
+  section.card .subtitle { color: var(--muted); font-size: 12.5px; margin: 3px 0 10px; }
+  .counts { display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; color: var(--muted); margin-top: 7px; }
+  .counts b { color: var(--ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+
+  /* ------------------------------------------------------------ check items */
+  ul.checks { list-style: none; margin: 0; padding: 0; }
+  ul.checks li { display: flex; gap: 11px; align-items: flex-start; padding: 8px 0; border-top: 1px solid var(--line); }
+  ul.checks li:first-child { border-top: 0; }
+  ul.checks li.manual { cursor: pointer; }
+  ul.checks li.manual:hover .box { border-color: var(--accent); }
+  .box { flex: none; width: 17px; height: 17px; margin-top: 2px; border-radius: 5px; border: 1.5px solid var(--line); display: grid; place-items: center; font-size: 11px; font-weight: 800; }
+  .box.done { background: var(--good); border-color: var(--good); color: #06231a; }
+  .box.warn { background: var(--warn); border-color: var(--warn); color: #2a1d00; }
+  .txt { min-width: 0; }
+  .txt .label { font-size: 13.5px; }
+  li.done .txt .label { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line); }
+  .txt .detail { font-size: 11.5px; color: var(--muted); margin-top: 1px; word-break: break-word; }
+  li.warn .txt .detail { color: var(--warn); }
+  .pts { margin-left: auto; flex: none; font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+  /* -------------------------------------------------------------- forecasts */
+  .companies { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .co { background: var(--panel-2); border: 1px solid var(--line); border-radius: 11px; padding: 12px 13px; }
+  .co .head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+  .co .tick { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+  .co .period { font-size: 11px; color: var(--muted); }
+  .metric { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; padding: 5px 0; border-top: 1px dashed var(--line); }
+  .metric:first-of-type { border-top: 0; }
+  .metric .m { font-size: 11.5px; color: var(--muted); min-width: 0; }
+  .metric .v { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .metric .v.missing { color: var(--bad); font-weight: 600; font-size: 11.5px; }
+  .metric .v.warn { color: var(--warn); font-size: 11.5px; }
+  .co .u { font-size: 10px; color: var(--muted); font-weight: 400; margin-left: 3px; }
+
+  footer.foot { margin-top: 26px; color: var(--muted); font-size: 11.5px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--good); margin-right: 6px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow">Agents vs Wall Street · Sunday 16 August 2026</p>
+      <h1>Mission control</h1>
+      <p class="sub" id="repoline">reading repository state…</p>
+    </div>
+    <div class="clock">
+      <div class="to" id="next-label">next deadline</div>
+      <div class="count" id="countdown">--:--:--</div>
+      <div class="to" id="localtime"></div>
+    </div>
+  </header>
+
+  <div class="overall">
+    <div class="row">
+      <h2>Everything the event asks for</h2>
+      <div class="pct"><span id="overall-pct">0</span>%</div>
+    </div>
+    <div class="bar"><i id="overall-bar" style="width:0%"></i></div>
+    <div class="counts"><span id="overall-counts">—</span><span id="updated">—</span></div>
+  </div>
+
+  <div class="timeline" id="timeline"></div>
+  <div class="cols" id="sections"></div>
+
+  <footer class="foot">
+    <span><span class="dot"></span>live — repository re-read every 5 seconds; manual ticks saved to dashboard/state.json</span>
+    <span>npm run check:submission remains the authority before uploading</span>
+  </footer>
+</div>
+
+<script>
+const LONDON = "Europe/London";
+let state = null;
+
+/* ------------------------------------------------------------------ helpers */
+const fmtTime = (date) =>
+  new Intl.DateTimeFormat("en-GB", { timeZone: LONDON, hour: "2-digit", minute: "2-digit", second: "2-digit" }).format(date);
+
+function countdown(ms) {
+  const total = Math.max(0, Math.floor(ms / 1000));
+  const h = String(Math.floor(total / 3600)).padStart(2, "0");
+  const m = String(Math.floor((total % 3600) / 60)).padStart(2, "0");
+  const s = String(total % 60).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function progressBar(pct, small) {
+  const bar = el("div", small ? "bar small" : "bar");
+  const fill = el("i");
+  fill.style.width = `${pct}%`;
+  bar.append(fill);
+  return bar;
+}
+
+function countsRow(left, right) {
+  const row = el("div", "counts");
+  row.append(el("span", null, left), el("b", null, right));
+  return row;
+}
+
+/* ------------------------------------------------------------------- render */
+function renderTimeline() {
+  const host = document.getElementById("timeline");
+  host.replaceChildren();
+  const now = Date.now();
+  const nextIndex = state.timeline.findIndex((slot) => new Date(slot.iso).getTime() > now);
+
+  state.timeline.forEach((slot, index) => {
+    const past = new Date(slot.iso).getTime() <= now;
+    const node = el("div", `slot${past ? " past" : ""}${index === nextIndex ? " next" : ""}${slot.hard ? " hard" : ""}`);
+    node.append(el("div", "t", slot.at), el("div", "l", slot.label), el("div", "d", slot.detail));
+    host.append(node);
+  });
+}
+
+function renderClock() {
+  if (!state) return;
+  const now = Date.now();
+  const next = state.timeline.find((slot) => new Date(slot.iso).getTime() > now);
+  const countdownNode = document.getElementById("countdown");
+  if (next) {
+    const remaining = new Date(next.iso).getTime() - now;
+    document.getElementById("next-label").textContent = `${next.at} · ${next.label}`;
+    countdownNode.textContent = countdown(remaining);
+    countdownNode.classList.toggle("urgent", remaining < 15 * 60 * 1000);
+  } else {
+    document.getElementById("next-label").textContent = "all deadlines passed";
+    countdownNode.textContent = "—";
+  }
+  document.getElementById("localtime").textContent = `${fmtTime(new Date())} London`;
+}
+
+function checkList(section) {
+  const list = el("ul", "checks");
+  for (const task of section.items) {
+    const li = el("li", `${task.kind === "manual" ? "manual " : ""}${task.status}`);
+    const box = el("div", `box ${task.status}`, task.status === "done" ? "✓" : task.status === "warn" ? "!" : "");
+    const text = el("div", "txt");
+    text.append(el("div", "label", task.label));
+    if (task.detail) text.append(el("div", "detail", task.detail));
+    li.append(box, text);
+    if (task.weight) li.append(el("div", "pts", `${task.weight} pt`));
+    if (task.kind === "manual") li.addEventListener("click", () => toggle(task.id, task.status !== "done"));
+    list.append(li);
+  }
+  return list;
+}
+
+function companyGrid(section) {
+  const grid = el("div", "companies");
+  for (const company of section.companies) {
+    const card = el("div", "co");
+    const head = el("div", "head");
+    head.append(el("div", "tick", company.ticker), el("div", "period", company.period));
+    card.append(head);
+
+    for (const metric of company.metrics) {
+      const row = el("div", "metric");
+      row.append(el("div", "m", metric.label));
+      if (metric.status === "done") {
+        const value = el("div", "v", String(metric.value));
+        value.append(el("span", "u", metric.units));
+        row.append(value);
+      } else {
+        row.append(el("div", `v ${metric.status === "warn" ? "warn" : "missing"}`, metric.status === "warn" ? "check" : "—"));
+      }
+      card.append(row);
+    }
+
+    card.append(
+      countsRow(company.error ?? company.file, `${company.done}/${company.total}`),
+      progressBar((company.done / company.total) * 100, true),
+    );
+    grid.append(card);
+  }
+  return grid;
+}
+
+function renderSections() {
+  const host = document.getElementById("sections");
+  host.replaceChildren();
+
+  for (const section of state.sections) {
+    const card = el("section", "card");
+    const header = el("header");
+    header.append(el("h2", null, section.title));
+    if (section.subtitle) header.append(el("p", "subtitle", section.subtitle));
+
+    header.append(progressBar(section.progress.pct));
+    header.append(countsRow(
+      section.points
+        ? `${section.points.done} of ${section.points.total} judging points covered`
+        : `${section.progress.total - section.progress.done} left${section.progress.warn ? ` · ${section.progress.warn} to check` : ""}`,
+      `${section.progress.pct}%`,
+    ));
+    card.append(header);
+
+    if (section.companies) card.append(companyGrid(section));
+    card.append(checkList(section));
+    host.append(card);
+  }
+}
+
+function render() {
+  document.getElementById("overall-pct").textContent = state.overall.pct;
+  document.getElementById("overall-bar").style.width = `${state.overall.pct}%`;
+  document.getElementById("overall-counts").textContent =
+    `${state.overall.done} of ${state.overall.total} tasks complete` +
+    (state.overall.warn ? ` · ${state.overall.warn} need a look` : "");
+  document.getElementById("updated").textContent = `updated ${fmtTime(new Date(state.now))}`;
+  document.getElementById("repoline").textContent =
+    `branch ${state.git.branch ?? "?"} at ${state.git.head ?? "?"} · four companies · twelve numbers`;
+  renderTimeline();
+  renderSections();
+  renderClock();
+}
+
+/* --------------------------------------------------------------------- data */
+async function refresh() {
+  try {
+    const response = await fetch("/api/state");
+    state = await response.json();
+    render();
+  } catch (error) {
+    document.getElementById("repoline").textContent = `lost the server — ${error.message}`;
+  }
+}
+
+async function toggle(id, done) {
+  const response = await fetch("/api/toggle", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ id, done }),
+  });
+  state = await response.json();
+  render();
+}
+
+refresh();
+setInterval(refresh, 5000);
+setInterval(renderClock, 1000);
+</script>
+</body>
+</html>
