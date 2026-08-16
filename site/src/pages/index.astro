@@ -3,7 +3,6 @@ import Sheet from "../layouts/Sheet.astro";
 import SignalFlow from "../components/SignalFlow.astro";
 import Gates from "../components/Gates.astro";
 import Tape from "../components/Tape.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import { companies, header, nodes, callsOf } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
@@ -35,29 +34,6 @@ const view = companies.map((company) => {
 <Sheet title="At the root" subsystem="Coverage" index="01">
   {view.map((v) => (
     <div data-company={v.company.ticker} hidden>
-      <div class="lede-row">
-        <div class="lede">
-          <span class="bar"></span>
-          <p>
-            Three estimates for {v.h.company}, each tracing from a figure on this page back to the
-            filing it was read from, through the workstreams that argued it and the checks that kept it.
-          </p>
-        </div>
-        <StatusCard
-          name="Coverage"
-          word={v.complete ? "Complete" : "Partial"}
-          summary={v.complete ? "Carried to the estimate" : `Stopped at ${v.h.last_completed_stage}`}
-          tone={v.complete ? "teal" : "amber"}
-          fill={v.complete ? 1 : 0.5}
-          rows={[
-            ["Period", v.h.period],
-            ["Estimates", "3"],
-            ["Claims read", f.count(v.claims)],
-            ["Quotes matched", `${f.count(v.matched)}/${f.count(v.checked)}`],
-            ["Spend", f.usd(v.usd)],
-          ]}
-        />
-      </div>
 
       <section class="sheet-section">
         <h2 class="section-heading">From filing to estimate</h2>

@@ -1,7 +1,6 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import { companies, primary, header, sum } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
@@ -24,28 +23,6 @@ const takenW = ceiling ? Math.max(2, (spentAll / ceiling) * barW) : 0;
 ---
 
 <Sheet title="Risk" subsystem="Deviation" index="05">
-  <div class="lede-row">
-    <div class="lede">
-      <span class="bar"></span>
-      <p>
-        Every estimate that sits away from the Street spends a budget. This sheet states the size of
-        each position, what stops it, and how much of the budget the run used.
-      </p>
-    </div>
-    <StatusCard
-      name="Deviation"
-      word={lambda === 1 ? "Full" : "Damped"}
-      summary="Weight carried on each estimate"
-      tone={lambda === 1 ? "amber" : "teal"}
-      fill={typeof lambda === "number" ? lambda : 0}
-      rows={[
-        ["Position size", f.position(lambda)],
-        ["Comparability flags", String(fired.length)],
-        ["Excluded readings", String(dropped.length)],
-        ["Spend", `${f.usd(spentAll)} of ${f.usd(ceiling)}`],
-      ]}
-    />
-  </div>
 
   <section class="sheet-section">
     <div class="grid2" style="grid-template-columns: minmax(0,1.35fr) minmax(0,1fr)">

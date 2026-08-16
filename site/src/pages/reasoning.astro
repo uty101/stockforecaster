@@ -1,7 +1,6 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import Concepts from "../components/Concepts.astro";
 import { companies, header, lensRows } from "../lib/read.mjs";
@@ -50,28 +49,6 @@ const view = companies.map((company) => {
 <Sheet title="Reasoning" subsystem="Workstreams" index="03">
   {view.map((v) => (
     <div data-company={v.company.ticker} hidden>
-      <div class="lede-row">
-        <div class="lede">
-          <span class="bar"></span>
-          <p>
-            Nine workstreams reach their own estimate for {v.h.company} from the filings before any
-            of them are compared. Each argues to the centre and to nothing else.
-          </p>
-        </div>
-        <StatusCard
-          name="Participation"
-          word={`${v.contributing}/${v.rows.length}`}
-          summary="Workstreams offered a figure"
-          tone={v.dropped ? "amber" : "teal"}
-          fill={v.contributing / Math.max(1, v.rows.length)}
-          rows={[
-            ["Offered a view", String(v.contributing)],
-            ["Abstained", String(v.abstained)],
-            ["Excluded", String(v.dropped)],
-            ["Dispersion", v.disagreement ? f.pct(v.disagreement.coefficient * 100) : "—"],
-          ]}
-        />
-      </div>
 
       <section class="sheet-section">
         <Concepts

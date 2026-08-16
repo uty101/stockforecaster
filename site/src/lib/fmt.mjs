@@ -153,6 +153,12 @@ export function gapLabel(own, other, units) {
   return signedPct((diff / Math.abs(other)) * 100);
 }
 
+// The ticker as a reader says it. The exchange prefix is part of the key we
+// join on, not part of the name, so it is dropped on the way to the page.
+export function ticker(value) {
+  return String(value ?? "").split(":").pop();
+}
+
 export function clockTime(ts) {
   if (!isNum(ts)) return DASH;
   const d = new Date(ts * 1000);

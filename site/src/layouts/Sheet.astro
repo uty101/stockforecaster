@@ -3,6 +3,7 @@
 // marks and the state banners. Built once and used nine times.
 import "../styles/tokens.css";
 import { anyFixture, incomplete, lockDate, runLabel, header, generatedAt, companies } from "../lib/read.mjs";
+import * as f from "../lib/fmt.mjs";
 
 const { title, subsystem, index, project = "ALPHA", version = "v1" } = Astro.props;
 
@@ -10,6 +11,7 @@ const { title, subsystem, index, project = "ALPHA", version = "v1" } = Astro.pro
 // every sheet follows it.
 const known = companies.map((c) => ({
   ticker: c.ticker,
+  label: f.ticker(c.ticker),
   name: header(c).company,
   period: header(c).period,
 }));
@@ -58,40 +60,28 @@ const stopped = incomplete
         </nav>
       </header>
 
-      <div class="tickerbar">
+      <form class="tickerbar" data-ticker-form autocomplete="off">
         <label class="eyebrow" for="ticker">Name</label>
         <span class="tickerpick">
-          <select id="ticker" class="tickerbox" data-ticker>
+          <input
+            id="ticker"
+            class="tickerbox"
+            type="text"
+            list="known-names"
+            spellcheck="false"
+            placeholder="ticker"
+            aria-describedby="ticker-state"
+            data-ticker
+          />
+          <datalist id="known-names">
             {known.map((k) => (
-              <option value={k.ticker}>{k.ticker} · {k.name}</option>
+              <option value={k.label}>{k.name}</option>
             ))}
-          </select>
-          <svg class="chev" width="9" height="6" viewBox="0 0 9 6" aria-hidden="true">
-            <path d="M0.5 0.5 L4.5 4.5 L8.5 0.5" fill="none" stroke="currentColor" stroke-width="1" />
-          </svg>
+          </datalist>
         </span>
-      </div>
+        <span class="meta" id="ticker-state" data-ticker-state></span>
+      </form>
 
-      <div class="metabar">
-        <div class="pairs">
-          <div class="pair">
-            <span class="eyebrow">Name</span>
-            <span class="v" data-company-name>{known[0]?.name ?? "—"}</span>
-          </div>
-          <div class="pair">
-            <span class="eyebrow">Period</span>
-            <span class="v" data-company-period>{known[0]?.period ?? "—"}</span>
-          </div>
-          <div class="pair">
-            <span class="eyebrow">Sheet</span>
-            <span class="v">{subsystem}</span>
-          </div>
-          <div class="pair">
-            <span class="eyebrow">Version</span>
-            <span class="v">{version}</span>
-          </div>
-        </div>
-      </div>
 
       {anyFixture && (
         <div class="notice">
@@ -182,7 +172,8 @@ const stopped = incomplete
           }
         };
 
-        // A ticker can be written with or without its exchange.
+        // A ticker can be typed with or without its exchange, and a company can
+        // be reached by name. Anything else has no run behind it.
         const resolve = (raw) => {
           const text = String(raw ?? "").trim().toUpperCase();
           if (!text) return null;
@@ -194,9 +185,7 @@ const stopped = incomplete
           return named ? named.ticker : null;
         };
 
-        const state = document.querySelector("[data-ticker-state]");
-        const box = document.querySelector("[data-ticker-form] input");
-        const form = document.querySelector("[data-ticker-form]");
+        const box = document.querySelector("[data-ticker]");
 
         const show = (ticker) => {
           const entry = known.find((k) => k.ticker === ticker);
@@ -207,26 +196,15 @@ const stopped = incomplete
           for (const el of document.querySelectorAll("[data-company-name]")) el.textContent = entry.name;
           for (const el of document.querySelectorAll("[data-company-period]")) el.textContent = entry.period;
           if (box) box.value = ticker;
-          if (state) state.textContent = "";
           write(ticker);
         };
 
         const selected = resolve(read()) ?? tickers[0];
         if (selected) show(selected);
 
-        form?.addEventListener("submit", (event) => {
-          event.preventDefault();
-          const wanted = box.value;
-          const match = resolve(wanted);
-          if (match) {
-            show(match);
-            return;
-          }
-          // Nothing is hidden and nothing is guessed. The box says what is missing.
-          if (state) {
-            state.textContent = `No run for ${String(wanted).trim().toUpperCase()}. A run against its filings would produce one.`;
-          }
-        });
+        // The list carries only names with a run behind them, so a choice is
+        // always one this build can show.
+        box?.addEventListener("change", () => show(box.value));
       })();
     </script>
   </body>
@@ -240,18 +218,23 @@ const stopped = incomplete
     flex-wrap: wrap;
     margin-top: 14px;
   }
+  .tickerpick { position: relative; display: inline-flex; align-items: center; }
   .tickerbox {
+    appearance: none;
+    -webkit-appearance: none;
     background: var(--raised);
     border: 1px solid var(--line-strong);
+    border-radius: 0;
     color: var(--white);
     font-family: var(--mono);
     font-size: 12px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding: 5px 10px;
-    width: 132px;
+    letter-spacing: 0.1em;
+    padding: 5px 28px 5px 10px;
+    cursor: pointer;
   }
-  .tickerbox::placeholder { color: var(--faint); letter-spacing: 0.14em; text-transform: none; }
+  .tickerbox option { background: var(--panel); color: var(--body); letter-spacing: normal; }
+  .tickerbox:hover { border-color: var(--secondary); }
   .tickerbox:focus-visible { outline: 1px solid var(--teal); outline-offset: 1px; }
+  .tickerpick .chev { position: absolute; right: 9px; color: var(--faint); pointer-events: none; }
   [data-company][hidden] { display: none; }
 </style>

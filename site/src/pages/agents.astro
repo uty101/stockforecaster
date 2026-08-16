@@ -1,7 +1,6 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import { prompts, nodes, companies, costByAgent, primary } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
@@ -37,29 +36,6 @@ const maxSpend = Math.max(0.0001, ...layerSpend.map((l) => l.usd));
 ---
 
 <Sheet title="Agents" subsystem="Roster" index="07">
-  <div class="lede-row">
-    <div class="lede">
-      <span class="bar"></span>
-      <p>
-        Every reader on the book, what it is asked to read, and what it cost. The roster is taken
-        from the written instructions themselves rather than kept as a separate list.
-      </p>
-    </div>
-    <StatusCard
-      name="Roster"
-      word={inSync ? "In sync" : "Adrift"}
-      summary="Roster against the written instructions"
-      tone={inSync ? "teal" : "red"}
-      fill={inSync ? 1 : 0.4}
-      rows={[
-        ["Readers", String(prompts.length)],
-        ["Cheap tier", String(tiers.cheap ?? 0)],
-        ["Mid tier", String(tiers.mid ?? 0)],
-        ["Deep tier", String(tiers.deep ?? 0)],
-        ["Without a model", String(tiers.none ?? 0)],
-      ]}
-    />
-  </div>
 
   <section class="sheet-section">
     <h2 class="section-heading">Layers, sized by spend</h2>

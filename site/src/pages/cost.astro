@@ -1,7 +1,6 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import { companies, header, primary, costByStage, costByAgent, callsOf, sum } from "../lib/read.mjs";
 import * as f from "../lib/fmt.mjs";
@@ -48,28 +47,6 @@ const barW = W - 180;
 ---
 
 <Sheet title="Cost" subsystem="Consumption" index="08">
-  <div class="lede-row">
-    <div class="lede">
-      <span class="bar"></span>
-      <p>
-        What the four runs consumed, split so the cached prefix is visible as a band, and how close
-        the total came to the ceiling set before any of it started.
-      </p>
-    </div>
-    <StatusCard
-      name="Spend"
-      word={spent < ceiling ? "Under" : "At"}
-      summary="Total against the ceiling"
-      tone={spent < ceiling * 0.8 ? "teal" : "amber"}
-      fill={ceiling ? Math.min(1, spent / ceiling) : 0}
-      rows={[
-        ["Spent", f.usd(spent)],
-        ["Ceiling", f.usd(ceiling)],
-        ["Calls", f.count(totals.calls)],
-        ["Tokens", f.tokens(allTokens)],
-      ]}
-    />
-  </div>
 
   <section class="sheet-section">
     <div class="grid2">

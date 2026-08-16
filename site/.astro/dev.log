@@ -159,3 +159,58 @@
 {"message":"[200] /method 14ms","label":null,"level":"info"}
 {"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
 {"message":"[200] /method 30ms","label":null,"level":"info"}
+{"message":"[200] /integrity 7ms","label":null,"level":"info"}
+{"message":"[200] /cost 11ms","label":null,"level":"info"}
+{"message":"[200] /agents 7ms","label":null,"level":"info"}
+{"message":"[200] /risk 7ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 10ms","label":null,"level":"info"}
+{"message":"[200] / 17ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 27ms","label":null,"level":"info"}
+{"message":"/src/pages/method.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/integrity.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"ReferenceError: c is not defined\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Array.map (<anonymous>)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    at new AstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:20:30)\n    at createAstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:75:20)\n    at renderAstroComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:361:20)\n    at renderComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:382:12)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:35:1)\n    at index (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\astro-component.js:16:12)\n    at callComponentAsTemplateResultOrResponse (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\render.js:203:31)","label":null,"level":"error"}
+{"message":"c is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"ReferenceError: c is not defined\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Array.map (<anonymous>)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    at new AstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:20:30)\n    at createAstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:75:20)\n    at renderAstroComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:361:20)\n    at renderComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:382:12)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:35:1)\n    at index (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\astro-component.js:16:12)\n    at callComponentAsTemplateResultOrResponse (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\render.js:203:31)","label":null,"level":"error"}
+{"message":"ReferenceError: c is not defined\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Array.map (<anonymous>)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    at new AstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:20:30)\n    at createAstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:75:20)\n    at renderAstroComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:361:20)\n    at renderComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:382:12)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:35:1)\n    at index (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\astro-component.js:16:12)\n    at callComponentAsTemplateResultOrResponse (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\render.js:203:31)","label":null,"level":"error"}
+{"message":"c is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"c is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"ReferenceError: c is not defined\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Array.map (<anonymous>)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    at new AstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:20:30)\n    at createAstroComponentInstance (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\instance.js:75:20)\n    at renderAstroComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:361:20)\n    at renderComponent (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\component.js:382:12)\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:35:1)\n    at index (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\astro-component.js:16:12)\n    at callComponentAsTemplateResultOrResponse (C:\\Hackathon_Utkarsh_Malhotra\\node_modules\\astro\\dist\\runtime\\server\\render\\astro\\render.js:203:31)","label":null,"level":"error"}
+{"message":"c is not defined\n  Stack trace:\n    at eval (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:112:118)\n    at Object.default (C:\\Hackathon_Utkarsh_Malhotra\\site\\src\\pages\\index.astro:36:4)\n    [...] See full stack trace in the browser, or rerun with --verbose.","label":null,"level":"error"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 34ms","label":null,"level":"info"}
+{"message":"[200] / 25ms","label":null,"level":"info"}
+{"message":"/src/pages/index.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 19ms","label":null,"level":"info"}
+{"message":"[200] / 31ms","label":null,"level":"info"}
+{"message":"/src/pages/model.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 22ms","label":null,"level":"info"}
+{"message":"[200] / 25ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 20ms","label":null,"level":"info"}
+{"message":"[200] / 32ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 24ms","label":null,"level":"info"}
+{"message":"[200] / 14ms","label":null,"level":"info"}
+{"message":"[200] /forecast 19ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 13ms","label":null,"level":"info"}
+{"message":"[200] /model 200ms","label":null,"level":"info"}
+{"message":"[200] /risk 8ms","label":null,"level":"info"}
+{"message":"[200] /agents 10ms","label":null,"level":"info"}
+{"message":"[200] /cost 13ms","label":null,"level":"info"}
+{"message":"[404] /method 3ms","label":null,"level":"info"}
+{"message":"[404] /integrity 1ms","label":null,"level":"info"}
+{"message":"[200] / 12ms","label":null,"level":"info"}
+{"message":"/src/pages/agents.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 36ms","label":null,"level":"info"}
+{"message":"/src/pages/cost.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 30ms","label":null,"level":"info"}
+{"message":"src/layouts/Sheet.astro","label":"watch","level":"info"}
+{"message":"[200] / 36ms","label":null,"level":"info"}
+{"message":"/src/layouts/Sheet.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"/src/pages/forecast.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 29ms","label":null,"level":"info"}
+{"message":"[200] / 57ms","label":null,"level":"info"}
+{"message":"/src/pages/risk.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"[200] / 26ms","label":null,"level":"info"}

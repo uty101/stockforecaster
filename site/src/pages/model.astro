@@ -1,7 +1,6 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import Spark from "../components/Spark.astro";
 import Statement from "../components/Statement.astro";
@@ -33,29 +32,6 @@ const view = companies.map((company) => {
 <Sheet title="Model" subsystem="Statement" index="04">
   {view.map((v) => (
     <div data-company={v.company.ticker} hidden>
-      <div class="lede-row">
-        <div class="lede">
-          <span class="bar"></span>
-          <p>
-            The income statement as {v.h.company} printed it, period by period. The error against
-            periods already reported sits above the statement, not below it.
-          </p>
-        </div>
-        <StatusCard
-          name="Reproduction"
-          word={v.worst === null ? "Unmeasured" : Math.abs(v.worst) < 5 ? "Close" : "Wide"}
-          summary="Widest error against a reported period"
-          tone={v.worst === null ? "amber" : Math.abs(v.worst) < 5 ? "teal" : "amber"}
-          fill={v.worst === null ? 0.2 : Math.min(1, 5 / Math.max(1, Math.abs(v.worst)))}
-          rows={[
-            ["Widest error", f.signedPctPoints(v.worst)],
-            ["Statement lines", String(v.lines)],
-            ["Periods", String(v.periods)],
-            ["Filings read", String(v.filings)],
-            ["Earliest period", v.earliest ?? "—"],
-          ]}
-        />
-      </div>
 
       <section class="sheet-section">
         <h2 class="section-heading">Before the projection</h2>

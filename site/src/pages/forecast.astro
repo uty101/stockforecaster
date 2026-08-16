@@ -1,7 +1,6 @@
 ---
 import Sheet from "../layouts/Sheet.astro";
 import Panel from "../components/Panel.astro";
-import StatusCard from "../components/StatusCard.astro";
 import Strip from "../components/Strip.astro";
 import Distribution from "../components/Distribution.astro";
 import { companies, header, sum } from "../lib/read.mjs";
@@ -26,27 +25,6 @@ function setBy(metric) {
 ---
 
 <Sheet title="Forecast" subsystem="Estimates" index="02">
-  <div class="lede-row">
-    <div class="lede">
-      <span class="bar"></span>
-      <p>
-        Twelve estimates, each with the Street figure it will be scored against and the range it
-        sits inside. Where no Street figure is published, the page says so.
-      </p>
-    </div>
-    <StatusCard
-      name="The book"
-      word={`${all.length}`}
-      summary="Estimates submitted this run"
-      tone="teal"
-      fill={1}
-      rows={[
-        ["Names", String(companies.length)],
-        ["With a Street figure", `${withStreet.length}/${all.length}`],
-        ["Spend", f.usd(totalUsd)],
-      ]}
-    />
-  </div>
 
   {companies.map((company) => {
     const h = header(company);
