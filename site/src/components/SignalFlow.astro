@@ -335,7 +335,7 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     </div>
     <div class="toggle">
       <span class="eyebrow">Boxes</span>
-      <span class="hint">Select one for what it read, what checks it, and what it did on this run</span>
+      <span class="hint">Select one; it opens in the reader under the drawing</span>
     </div>
   </div>
 
@@ -488,8 +488,9 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     </svg>
   </div>
 
-  <div class="nodedetail panel" data-detail>
+  <div class="nodedetail panel" data-detail tabindex="-1">
     <div class="panel-head">
+      <span class="n">READER</span>
       <span class="eyebrow" data-detail-name>Select a box</span>
       <span class="plus">+</span>
     </div>
@@ -528,8 +529,12 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
 
   .node { cursor: pointer; }
   .node:hover .nodebox { fill: #131c27; stroke-width: 1.5; }
-  .node:focus-visible .nodebox { stroke: #35d39a; }
+  /* The browser's own focus ring is a white rectangle around the group, which
+     reads as a rendering fault rather than a selection. Drawn here instead. */
+  .node:focus { outline: none; }
+  .node:focus-visible .nodebox { stroke: #35d39a; stroke-width: 2; }
   .node.is-open .nodebox { fill: #16202c; stroke-width: 2; stroke-dasharray: none; }
+  .node.is-open .nodeid { fill: var(--body); }
 
   .edges-acct { display: none; }
   .flowwrap:has(input[value="acct"]:checked) .edges-acct { display: block; }
@@ -542,7 +547,22 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
   .gate { animation: gatecurrent 6s linear infinite; }
   @keyframes gatecurrent { to { stroke-dashoffset: -20; } }
 
-  .nodedetail { margin-top: 16px; max-width: 720px; }
+  /* The drawing is taller than a screen, so a reader that sits under it answers
+     a click 600px below where the click happened. It rides the bottom of the
+     viewport instead, for as long as the drawing is on screen. */
+  .nodedetail {
+    position: sticky;
+    bottom: 16px;
+    z-index: 2;
+    margin-top: 16px;
+    max-width: 720px;
+    max-height: min(44vh, 340px);
+    overflow-y: auto;
+    background: var(--panel);
+    box-shadow: 0 -12px 28px -18px #000;
+  }
+  .nodedetail .panel-head { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+  .nodedetail.is-live { border-color: var(--teal); }
   .worth { margin-top: 14px; border-left: 2px solid var(--teal); padding-left: 14px; }
   .worth p { margin: 4px 0 0; line-height: 1.62; color: var(--body); }
 
@@ -564,10 +584,12 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
     const boxes = [...wrap.querySelectorAll("[data-node]")];
     const escape = (value) =>
       String(value).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
-    const open = (id) => {
+    const panel = wrap.querySelector("[data-detail]");
+    const open = (id, { reveal = true } = {}) => {
       const d = detail[id];
       if (!d) return;
       for (const box of boxes) box.classList.toggle("is-open", box.dataset.node === id);
+      panel.classList.add("is-live");
       name.textContent = `${id} · ${d.title}`;
       says.textContent = d.says || d.note || d.label;
       note.textContent = d.note && d.note !== says.textContent ? d.note : "";
@@ -589,6 +611,11 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
       rows.innerHTML = pairs
         .map(([k, v]) => `<div class="row"><span class="k">${escape(k)}</span><span class="v num">${escape(v)}</span></div>`)
         .join("");
+      // The reader is pinned to the bottom of the viewport while the drawing is
+      // on screen, so this scrolls only in the cases where it is not: the top
+      // of a long page, or a browser without sticky.
+      if (reveal) panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      panel.scrollTop = 0;
     };
     for (const node of boxes) {
       node.addEventListener("click", () => open(node.dataset.node));
@@ -599,5 +626,9 @@ const busTap = results.forecast?.consensus_bus?.tapped_at_node ?? "U1";
         }
       });
     }
+    // Open on the one box the estimate turns on, so the reader arrives populated
+    // and the drawing is visibly something you select from.
+    const first = boxes.find((b) => b.dataset.node === "U23") ?? boxes[0];
+    if (first) open(first.dataset.node, { reveal: false });
   }
 </script>
