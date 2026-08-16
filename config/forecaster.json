@@ -8,7 +8,6 @@
   "corpus_frozen_at": "2026-08-14",
   "source_priority": [
     "corpus",
-    "sec",
     "market"
   ],
   "sources": {
@@ -29,7 +28,8 @@
         "HD": 354950,
         "ADI": 6281,
         "DE": 315189
-      }
+      },
+      "_disabled_reason": "Written and working, then taken out of the priority chain on purpose. Historic financials are read from the filings in this repository instead, so every number traces to a document a judge can open rather than to an API response they cannot see. Consensus stays on the network because it is a forward estimate the corpus never contained."
     },
     "market": {
       "kind": "yahoo_quote_summary",

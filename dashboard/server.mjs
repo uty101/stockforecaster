@@ -388,6 +388,127 @@ const manualSections = [
   },
 ];
 
+
+// ------------------------------------------------------------- forecaster build
+// What we are actually building, node by node, with status read from the repo
+// rather than typed in. A node counts as built when its module exists; an agent
+// counts as built when its prompt file exists, because the prompt file is the
+// only definition of an agent that can be checked rather than asserted.
+
+const MISSION = {
+  goal:
+    "Forecast twelve numbers - three metrics each for Home Depot, Analog Devices, Hays and Deere - "
+    + "and show a visible trail from source evidence to every one of them.",
+  thesis:
+    "The forecast is consensus plus lambda times the gap between our own estimate and consensus. "
+    + "Everything upstream produces the own estimate; lambda decides how much of it to act on. "
+    + "Shrinking hard to consensus on a heavily covered name is the correct answer, not a failure.",
+  scoring:
+    "Accuracy is scored relative to Wall Street: min(5.0, our miss divided by the Street miss), averaged "
+    + "over the twelve, lowest wins. A missing number scores 5.0, so we always ship a number. "
+    + "Architecture is judged separately and rewards the evidence trail, validation and stated "
+    + "weaknesses - explicitly not complexity and not accuracy.",
+  approach: [
+    "Filings, transcripts and slides come from the frozen 1,139-document corpus in this repo. No retrieval agent, and every number traces to a document a judge can open.",
+    "Historic financials are read from those same filings, not from a market-data API.",
+    "Analyst consensus comes from the network, because it is a forward estimate the corpus never contained and it is the number our error is scored against.",
+    "Nine lenses argue the case independently and are blind to each other. Lenses that see each other converge, and converging rebuilds consensus, which scores zero.",
+    "Every cited quote is string-matched against its document. A lens that fails is dropped whole, and the drop is shown rather than hidden.",
+    "One deep-tier call makes the judgement, weighting by materiality rather than by vote count.",
+    "Python writes JSON; the site polls it and computes nothing."
+  ],
+  cuts: [
+    ["Balance sheet, cash flow, DCF", "None of the twelve metrics touches a balance-sheet or cash-flow line, so an income-statement model reaches every scored number and the circularity solve reaches none."],
+    ["SEC XBRL as the history source", "Written and working, then set aside: the repo's own filings are the sanctioned evidence and give a trail that can be opened rather than trusted."],
+    ["Backtest driver and eval harness", "Consensus is available only as of today, with no vintage, so the historical Street bar cannot be reconstructed. Skill-versus-consensus is unobtainable, not merely unbuilt."],
+    ["Bootstrap calibration", "No backtest residuals exist to bootstrap. The interval is the judge's own and is labelled uncalibrated."],
+    ["Perception scoring and the news adapter", "Coverage stance moves a discount rate, and none of the twelve metrics is a valuation."],
+    ["Fixture generator", "A real run exists, and the demo fallback is a recorded run replayed through the same code path."],
+    ["Options and implied move", "No entitlement on the available plan."]
+  ]
+};
+
+const PIPELINE_PLAN = [
+  { id: "A", label: "Sources - corpus first, consensus behind it", file: "forecaster/stages/a_sources.py",
+    detail: "One protocol, priority chain, two independent point-in-time locks." },
+  { id: "B", label: "Acquire - dossier keyed by ticker and as-of", file: "forecaster/stages/b_acquire.py",
+    detail: "Results releases picked by form, never by date. Eight earnings calls kept as an ordered sequence." },
+  { id: "C", label: "Evidence store - citation IDs", file: "forecaster/stages/c_structure.py",
+    detail: "Prose quoted and matched, structured facts typed by the adapter, derived figures marked as neither." },
+  { id: "D", label: "Income model - ratio base and reproduction check", file: "forecaster/stages/d_model.py",
+    detail: "History as filed, median and scaled MAD per driver, and the model stating its own measured error before it is trusted." },
+  { id: "E", label: "Nine lenses, blind to each other", file: "forecaster/stages/e_analyse.py",
+    detail: "Eight on the mid tier plus Mechanical, which has no model and cannot hallucinate." },
+  { id: "V1", label: "Reconcile - quote matching", file: "forecaster/stages/v1_reconcile.py",
+    detail: "Deterministic. Nothing that can hallucinate decides which hallucinations survive." },
+  { id: "F", label: "Champion - argue, attack, survive, weigh", file: "forecaster/stages/f_challenge.py",
+    detail: "Self-reported confidence replaced by what held up under attack." },
+  { id: "G", label: "Judge - one deep call", file: "forecaster/stages/g_judge.py",
+    detail: "Weighted by materiality, told which lenses are missing and why, returning five named quantiles." },
+  { id: "V2", label: "Comparability", file: "forecaster/stages/v2_comparability.py",
+    detail: "M&A, accounting change, 53rd week, withdrawn guidance. When one fires, lambda collapses." },
+  { id: "H", label: "Position - lambda and the consensus bus", file: "forecaster/stages/h_position.py",
+    detail: "Consensus is tapped once and carried untouched to lambda's second input; the baseline terminates on it." },
+  { id: "I", label: "Output - results file and event tape", file: "forecaster/stages/i_output.py",
+    detail: "Written atomically. Every field any sheet renders lives here." },
+  { id: "RUN", label: "Flat orchestrator", file: "forecaster/run.py",
+    detail: "Every stage in order, one level of indentation, readable out loud." },
+  { id: "XL", label: "Results into the four workbooks", file: "src/forecast-to-workbooks.mjs",
+    detail: "Patches the supplied templates in place, asserting labels, units and period first." },
+  { id: "SITE", label: "Astro site, nine sheets", file: "site/package.json",
+    detail: "Polls the results file and the tape. Renders and nothing more." }
+];
+
+const AGENT_PLAN = [
+  ["lens_mechanical", "Mechanical - FX, share count, calendar effects. No model, zero tokens."],
+  ["lens_guidance", "Guidance - the guided range and where the company lands inside it."],
+  ["lens_drivers", "Drivers - units times price, comps times stores, backlog conversion."],
+  ["lens_demand", "Demand - one link up and one link down the value chain."],
+  ["lens_market", "Market - market growth separated from share change."],
+  ["lens_margins", "Margins - gross margin mix, operating expense, tax."],
+  ["lens_forensics", "Forensics - accruals and the GAAP-to-adjusted exclusions."],
+  ["lens_peer_read", "Peer read - who has already reported into this cycle."],
+  ["lens_macro", "Macro - the series that matter against what estimates assume."],
+  ["extract_guidance", "Guidance extracted from the results release, carrying its quote."],
+  ["extract_bridge", "The GAAP-to-adjusted bridge across five quarters."],
+  ["scan_calls", "Reads eight calls at once and reports what management stopped saying."],
+  ["scan_perception", "Scores the analyst Q&A across those calls for stance and conviction - our sentiment read, since the corpus carries no news."],
+  ["champion", "Argues each case at its strongest, then attacks it in good faith."],
+  ["judge", "The one deep call. Materiality, never vote count."],
+  ["comparability", "Is this period comparable to its own history?"]
+];
+
+function forecasterFileExists(relative) {
+  return fsSync.existsSync(path.join(root, relative));
+}
+
+async function pipelineSection() {
+  return PIPELINE_PLAN.map((node) => ({
+    id: "node:" + node.id,
+    label: node.id + " - " + node.label,
+    detail: node.detail,
+    kind: "auto",
+    status: forecasterFileExists(node.file) ? "done" : "todo",
+  }));
+}
+
+async function agentSection() {
+  return AGENT_PLAN.map((entry) => {
+    const name = entry[0];
+    const detail = entry[1];
+    const built = name === "lens_mechanical"
+      ? forecasterFileExists("forecaster/stages/e_analyse.py")
+      : forecasterFileExists("llm/prompts/" + name + ".md");
+    return {
+      id: "agent:" + name,
+      label: name === "lens_mechanical" ? name + " - deterministic" : name,
+      detail,
+      kind: "auto",
+      status: built ? "done" : "todo",
+    };
+  });
+}
+
 // ------------------------------------------------------------------ assembling
 
 function summarise(items) {
@@ -420,6 +541,18 @@ async function buildState() {
       title: "Architecture page",
       subtitle: "architecture/index.html — locks at 17:15 and carries 30 of the 100 judging points.",
       items: await architectureSection(),
+    },
+    {
+      id: "pipeline",
+      title: "Forecaster pipeline",
+      subtitle: "Every stage of the signal flow. A node counts as built when its module exists - computed, never ticked by hand.",
+      items: await pipelineSection(),
+    },
+    {
+      id: "agents",
+      title: "Agent roster",
+      subtitle: "Sixteen prompts plus one deterministic lens. An agent counts as built when its prompt file exists, because the prompt file is the only definition that can be checked rather than asserted.",
+      items: await agentSection(),
     },
     {
       id: "run",
@@ -455,6 +588,7 @@ async function buildState() {
   return {
     now: new Date().toISOString(),
     day: DAY,
+    mission: MISSION,
     timeline,
     sections,
     overall: summarise(allItems),

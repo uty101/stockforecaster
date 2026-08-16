@@ -30,6 +30,20 @@
   a { color: var(--accent); }
   .wrap { width: min(1280px, calc(100% - 40px)); margin: 0 auto; padding: 28px 0 80px; }
 
+  /* --------------------------------------------------------------- mission */
+  .mission { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 22px 24px; margin-bottom: 22px; }
+  .mission h2 { margin: 0 0 4px; font-size: 19px; letter-spacing: -.01em; }
+  .mission .lede { color: var(--ink); font-size: 15px; margin: 0 0 18px; max-width: 78ch; }
+  .mission .grid { display: grid; gap: 18px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .mission .block { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; }
+  .mission .block h3 { margin: 0 0 8px; font-size: 11px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+  .mission .block p { margin: 0; color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+  .mission ul { margin: 0; padding-left: 18px; color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+  .mission ul li + li { margin-top: 6px; }
+  .mission .cut { display: block; margin-bottom: 10px; }
+  .mission .cut b { color: var(--ink); font-weight: 650; display: block; font-size: 13px; }
+  .mission .cut span { color: var(--muted); font-size: 13px; }
+
   /* ---------------------------------------------------------------- header */
   header.top { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 22px; }
   .eyebrow { color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; margin: 0 0 4px; }
@@ -128,6 +142,8 @@
     <div class="counts"><span id="overall-counts">—</span><span id="updated">—</span></div>
   </div>
 
+  <section class="mission" id="mission"></section>
+
   <div class="timeline" id="timeline"></div>
   <div class="cols" id="sections"></div>
 
@@ -175,6 +191,29 @@ function countsRow(left, right) {
 }
 
 /* ------------------------------------------------------------------- render */
+function esc(value) {
+  return String(value).replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+}
+
+function renderMission() {
+  const host = document.getElementById("mission");
+  const m = state.mission;
+  if (!m) { host.innerHTML = ""; return; }
+  const approach = m.approach.map((line) => "<li>" + esc(line) + "</li>").join("");
+  const cuts = m.cuts
+    .map((entry) => '<span class="cut"><b>' + esc(entry[0]) + "</b><span>" + esc(entry[1]) + "</span></span>")
+    .join("");
+  host.innerHTML =
+    "<h2>What we are building</h2>" +
+    '<p class="lede">' + esc(m.goal) + "</p>" +
+    '<div class="grid">' +
+      '<div class="block"><h3>The thesis</h3><p>' + esc(m.thesis) + "</p></div>" +
+      '<div class="block"><h3>How it is scored</h3><p>' + esc(m.scoring) + "</p></div>" +
+      '<div class="block"><h3>How it works</h3><ul>' + approach + "</ul></div>" +
+      '<div class="block"><h3>Deliberately not built, and why</h3>' + cuts + "</div>" +
+    "</div>";
+}
+
 function renderTimeline() {
   const host = document.getElementById("timeline");
   host.replaceChildren();
@@ -286,6 +325,7 @@ function render() {
   document.getElementById("updated").textContent = `updated ${fmtTime(new Date(state.now))}`;
   document.getElementById("repoline").textContent =
     `branch ${state.git.branch ?? "?"} at ${state.git.head ?? "?"} · four companies · twelve numbers`;
+  renderMission();
   renderTimeline();
   renderSections();
   renderClock();
