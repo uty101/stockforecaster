@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent architecture — Alpha</title>
+<style>
+:root{color-scheme:light;--ink:#101828;--body:#344054;--muted:#667085;--faint:#98a2b3;
+--line:#e4e7ec;--line2:#d0d5dd;--blue:#155eef;--tint:#eff4ff;--paper:#fff;--wash:#f8fafc;
+--green:#087443;--amber:#b54708;--red:#b42318;--violet:#6938ef}
+*{box-sizing:border-box}
+body{margin:0;color:var(--body);background:var(--wash);
+font:16px/1.7 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+-webkit-font-smoothing:antialiased}
+main{width:min(940px,calc(100% - 32px));margin:40px auto;padding:clamp(24px,6vw,64px);
+background:var(--paper);border:1px solid var(--line2);border-radius:20px}
+h1{margin:0 0 10px;font-size:clamp(40px,8vw,72px);line-height:.98;letter-spacing:-.05em;color:var(--ink)}
+h2{margin:56px 0 6px;font-size:24px;letter-spacing:-.02em;color:var(--ink);
+padding-bottom:10px;border-bottom:1px solid var(--line)}
+h3{margin:30px 0 6px;font-size:17px;letter-spacing:-.01em;color:var(--ink)}
+p,li{max-width:70ch}
+p{margin:0 0 14px}
+.eyebrow{color:var(--blue);font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin:0 0 6px}
+.lede{color:var(--muted);font-size:20px;line-height:1.5;max-width:62ch}
+.card{margin:24px 0;padding:20px;background:var(--wash);border:1px solid var(--line2);border-radius:12px}
+.card p{margin:0 0 6px;font-size:15px}
+.card p:last-child{margin:0}
+code{padding:2px 6px;border-radius:5px;background:var(--tint);color:#0b3fa8;
+font:13px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+figure{margin:26px 0;padding:20px 16px 12px;background:#fbfcfd;
+border:1px solid var(--line2);border-radius:12px;overflow-x:auto}
+figcaption{margin-top:12px;padding:0 4px;color:var(--muted);font-size:13.5px;line-height:1.55}
+svg{display:block}
+.dt{font:11px ui-monospace,Menlo,monospace;fill:#101828}
+.dm{font:10px ui-monospace,Menlo,monospace;fill:#667085}
+.dk{font:8.5px ui-monospace,Menlo,monospace;fill:#98a2b3;letter-spacing:.14em}
+table{width:100%;margin:22px 0;border-collapse:collapse;font-size:14.5px}
+th,td{padding:9px 10px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);
+border-bottom:1px solid var(--line2);font-weight:600}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+tbody tr:last-child td{border-bottom:none}
+.note{color:var(--muted);font-size:14.5px}
+.pill{display:inline-block;padding:1px 8px;border-radius:20px;font-size:11.5px;font-weight:600;
+letter-spacing:.04em;background:var(--tint);color:#0b3fa8}
+.pill.g{background:#ecfdf3;color:var(--green)}
+.pill.a{background:#fffaeb;color:var(--amber)}
+.pill.r{background:#fef3f2;color:var(--red)}
+ul{margin:0 0 14px;padding-left:20px}
+li{margin-bottom:10px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);margin:24px 0;
+border:1px solid var(--line2);border-radius:12px;overflow:hidden}
+.stat{padding:16px 18px;border-right:1px solid var(--line);background:var(--wash)}
+.stat:last-child{border-right:none}
+.stat .n{font-size:26px;color:var(--ink);letter-spacing:-.02em;line-height:1.2}
+.stat .k{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.stat .d{font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.45}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<main>
+
+<p class="eyebrow">Agents vs Wall Street</p>
+<h1>Alpha</h1>
+<p class="lede">Nine lenses read the same evidence and cannot see each other. Every claim
+carries a quote that is matched back to its filing. One judge weighs what survives by how much
+each driver is worth, not by how many lenses agreed.</p>
+
+<div class="card">
+  <p>Agent name: <strong>Alpha</strong></p>
+  <p>Team: <strong>Utkarsh Malhotra</strong>, solo</p>
+  <p>Build style and harness: <strong>coding harness, Claude Code, unmodified. The agent is a headless Python pipeline run by one command.</strong></p>
+  <p>Models: <strong>claude-opus-5 for the judge. claude-sonnet-5 for the lenses, the challenge and the narrative. claude-haiku-4-5 for extraction, scanners, research and comparability.</strong></p>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="k">Numbers</div><div class="n">12</div><div class="d">four companies, three metrics each</div></div>
+  <div class="stat"><div class="k">Model calls</div><div class="n">150</div><div class="d">one deep call per company</div></div>
+  <div class="stat"><div class="k">Cost</div><div class="n">$5.20</div><div class="d">total, four companies</div></div>
+  <div class="stat"><div class="k">Tests</div><div class="n">106</div><div class="d">93 Python, 13 Node, all passing</div></div>
+</div>
+
+<section>
+<h2>How it works</h2>
+<p>One command runs four companies end to end. Each company walks the same stages in the same
+order.</p>
+<p>That order is written top to bottom in <code>forecaster/run.py</code>. There is no registry and
+no dispatch loop, so the whole data flow can be read aloud while somebody watches over your
+shoulder.</p>
+<p>Every box below has a stable identifier. <code>J1</code> to <code>J7</code> for sources,
+<code>U1</code> to <code>U26</code> for the pipeline. They are defined once in
+<code>forecaster/nodes.py</code> and they appear in the module names, the event names and the log
+lines. A line in the log names the box that produced it.</p>
+
+<figure>
+<svg viewBox="0 0 900 560" role="img" aria-labelledby="f1t f1d">
+<title id="f1t">Sources through to the citation gate</title>
+<desc id="f1d">Seven sources feed nine acquisition boxes. Those build one evidence store and an income model. Nine lenses read both and cannot see each other. Every lens output passes through a citation gate.</desc>
+<defs><marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+
+<g class="dk">
+<text x="14" y="16">A · SOURCES</text><text x="152" y="16">B · ACQUIRE</text><text x="316" y="16">C · EVIDENCE</text>
+<text x="452" y="16">D · HISTORY</text><text x="606" y="16">E · WORKSTREAMS</text><text x="782" y="16">V1 · CITATIONS</text>
+</g>
+
+<g fill="none" stroke="#98a2b3" stroke-width="1">
+<rect x="14" y="120" width="116" height="26" rx="4"/><rect x="14" y="156" width="116" height="26" rx="4"/>
+<rect x="14" y="192" width="116" height="26" rx="4"/><rect x="14" y="228" width="116" height="26" rx="4"/>
+<rect x="14" y="264" width="116" height="26" rx="4"/><rect x="14" y="300" width="116" height="26" rx="4"/>
+</g>
+<g class="dm" text-anchor="middle" fill="#344054">
+<text x="72" y="137">Corpus</text><text x="72" y="173">Consensus</text><text x="72" y="209">News</text>
+<text x="72" y="245">Universe</text><text x="72" y="281">Macro feed</text><text x="72" y="317">Sponsor feed</text>
+</g>
+<g class="dk"><text x="14" y="114">J1</text><text x="14" y="150">J2</text><text x="14" y="186">J3</text><text x="14" y="222">J5</text><text x="14" y="258">J6</text><text x="14" y="294">J7</text></g>
+
+<g stroke="#d0d5dd" fill="none" stroke-dasharray="3 3">
+<path d="M130 133h16"/><path d="M130 169h16"/><path d="M130 205h16"/><path d="M130 241h16"/><path d="M130 277h16"/><path d="M130 313h16"/>
+<path d="M146 133v180"/>
+</g>
+
+<g fill="none" stroke-width="1">
+<rect x="152" y="44" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="152" y="80" width="126" height="26" rx="4" stroke="#087443"/>
+<rect x="152" y="116" width="126" height="26" rx="4" stroke="#087443"/>
+<rect x="152" y="152" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="152" y="188" width="126" height="26" rx="4" stroke="#087443"/>
+<rect x="152" y="224" width="126" height="26" rx="4" stroke="#087443"/>
+<rect x="152" y="260" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="152" y="296" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="152" y="332" width="126" height="26" rx="4" stroke="#6938ef"/>
+</g>
+<g class="dm" text-anchor="middle">
+<text x="215" y="61" fill="#6938ef">Numbers</text><text x="215" y="97" fill="#087443">Series</text>
+<text x="215" y="133" fill="#087443">Filings</text><text x="215" y="169" fill="#6938ef">Ranges</text>
+<text x="215" y="205" fill="#087443">Industry</text><text x="215" y="241" fill="#087443">Macro series</text>
+<text x="215" y="277" fill="#6938ef">Bridge</text><text x="215" y="313" fill="#6938ef">Calls</text>
+<text x="215" y="349" fill="#6938ef">Perception</text>
+</g>
+<g class="dk">
+<text x="152" y="38">U1</text><text x="152" y="74">U2</text><text x="152" y="110">U3</text><text x="152" y="146">U4</text>
+<text x="152" y="182">U5</text><text x="152" y="218">U6</text><text x="152" y="254">U7</text><text x="152" y="290">U8</text><text x="152" y="326">U9</text>
+</g>
+
+<g stroke="#087443" fill="none" stroke-dasharray="3 3" opacity=".8">
+<path d="M278 57h18"/><path d="M278 93h18"/><path d="M278 129h18"/><path d="M278 165h18"/><path d="M278 201h18"/>
+<path d="M278 237h18"/><path d="M278 273h18"/><path d="M278 309h18"/><path d="M278 345h18"/>
+<path d="M296 57v288"/><path d="M296 201h18" marker-end="url(#a1)"/>
+</g>
+
+<rect x="316" y="186" width="120" height="30" rx="4" fill="none" stroke="#087443"/>
+<text class="dt" x="376" y="205" text-anchor="middle" fill="#087443">Evidence</text>
+<text class="dk" x="316" y="180">U10</text>
+<path d="M436 201h14" stroke="#087443" stroke-dasharray="3 3" fill="none" marker-end="url(#a1)"/>
+
+<rect x="452" y="186" width="126" height="30" rx="4" fill="none" stroke="#087443"/>
+<text class="dt" x="515" y="205" text-anchor="middle" fill="#087443">Income model</text>
+<text class="dk" x="452" y="180">U11</text>
+
+<g fill="none" stroke-width="1">
+<rect x="606" y="44" width="126" height="26" rx="4" stroke="#087443"/>
+<rect x="606" y="80" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="116" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="152" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="188" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="224" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="260" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="296" width="126" height="26" rx="4" stroke="#6938ef"/>
+<rect x="606" y="332" width="126" height="26" rx="4" stroke="#b42318" stroke-dasharray="4 3"/>
+</g>
+<g class="dm" text-anchor="middle">
+<text x="669" y="61" fill="#087443">Mechanical</text><text x="669" y="97" fill="#6938ef">Guidance</text>
+<text x="669" y="133" fill="#6938ef">Drivers</text><text x="669" y="169" fill="#6938ef">Demand</text>
+<text x="669" y="205" fill="#6938ef">Market</text><text x="669" y="241" fill="#6938ef">Margins</text>
+<text x="669" y="277" fill="#6938ef">Forensics</text><text x="669" y="313" fill="#6938ef">Peer read</text>
+<text x="669" y="349" fill="#b42318">Macro</text>
+</g>
+<g class="dk">
+<text x="606" y="38">U12</text><text x="606" y="74">U13</text><text x="606" y="110">U14</text><text x="606" y="146">U15</text>
+<text x="606" y="182">U16</text><text x="606" y="218">U17</text><text x="606" y="254">U18</text><text x="606" y="290">U19</text><text x="606" y="326">U20</text>
+</g>
+
+<g stroke="#6938ef" fill="none" stroke-dasharray="3 3" opacity=".5">
+<path d="M578 201h12"/><path d="M590 57h16"/><path d="M590 93h16"/><path d="M590 129h16"/><path d="M590 165h16"/>
+<path d="M590 201h16"/><path d="M590 237h16"/><path d="M590 273h16"/><path d="M590 309h16"/><path d="M590 345h16"/>
+<path d="M590 57v288"/>
+</g>
+
+<rect x="758" y="30" width="128" height="336" rx="4" fill="none" stroke="#98a2b3" stroke-dasharray="4 4"/>
+<g stroke="#087443" fill="none" stroke-dasharray="3 3">
+<path d="M732 57h28"/><path d="M732 93h28"/><path d="M732 129h28"/><path d="M732 165h28"/>
+<path d="M732 201h28"/><path d="M732 237h28"/><path d="M732 273h28"/><path d="M732 309h28"/>
+</g>
+<path d="M732 345h20" stroke="#b42318" stroke-dasharray="4 3" fill="none"/>
+<path d="M746 339l10 12M756 339l-10 12" stroke="#b42318" stroke-width="1.2"/>
+<rect x="778" y="186" width="90" height="30" rx="4" fill="none" stroke="#087443"/>
+<text class="dt" x="823" y="205" text-anchor="middle" fill="#087443">Reconcile</text>
+<text class="dk" x="778" y="180">U21</text>
+
+<path d="M215 358v152h660" stroke="#087443" stroke-width="2" stroke-dasharray="6 5" fill="none"/>
+<text class="dk" x="232" y="504" fill="#087443">CONSENSUS, TAPPED AT U1, CARRIED UNTOUCHED TO POSITION</text>
+
+<g class="dk" fill="#667085">
+<text x="14" y="542">GREEN reported and checked</text>
+<text x="212" y="542">VIOLET written by a reader</text>
+<text x="410" y="542">RED excluded, carries nothing</text>
+</g>
+</svg>
+<figcaption>Green boxes work from reported figures. Violet boxes read text written by a person.
+The macro lens is red because one of its citations failed, so its edge stops at the gate and
+carries nothing forward. The heavy dashed line along the bottom is consensus, which no reasoning
+box can touch.</figcaption>
+</figure>
+
+<figure>
+<svg viewBox="0 0 900 220" role="img" aria-labelledby="f2t f2d">
+<title id="f2t">Citation gate through to the submitted estimate</title>
+<desc id="f2d">What survives the citation gate is argued for and against, weighed by one judge, checked for comparability, positioned against consensus, and written out as the estimate.</desc>
+<defs><marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<g class="dk">
+<text x="14" y="16">V1 · CITATIONS</text><text x="164" y="16">F · CHALLENGE</text><text x="314" y="16">G · WEIGHTING</text>
+<text x="464" y="16">V2 · COMPARABILITY</text><text x="644" y="16">H · POSITION</text><text x="794" y="16">I · OUTPUT</text>
+</g>
+<g fill="none" stroke-width="1">
+<rect x="14" y="70" width="126" height="32" rx="4" stroke="#087443"/>
+<rect x="164" y="70" width="126" height="32" rx="4" stroke="#6938ef"/>
+<rect x="314" y="70" width="126" height="32" rx="4" stroke="#b42318"/>
+<rect x="464" y="70" width="150" height="32" rx="4" stroke="#6938ef"/>
+<rect x="644" y="70" width="126" height="32" rx="4" stroke="#087443"/>
+<rect x="794" y="70" width="92" height="32" rx="4" stroke="#087443"/>
+</g>
+<g class="dt" text-anchor="middle">
+<text x="77" y="91" fill="#087443">Reconcile</text><text x="227" y="91" fill="#6938ef">Champion</text>
+<text x="377" y="91" fill="#b42318">Judge</text><text x="539" y="91" fill="#6938ef">Comparability</text>
+<text x="707" y="91" fill="#087443">Position</text><text x="840" y="91" fill="#087443">Estimate</text>
+</g>
+<g class="dk">
+<text x="14" y="64">U21</text><text x="164" y="64">U22</text><text x="314" y="64">U23</text>
+<text x="464" y="64">U24</text><text x="644" y="64">U26</text><text x="794" y="64">OUT</text>
+</g>
+<g stroke="#087443" fill="none" stroke-dasharray="3 3" marker-end="url(#a2)">
+<path d="M140 86h20"/><path d="M290 86h20"/><path d="M440 86h20"/><path d="M614 86h26"/><path d="M770 86h20"/>
+</g>
+<path d="M14 176h693v-70" stroke="#087443" stroke-width="2" stroke-dasharray="6 5" fill="none" marker-end="url(#a2)"/>
+<text class="dk" x="32" y="168" fill="#087443">CONSENSUS ARRIVES HERE AND NOWHERE ELSE</text>
+</svg>
+<figcaption>Consensus enters at one point, at the end. Everything to the left of it is built from
+filings alone, so nothing in the reasoning can be anchored on the Street number.</figcaption>
+</figure>
+
+<p class="note">The workstreams column above is the nine lenses. Lens is the name used in the
+code, so both words appear in this page and they mean the same thing.</p>
+
+<h3>What the agents do</h3>
+<p>There are seventeen agents, sitting in seven layers.</p>
+<p>One pulls candidate figures out of the filings. One pulls the guidance range out, because
+guidance is written in sentences. One is a research scout, which suggests searches, looks at what
+came back, then asks for whatever it is still missing. And two scanners, one reading the calls in
+sequence, the other reading coverage.</p>
+<p>Then nine lenses do the actual analysis. Each one has a single angle.</p>
+<ul>
+<li><strong>Guidance</strong> anchors on what management guided and where this company usually
+lands in its own range.</li>
+<li><strong>Drivers</strong> builds the top line bottom up, units times price.</li>
+<li><strong>Margins</strong> takes revenue as given and argues about what falls through.</li>
+<li><strong>Forensics</strong> reads like an auditor, accruals versus cash.</li>
+<li><strong>Peer read</strong> looks at who has already reported.</li>
+<li><strong>Demand</strong> goes one link up and one link down the value chain.</li>
+<li><strong>Market</strong> splits growth into market growth and share.</li>
+<li><strong>Macro</strong> checks the series against what the Street seems to be assuming.</li>
+<li><strong>Mechanical</strong> is just arithmetic. FX, share count, net interest.</li>
+</ul>
+
+<h3>How they are connected</h3>
+<p>They are not. That is the point.</p>
+<p>All nine read the same evidence and none of them can see what the others said. That is in the
+code, in the signatures, not in the prompt. There is no way to pass one lens's answer to
+another.</p>
+<p>Because if they can see each other they converge, and once they converge you have just rebuilt
+consensus.</p>
+<p>The only thing sitting underneath all nine is a gate.</p>
+
+<h3>Tiers and the client</h3>
+<p>Tiers are assigned once, in <code>forecaster/agents/tiers.py</code>. Cheap for retrieval and
+extraction, mid for the lenses, the challenge and the narrative, deep for the judge alone. One
+deep call per company, enforced by a test.</p>
+<p>The client is our own <code>urllib</code> wrapper over the Messages API, since there is no
+working <code>pip</code> on the build machine. It does five things. It forces a schema and
+validates before returning. It caches on a content hash on disk. It enforces a hard cost ceiling.
+It handles prompt caching of the shared corpus. It retries on rate limits and 5xx only.</p>
+
+<h3>The last clean run</h3>
+<table>
+<thead><tr><th>Company</th><th>Period</th><th class="num">Calls</th><th class="num">Citations</th><th class="num">Cost</th><th>Forecasts</th></tr></thead>
+<tbody>
+<tr><td>Home Depot</td><td>FY2026 Q2</td><td class="num">38</td><td class="num">71 of 71</td><td class="num">$1.21</td><td class="num">47,320 USDm · 4.65 USD/sh · 0.9%</td></tr>
+<tr><td>Analog Devices</td><td>FY2026 Q3</td><td class="num">38</td><td class="num">65 of 65</td><td class="num">$1.11</td><td class="num">3,930 USDm · 3.35 USD/sh · 73.1%</td></tr>
+<tr><td>Hays plc</td><td>FY2026</td><td class="num">36</td><td class="num">58 of 60</td><td class="num">$1.23</td><td class="num">896 GBPm · 1.25 GBp · 45.2 GBPm</td></tr>
+<tr><td>Deere &amp; Company</td><td>FY2026 Q3</td><td class="num">38</td><td class="num">81 of 81</td><td class="num">$1.65</td><td class="num">12,470 USDm · 4.92 USD/sh · 560 USDm</td></tr>
+</tbody>
+</table>
+<p class="note">$5.20 in total. Two of the Hays citations failed to match, which cost it two whole workstreams. See <em>Checks and tests</em>.</p>
+</section>
+
+<section>
+<h2>Research and financial reasoning</h2>
+
+<h3>Where the information comes from</h3>
+<p>Five source adapters sit behind one priority chain.</p>
+<p>The organisers' frozen corpus of 1,139 documents supplies filings, transcripts and slides. It
+is the only source of historical financials. A number that traces to a document a judge can open
+is worth more than one tracing to an API response they cannot see.</p>
+<p>On top of that sits a research agent. It proposes searches, looks at the titles that came back,
+then asks for what is still missing. A fixed list of queries cannot notice that every result came
+from the same trade magazine.</p>
+<p>News is date bounded at the API rather than filtered afterwards, so anything published after
+the lock date never enters the result set. Macro comes from FRED with <code>realtime_start</code>
+pinned to the lock date, so a series arrives as it stood then rather than as later revised.
+Consensus is shown beside every forecast and never feeds one.</p>
+<p>Everything pulled from the web is written into the run directory as a document. A lens
+citing research is quoting text that exists on disk, and the gate can match it exactly as it
+matches a quote from a results release.</p>
+
+<h3>Metrics and units</h3>
+<p>The metric labels, units and period headers come from the templates and
+<code>challenge/companies.json</code>. The agent never invents them.</p>
+<p>Every extracted value is typed against the metric it is offered for. Three guards reject values
+that merely mention the right words. A percentage offered for a money or per share metric is
+discarded. A post exceptional value offered for a pre exceptional line is discarded. A figure
+covering the wrong period length is discarded, so a half year figure cannot satisfy a full year
+metric.</p>
+<p>Each rejection is recorded on the metric rather than dropped quietly.</p>
+<p>Consensus revenue arrives in absolute currency and is converted to millions in exactly one
+place. Getting that direction wrong is an error of a million times that still looks like a
+plausible number on a sheet.</p>
+
+<h3>Conflicting evidence</h3>
+<p>Four mechanisms, in order.</p>
+<p>First, the evidence store splits verification three ways. <strong>Prose</strong> means a person
+wrote it and a model quoted it, so the quote has to be found in the text.
+<strong>Structured</strong> means the quote is the tagged fact itself, rendered by an adapter from
+a typed response. <strong>Derived</strong> means the pipeline computed it, so it sits in neither
+set and has to be justified by the claims underneath it.</p>
+<p>News is not evidence at all. We hold a snippet rather than the article, coverage published days
+before a print is preview and positioning, and no lens may cite it.</p>
+<p>Second, every surviving case is argued into its strongest honest form and then attacked. The
+gap between the stated confidence and the surviving confidence reaches the judge as a discount on
+that view's weight. Never as a vote.</p>
+<p>Third, the spread across lenses is measured per metric, with abstentions counted
+separately rather than folded in.</p>
+<p>Fourth, the comparability gate asks whether this period can be compared with the company's own
+history at all. When it fires, the historical priors have stopped applying, and that is carried
+forward rather than noted and forgotten.</p>
+
+<h3>How it feeds the model</h3>
+<p>Before any of that runs, there is a deterministic income model built off the filings. History
+as filed, a ratio base, a projection.</p>
+<p>It also re forecasts the last few periods using only what it knew before each one, so it tells
+you how wrong it has been. That error goes to the lenses as context and to the judge alongside the
+projection.</p>
+<p>So a lens is looking at a company with a margin trend in front of it, not just a pile of
+numbers. And the judge knows how much to trust the arithmetic before it decides anything.</p>
+<p>It is an income statement rather than three statements, because none of the twelve metrics
+touches a balance sheet or cash flow line.</p>
+
+<h3>How that drives the estimates</h3>
+<p>Each lens comes back with all three metrics in one call. Its reasoning, its confidence, its
+citations, and what would change its mind.</p>
+<p>It is allowed to say nothing. Abstaining is a real answer and it beats making something up.</p>
+<p>Then the gate. Every citation has to already exist, and every quote has to actually match the
+document. If a lens fails either one, the whole lens is dropped. Not the bad claim, the whole
+thing. Hays lost two of nine that way.</p>
+
+<h3>How they argue</h3>
+<p>They do not argue with each other. They get argued against.</p>
+<p>Every surviving view goes to a champion stage that builds the case up as strongly as it
+honestly can, then turns round and attacks it properly. What comes out the other side is a
+surviving confidence, and it is usually a lot lower than what the lens claimed for itself.</p>
+<p>That happens before anything gets compared. Because if you just line up the raw findings and
+take the majority, you are rewarding whatever was easiest to spot.</p>
+
+<h3>How it becomes the figures, and the weighting</h3>
+<p>Then one Opus call, once per company. It gets every surviving view, the confidence after it has
+been attacked, which lenses went quiet and why, and how much they disagree.</p>
+<p>Weighting is materiality. For each metric I measure what one standard deviation of each driver
+is actually worth, by nudging it and re running the model. That is the weight. It is measured off
+the company's own history rather than decided by me.</p>
+<p>Surviving confidence then discounts it. It is never a vote.</p>
+<p>So six lenses agreeing on something weak still lose to one lens holding the company's own
+guidance with a quote. They are all reading the same documents anyway, so five of them agreeing is
+about as likely to be wrong as one.</p>
+<p>The judge returns five quantiles per metric. The median is what goes in the workbook. Everything
+else is on the page.</p>
+</section>
+
+<section>
+<h2>Important design choices</h2>
+
+<h3>Positioning toward consensus is switched off by configuration, not deleted</h3>
+<p>Accuracy here is our miss divided by the Street's miss, capped at 5.0 and averaged over twelve
+metrics. A forecast shrunk onto consensus inherits the Street's error and scores about 1.0 by
+construction. Safe, and unable to place.</p>
+<p>Submitting our own estimate is the only way to score below 1.0. It accepts a wider spread of
+outcomes in exchange.</p>
+<p>This reverses the specification's own instinct, so it is written down rather than left to be
+inferred from a weight that happens to equal 1. Consensus is still acquired, still carried on its
+own path, and every regime condition it would have triggered is still measured. The run states,
+for each metric, the weight that would have applied.</p>
+<p>The rejected alternative was deleting the positioning stage, which would have made the decision
+invisible.</p>
+
+<h3>Consensus travels on its own path</h3>
+<p>It is tapped once where consensus enters, carried untouched, and handed to exactly one stage. It
+exposes no method a reasoning stage could write to, and no lens or judge signature takes
+it. A test asserts both properties.</p>
+<p>So lookahead through consensus is prevented by the shape of the code rather than by a promise
+in a prompt.</p>
+<p>The same instinct governs the lenses. There is no parameter through which one view could
+reach another, and a change that would create one is rejected on that basis alone.</p>
+
+<h3>One fabricated citation drops the whole lens</h3>
+<p>Not the offending claim, the entire view.</p>
+<p>A lens that invented one citation has told you something about the rest of its reasoning.
+Keeping its surviving claims means keeping the parts of an argument whose author you have just
+stopped trusting.</p>
+<p>The cost is real. Hays lost two of nine this way on the final run. The alternative, dropping the
+bad claim and keeping the rest, was rejected because it makes fabrication cheap.</p>
+
+<h3>One deep call, spent on the judge</h3>
+<p>The judge is the highest leverage decision in the system, so it is the only call on the deep
+tier and exactly one is allowed per run.</p>
+<p>The narrative agent is deliberately mid tier. Prose written from a settled answer is not where
+the leverage is, and spending the expensive tier there would take the call away from the decision
+that actually moves the number.</p>
+
+<h3>Degrade loudly, never quietly</h3>
+<p>If the judge call fails, the fallback is the median of surviving views and it labels itself
+degraded on every metric.</p>
+<p>If the judge returns crossed quantiles, they are sorted and the correction is recorded.
+Accepting them silently and sorting them silently are both ways of hiding that it happened.</p>
+<p>If a metric has no judged distribution, it falls back to the model projection and says so.</p>
+<p>A blank cell scores the maximum 5.0 penalty, so the system always ships a number. It just never
+ships one that looks better than it is.</p>
+
+<h3>The newest healthy run wins, not the newest run</h3>
+<p>This exists because of a specific failure during the build.</p>
+<p>The API ran out of credit mid run. Deere's research, all three scanners and eight of its nine
+lenses failed. The pipeline correctly degraded and produced numbers anyway. Those numbers
+then overwrote a healthy run's numbers, because the writer took the most recent run rather than
+the best one.</p>
+<p>Health is now judged explicitly on the stage reached, a surviving lens floor of four, no
+failed lenses, a judge that did not degrade, and no metric equal to consensus. When nothing
+is healthy the writer says so loudly rather than quietly shipping the wreckage.</p>
+
+<h3>Standard library only, and no install step</h3>
+<p>No <code>pip</code> works on the build machine, so the client, schema validator, tier router,
+disk cache and fan out runner are written here over <code>urllib</code>.</p>
+<p>That is a constraint rather than a preference, but it has one real benefit at 17:30. The final
+run has no dependency install that can fail.</p>
+<p>Node is used only for writing the workbooks and checking their shape, where SheetJS was already
+in the starter.</p>
+
+<h3>Two things built and then removed</h3>
+<p>The SEC XBRL adapters work and are out of the priority chain on purpose, so every historical
+number traces to a document in this repository.</p>
+<p>An earlier build computed a baseline of consensus times the company's shrunk historical beat.
+It was removed. Consensus is the bar this event actually scores against, and a second invented bar
+beside it was one more number a reader had to interpret first.</p>
+</section>
+
+<section>
+<h2>Checks and tests</h2>
+
+<figure>
+<svg viewBox="0 0 900 190" role="img" aria-labelledby="f3t f3d">
+<title id="f3t">How a submitted figure traces back to a filing</title>
+<desc id="f3d">A workbook cell traces to a distribution, to a lens view, to a claim, to a quote, to the source filing. A failed match at the gate drops the whole lens.</desc>
+<defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<g fill="none" stroke="#101828">
+<rect x="14" y="44" width="122" height="32" rx="4"/><rect x="166" y="44" width="122" height="32" rx="4"/>
+<rect x="318" y="44" width="122" height="32" rx="4"/><rect x="470" y="44" width="122" height="32" rx="4"/>
+<rect x="622" y="44" width="122" height="32" rx="4"/><rect x="774" y="44" width="112" height="32" rx="4"/>
+</g>
+<g class="dt" text-anchor="middle">
+<text x="75" y="64">workbook cell</text><text x="227" y="64">distribution</text><text x="379" y="64">view</text>
+<text x="531" y="64">claim</text><text x="683" y="64">quote</text><text x="830" y="64">filing</text>
+</g>
+<g class="dk" text-anchor="middle">
+<text x="75" y="92">I OUTPUT</text><text x="227" y="92">U23 JUDGE</text><text x="379" y="92">U12 TO U20</text>
+<text x="531" y="92">U10 EVIDENCE</text><text x="683" y="92">U21 RECONCILE</text><text x="830" y="92">J1 CORPUS</text>
+</g>
+<g stroke="#155eef" fill="none" marker-end="url(#a3)">
+<path d="M136 60h26"/><path d="M288 60h26"/><path d="M440 60h26"/><path d="M592 60h26"/><path d="M744 60h26"/>
+</g>
+<path d="M683 76v42h-300" stroke="#b42318" stroke-dasharray="4 3" fill="none"/>
+<path d="M389 112l-12 6 12 6" stroke="#b42318" fill="none"/>
+<text class="dm" x="398" y="122" fill="#b42318">a quote that does not match drops the whole lens</text>
+<text class="dk" x="14" y="160">EVERY ARROW RUNS BOTH WAYS. ANY SUBMITTED FIGURE RESOLVES TO A DOCUMENT IN THIS REPOSITORY.</text>
+</svg>
+<figcaption>Forward it produces a number. Backward it produces the filing that number rests on.</figcaption>
+</figure>
+
+<h3>What the running system catches</h3>
+<ul>
+<li><strong>Fabricated quotes, twice.</strong> At extraction, every quote is matched back against
+the document it was attributed to. This is the only stage that catches a guidance range assembled
+from two different sentences, which reads beautifully and is not what the company said. Then again
+at the gate, deterministically, because nothing that can hallucinate should decide which
+hallucinations survive.</li>
+<li><strong>Invented citation identifiers.</strong> Every cited identifier must already exist in
+the evidence store. An estimate with no citation at all is also dropped, since an uncited estimate
+cannot be checked.</li>
+<li><strong>Total collapse.</strong> If every lens is dropped, the run stops rather than
+emitting a number nothing supports.</li>
+<li><strong>Bad units and mixed kinds.</strong> Percentage for money, post exceptional for pre
+exceptional, and wrong period length values are rejected before they can reach a median.</li>
+<li><strong>Implausible distributions.</strong> Crossed quantiles are sorted and flagged.
+Disagreement is measured per metric. The comparability gate flags periods where the priors have
+broken.</li>
+<li><strong>Invented figures in the write up.</strong> Every number in the narrative agent's prose
+is pulled out and checked against the figures the pipeline actually produced. Prose carrying an
+invented figure is rejected rather than printed.</li>
+<li><strong>Malformed model responses.</strong> The schema validator never coerces, never defaults
+a missing field, and never accepts a string where a float was declared. Schema errors fail fast,
+since retrying malformed output mostly reproduces it and bills you twice. Rate limits and 5xx are
+retried.</li>
+<li><strong>Cost.</strong> A hard ceiling stops the run before the call that would breach it.</li>
+<li><strong>Malformed workbooks.</strong> The writer patches the supplied templates in place. It
+refuses a non finite value, a value count that does not match the metric count, a template that no
+longer matches <code>companies.json</code>, or one whose period header does not match the
+specification. The checker then reopens each file on disk and verifies the labels, the units, the
+period header, and that every forecast cell holds a finite number.</li>
+<li><strong>Whole company failure.</strong> Each company is retried once. The retry is nearly free
+because every repeated model call is served from the disk cache, so what is really being retried
+is the transport. One company failing cannot cost the other three their numbers.</li>
+</ul>
+
+<h3>What was tested, and what happened</h3>
+<p><strong>106 automated tests, all passing.</strong> 93 Python and 13 Node, verified at the time
+of writing.</p>
+<p>Beyond ordinary unit coverage, a set of structural tests asserts the architecture rather than
+the outputs. No lens signature can accept another lens's view. The corpus a lens
+reads contains no lens output. Only the positioning stage accepts consensus. Consensus
+exposes nothing writable. Only the judge runs on the deep tier. Every lens dropped stops the
+run rather than forecasting. The results file is never observed half written. Every prompt file has
+a node, every agent node has a prompt, and every prompt declares a version.</p>
+<p>Three defects were found by these checks during the build, each fixed in its own commit.</p>
+<ul>
+<li><strong>Hays net fees were contaminated.</strong> A results release gives net fees in pounds
+and net fee growth as a percentage in the same breath. Both mention net fees. Both matched on the
+label. Fourteen of sixteen observations in the series were percentage declines sitting in a series
+measured in millions. A median across two kinds of thing is a median of nothing, and everything
+downstream inherited it. This is what the kind and period length guards now exist for.</li>
+<li><strong>The judge's metrics were silently unmatched.</strong> The judge is given each metric
+label with its units beside it, and sometimes echoes the pair back as one string. An exact
+comparison found nothing, so every metric read as unjudged. Label matching is now normalised, with
+a containment fallback.</li>
+<li><strong>A degraded run overwrote a healthy one</strong> after the API ran out of credit. This
+is the failure that produced the run health check above.</li>
+</ul>
+<p>The final run reports an exit code that means something. <span class="pill g">0</span> four
+workbooks written, verified, and every number forecast in this run. <span class="pill a">1</span>
+a workbook failed verification, do not upload. <span class="pill r">2</span> the workbooks are the
+right shape but at least one company carried forward previous numbers rather than forecasting
+today. The last clean run exited 0 with all four files passing.</p>
+</section>
+
+<section>
+<h2>Reproducing the run</h2>
+<p><strong>Install and configure.</strong> Python 3.14, standard library only, so there is nothing
+to install. Node.js with <code>npm install</code> for the two packages the starter already
+listed.</p>
+<p>Three keys in <code>.env</code> or the environment. <code>ANTHROPIC_API_KEY</code> is required.
+<code>EXA_API_KEY</code> covers news and industry research. <code>FRED_API_KEY</code> covers macro.
+Missing optional keys degrade that source and are recorded on the run rather than crashing it.</p>
+<p><strong>How the companies and metrics enter.</strong> Nothing about the four companies is
+hardcoded in Python.</p>
+<p><code>challenge/companies.json</code> supplies the tickers, the fiscal periods, the twelve
+metric labels, their units and the output filenames. The supplied templates provide the period
+header. <code>config/forecaster.json</code> holds the run parameters: the as of date, the corpus
+freeze date, the source priority chain, the per company research angles and macro series, the tier
+to model mapping, the cost ceiling and the positioning switch.</p>
+<p>Adding a fifth company means editing JSON, not Python.</p>
+<p><strong>Remaining human input.</strong> None during the run. A person reads the log, sanity
+checks the four numbers, and uploads the files by hand, since the rules require manual upload and
+the agent does not post to OpenStocks.</p>
+</section>
+
+<section>
+<h2>Known weaknesses</h2>
+<ul>
+<li><strong>Dropping a lens whole is expensive.</strong> Two Hays lenses died on two
+failed quote matches, taking their good claims with them. The trade is deliberate, but a
+lens that mis transcribes one character is treated exactly like one that fabricates, and I
+would separate those cases next.</li>
+<li><strong>The extraction rejections are not audited.</strong> Between 43 and 144 candidate values
+per company were discarded by the guards. Spot checks say they are overwhelmingly correct, but
+nothing verifies that a right value was never thrown away with them.</li>
+<li><strong>The positioning base is asserted, not fitted.</strong> The regression that would
+measure it needs the Street bar as it stood at past quarters, and no source available here
+publishes consensus history. Positioning is switched off for this run, so it does not touch the
+submitted numbers, but the machinery would need that measurement before it should ever be switched
+on.</li>
+<li><strong>Hays has no consensus coverage at all</strong> in the market adapter, so three of the
+twelve numbers have no Street comparison to show. Hays is also the name where the corpus is
+thinnest, and it reports half yearly rather than quarterly.</li>
+<li><strong>Only the model's error is measured, not the system's.</strong> The reproduction check
+measures the deterministic projection against reported history. There is no backtest of the full
+nine lens pipeline, because doing it honestly needs point in time consensus and a corpus
+rebuilt per past quarter, and neither exists inside a one day event.</li>
+<li><strong>The judge is a single point of judgement.</strong> One deep call per company. If it
+fails, the fallback is a median of surviving views, which is labelled degraded but is a materially
+weaker answer.</li>
+<li><strong>The corpus is frozen at 2026-08-14</strong> and the run is 2026-08-16. The two day gap
+is covered only by date bounded web search, which feeds perception and reaches no revenue or
+margin driver by design.</li>
+<li><strong>The shape checker cannot judge quality.</strong> It verifies that the workbooks are
+exactly what was asked for. Whether 47,320 is a good number for Home Depot is a question no check
+in this repository can answer.</li>
+</ul>
+</section>
+
+<section>
+<h2>How to reproduce the final run</h2>
+<div class="card">
+<p>Final commit: <code>52bb54d72389ef3a94ea798785e34f548a06c0d3</code></p>
+<p>Final command: <code>py -m forecaster.final_run</code></p>
+<p>Expected output: four completed workbooks in <code>submission/</code>, one timestamped log in
+<code>logs/</code>, one results file per company under <code>runs/</code>, and exit code
+<code>0</code>.</p>
+</div>
+<p class="note">The log records the git commit and whether the working tree was clean, the as of
+and corpus freeze dates, every stage event as it is emitted, the cost per company, the checker's
+verdict per file, and the meaning of the exit code. Nothing under <code>logs/</code> is ever
+overwritten, so a retry leaves the failed attempt exactly where it was.</p>
+</section>
+
+</main>
+</body>
+</html>

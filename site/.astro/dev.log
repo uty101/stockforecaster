@@ -363,3 +363,29 @@
 {"message":"[200] / 40ms","label":null,"level":"info"}
 {"message":"[200] / 66ms","label":null,"level":"info"}
 {"message":"[200] / 59ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 26ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 31ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 33ms","label":null,"level":"info"}
+{"message":"[Unhandled error] TypeError: Cannot read properties of null (reading 'classList')\n > open ../../src/components/SignalFlow.astro?astro=&type=script&index=0&lang.ts=:21:9\n > ../../src/components/SignalFlow.astro?astro=&type=script&index=0&lang.ts=:62:13\n","label":"vite","level":"error"}
+{"message":"/src/components/SignalFlow.astro?astro&type=style&index=0&lang.css","label":"watch","level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 55ms","label":null,"level":"info"}
+{"message":"src/components/SignalFlow.astro","label":"watch","level":"info"}
+{"message":"[200] / 155ms","label":null,"level":"info"}
+{"message":"[200] / 68ms","label":null,"level":"info"}
+{"message":"[200] /forecast 30ms","label":null,"level":"info"}
+{"message":"[200] / 14ms","label":null,"level":"info"}
+{"message":"[200] /forecast 12ms","label":null,"level":"info"}
+{"message":"[200] /reasoning 13ms","label":null,"level":"info"}
+{"message":"[200] / 14ms","label":null,"level":"info"}
+{"message":"[200] / 14ms","label":null,"level":"info"}
+{"message":"[200] /forecast 12ms","label":null,"level":"info"}
+{"message":"[200] /cost 25ms","label":null,"level":"info"}
+{"message":"[200] /risk 11ms","label":null,"level":"info"}
+{"message":"[200] / 12ms","label":null,"level":"info"}
+{"message":"[200] /forecast 10ms","label":null,"level":"info"}
+{"message":"[200] / 11ms","label":null,"level":"info"}
+{"message":"[200] /forecast 19ms","label":null,"level":"info"}
